@@ -22,7 +22,6 @@
 <use   name="DataFormats/L1GlobalTrigger"/>
 <use   name="RecoLocalCalo/EcalRecAlgos"/>
 <use   name="RecoParticleFlow/PFProducer"/>
-<use   name="FWCore/ServiceRegistry"/>
 <use   name="CondFormats/EcalObjects"/>
 <use   name="CondFormats/HcalObjects"/>
 <use   name="CondFormats/DataRecord"/>
