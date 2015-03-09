@@ -78,6 +78,7 @@ class GenParAna
     bool AnaWdiJets() const;
     bool BookHistogram();
     bool GetGenCount();
+    int GetTopCount() const;
     int GetLepCount() const;
 
     // ====================  OPERATORS     ===============================

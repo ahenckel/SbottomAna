@@ -67,27 +67,26 @@ SuperTopTagger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   using namespace edm;
   GetHandleByLabel(iEvent);
 
-
 #ifdef THIS_IS_AN_EVENT_EXAMPLE
-   Handle<ExampleData> pIn;
-   iEvent.getByLabel("example",pIn);
+  Handle<ExampleData> pIn;
+  iEvent.getByLabel("example",pIn);
 #endif
-   
+
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-   ESHandle<SetupData> pSetup;
-   iSetup.get<SetupRecord>().get(pSetup);
+  ESHandle<SetupData> pSetup;
+  iSetup.get<SetupRecord>().get(pSetup);
 #endif
 
 
-   //----------------------------------------------------------------------------
-   //  Analysis Classes
-   //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //  Analysis Classes
+  //----------------------------------------------------------------------------
   AnaPtr->GetGenParticles(PrunedGenHdl, PackedGenHdl);
   //AnaPtr->PrintGenPars(PrunedGenHdl);
   AnaPtr->GetTopandW(PrunedGenHdl);
   //AnaPtr->PrintTopDecay();
 
-  if (AnaPtr->GetLepCount() == 0) return;
+  if (AnaPtr->GetTopCount() != 0 && AnaPtr->GetLepCount() == 0) return;
 
   AnaPtr->AnaWdiJets();
   //----------------------------------------------------------------------------
@@ -171,7 +170,6 @@ int SuperTopTagger::GetHandleByLabel(const edm::Event& iEvent)
   return true;
 }       // -----  end of function SuperTopTagger::GetHandleByLabel  -----
 
-
 // ===  FUNCTION  ============================================================
 //         Name:  SuperTopTagger::SetType3TopTagger
 //  Description:  
@@ -219,6 +217,7 @@ bool SuperTopTagger::RunType3TopTagger()
 {
   loadMETMHT();
   PickJetFromCombining();
+
   bool pass = type3TopTaggerPtr->processEvent(oriJetsVec, recoJetsBtagCSVS, metLVec);
   hist->FillTH1("NType3TopTagger", type3TopTaggerPtr->nTopCandSortedCnt);
   type3TopTaggerPtr->prepareFindingBestTopCandidate(oriJetsVec, recoJetsBtagCSVS);
@@ -273,7 +272,6 @@ bool SuperTopTagger::JetSelection(const pat::Jet& jets) const
 {
   return true;
 }       // -----  end of function SuperTopTagger::JetSelection  -----
-
 
 // ===  FUNCTION  ============================================================
 //         Name:  SuperTopTagger::BookHistogram
