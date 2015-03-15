@@ -38,8 +38,8 @@
 // UserCode 
 #include "UserCode/SuperTopTagger/interface/GenParAna.h"
 #include "UserCode/SuperTopTagger/interface/HistTool.h"
-#include "UserCode/SuperTopTagger/interface/Type3TopTagger.h"
 #include "UserCode/SuperTopTagger/interface/MatchingTaggerGen.h"
+#include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
 
 
 //

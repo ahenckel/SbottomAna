@@ -18,7 +18,8 @@
 // UserCode 
 #include "UserCode/SuperTopTagger/interface/GenParAna.h"
 #include "UserCode/SuperTopTagger/interface/HistTool.h"
-#include "UserCode/SuperTopTagger/interface/Type3TopTagger.h"
+#include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
+
 // ===========================================================================
 //        Class:  MatchingTaggerGen
 //  Description:  
@@ -28,9 +29,10 @@ class MatchingTaggerGen
   public:
 
     // ====================  LIFECYCLE     ===============================
-    MatchingTaggerGen (HistTool* hist_, TLorentzVector *metLVec_, std::vector<TLorentzVector> *oriJetsVec_, std::vector<double> *recoJetsBtagCSVS_);                             // constructor
-    MatchingTaggerGen ( const MatchingTaggerGen &other );   // copy constructor
-    ~MatchingTaggerGen ();                            // destructor
+    MatchingTaggerGen (HistTool* hist_, TLorentzVector *metLVec_,    // constructor
+        std::vector<TLorentzVector> *oriJetsVec_, std::vector<double> *recoJetsBtagCSVS_);                             
+    MatchingTaggerGen ( const MatchingTaggerGen &other );            // copy constructor
+    ~MatchingTaggerGen ();                                           // destructor
 
     // ====================  ACCESSORS     ===============================
     bool BookHistogram() const;
