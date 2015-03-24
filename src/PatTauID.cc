@@ -34,7 +34,6 @@ PatTauID::PatTauID(const edm::ParameterSet& iConfig)
   produces<std::vector<pat::Tau> >("PassTau");
   //now do what ever other initialization is needed
   PatTauTag_ = iConfig.getParameter<edm::InputTag>("PatTauTag");
-  PatTauTag_ = iConfig.getParameter<edm::InputTag>("PatTauTag");
 
   DecayMode = iConfig.getUntrackedParameter<std::string>("DecayModeTag",  "decayModeFindingOldDMs");
   Isolation = iConfig.getUntrackedParameter<std::string>("IsolationTag", "byLooseCombinedIsolationDeltaBetaCorr3Hits");

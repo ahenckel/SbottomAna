@@ -141,6 +141,7 @@ class HistTool
     // Output the His TH2
     int WriteTH2();
     int DrawTH2();
+    bool CalEfficiency(std::string output, std::string Numerator, std::string DeNumerator);
 
   protected:
     // ====================  DATA MEMBERS  ===============================

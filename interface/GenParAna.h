@@ -112,6 +112,7 @@ class GenParAna
     std::map<std::string, int> GenCounts;
     std::vector<TopDecay> Topidx;
     std::vector<WDecay> Widx;
+    std::vector<TauDecay> Tauidx;
 
 
   protected:

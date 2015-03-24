@@ -620,3 +620,13 @@ bool HistTool::SetWeight(double weight)
   HWeight = weight;
   return true;
 }       // -----  end of function HistTool::SetWeight  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  HistTool::CalEfficiency
+//  Description:  /* cursor */
+// ===========================================================================
+bool HistTool::CalEfficiency(std::string output, std::string Numerator, std::string DeNumerator)
+{
+  HisMap[output]->Divide(HisMap[Numerator], HisMap[DeNumerator]);
+  return true;
+}       // -----  end of function HistTool::CalEfficiency  -----

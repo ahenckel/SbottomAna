@@ -288,6 +288,8 @@ bool GenParAna::CleanPerEvent()
 {
   Topidx.clear();
   Widx.clear();
+  Tauidx.clear();
+
   return true;
 }       // -----  end of function GenParAna::CleanPerEvent  -----
 
@@ -632,12 +634,10 @@ bool GenParAna::GetTauDecay(const reco::Candidate* TauPar)
     //Get tau neutrino, multiple neutrino from tau?
     if ( fabs(dau->pdgId()) == 12 || fabs(dau->pdgId()) == 14 ||fabs(dau->pdgId()) == 16 )
       temp.PrunedNeus.push_back(dau);
-
     // Get prongs?
-    
-
   }
 
+  Tauidx.push_back(temp);
   return true;
 }       // -----  end of function GenParAna::GetTauDecay  -----
 
@@ -672,7 +672,7 @@ std::vector<fastjet::PseudoJet>  GenParAna::ProdGenJets(const std::vector<const 
 
     // fastjet cluster sequence
   fastjet::ClusterSequence fjClusterSeq =  fastjet::ClusterSequenceArea( fjInputs, fjJetDefinition, fjAreaDefinition );
-  return fastjet::sorted_by_pt(fjClusterSeq.inclusive_jets(jetPtMin));
+  return fastjet::sorted_by_pt(fjClusterSeq.inclusive_jets(jetPtMin)) ;
 }       // -----  end of function GenParAna::ProdGenJets  -----
 
 // ===  FUNCTION  ============================================================
