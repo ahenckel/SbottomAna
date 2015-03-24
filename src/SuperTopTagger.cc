@@ -86,15 +86,15 @@ SuperTopTagger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   AnaPtr->GetTopandW(PrunedGenHdl);
   //AnaPtr->PrintTopDecay();
 
-  if (AnaPtr->GetTopCount() != 0 && AnaPtr->GetLepCount() == 0) return;
+  //if (AnaPtr->GetTopCount() != 0 && AnaPtr->GetLepCount() != 0) return;
 
   AnaPtr->AnaWdiJets();
+  AnaPtr->AnaTopandW();
   //----------------------------------------------------------------------------
   //  Type3 Top Tagger
   //----------------------------------------------------------------------------
   RunType3TopTagger();
   MatchingPtr->AnaType3Gen(type3TopTaggerPtr, AnaPtr);
-
 }
 
 
@@ -217,10 +217,9 @@ bool SuperTopTagger::RunType3TopTagger()
 {
   loadMETMHT();
   PickJetFromCombining();
-
   bool pass = type3TopTaggerPtr->processEvent(oriJetsVec, recoJetsBtagCSVS, metLVec);
   hist->FillTH1("NType3TopTagger", type3TopTaggerPtr->nTopCandSortedCnt);
-  type3TopTaggerPtr->prepareFindingBestTopCandidate(oriJetsVec, recoJetsBtagCSVS);
+  //type3TopTaggerPtr->prepareFindingBestTopCandidate(oriJetsVec, recoJetsBtagCSVS);
 
   //std::cout << " T3TopTag " << pass << std::endl;
   return pass;
@@ -263,7 +262,6 @@ bool SuperTopTagger::PickJetFromCombining()
   return true;
 }       // -----  end of function SuperTopTagger::PickJetFromCombining  -----
 
-
 // ===  FUNCTION  ============================================================
 //         Name:  SuperTopTagger::JetSelection
 //  Description:  
@@ -272,6 +270,7 @@ bool SuperTopTagger::JetSelection(const pat::Jet& jets) const
 {
   return true;
 }       // -----  end of function SuperTopTagger::JetSelection  -----
+
 
 // ===  FUNCTION  ============================================================
 //         Name:  SuperTopTagger::BookHistogram

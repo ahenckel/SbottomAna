@@ -46,6 +46,7 @@ class MatchingTaggerGen
     bool PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, int ic) const;
 
     MatchingTaggerGen& operator = ( const MatchingTaggerGen &other ); // assignment operator
+    bool FakeType3WTag(topTagger::type3TopTagger* type3TopTaggerPtr);
 
     // ====================  DATA MEMBERS  ===============================
 

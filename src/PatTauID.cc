@@ -83,6 +83,8 @@ PatTauID::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   */
   std::auto_ptr<std::vector<pat::Tau> > pOut(new  std::vector<pat::Tau> );
   std::vector<pat::Tau>  temp =  PassTauID();
+
+  std::cout << " Output Pat Tau size " << temp.size() << std::endl;
   *pOut.get() = temp;
   iEvent.put(pOut, "PassTau");
 }
@@ -151,6 +153,11 @@ std::vector<pat::Tau> PatTauID::PassTauID()
   for(unsigned int i=0; i < PatTauHdl->size(); ++i)
   {
     pat::Tau tau = PatTauHdl->at(i);
+    std::cout << "Tau ID DecayMode: " << tau.tauID(DecayMode) 
+      << " Isolation: " << tau.tauID(Isolation)
+      << " MuonReject: " << tau.tauID(MuonReject)
+      << " EleReject: " << tau.tauID(EleReject)
+      << std::endl;
     // Decay mode: 
     // decayModeFindingOldDMs
     // decayModeFindingNewDMs (nly for analysis involving high pT taus, like !SUSY searches)
@@ -189,6 +196,12 @@ std::vector<pat::Tau> PatTauID::PassTauID()
       if (tau.tauID(EleReject)  < 0.5)
         break;
     }
+
+    std::cout << "Tau ID DecayMode: " << tau.tauID(DecayMode) 
+      << " Isolation: " << tau.tauID(Isolation)
+      << " MuonReject: " << tau.tauID(MuonReject)
+      << " EleReject: " << tau.tauID(EleReject)
+      << std::endl;
     temp.push_back(tau);
   }
 

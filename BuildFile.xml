@@ -34,4 +34,5 @@
 <use   name="JetMETCorrections/Objects"/>
 <use   name="HLTrigger/HLTcore"/>
 <use   name="recipeAUX/OxbridgeMT2"/>
+<use   name="fastjet"/>
 <flags   EDM_PLUGIN="1"/>

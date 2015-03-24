@@ -100,7 +100,7 @@ WDecay GenParAna::GetWDecay(const reco::Candidate* WPar)
 //----------------------------------------------------------------------------
 //  If it is an intermedia W , nest the function
 //----------------------------------------------------------------------------
-  if (WPar->numberOfMothers() == 1 && fabs( WPar->daughter(0)->pdgId()) == 24)
+  if (WPar->numberOfDaughters() == 1 && fabs( WPar->daughter(0)->pdgId()) == 24)
   {
     return GetWDecay(WPar->daughter(0));
   }
@@ -148,10 +148,37 @@ WDecay GenParAna::GetWDecay(const reco::Candidate* WPar)
 // ===========================================================================
 TopDecay GenParAna::GetTopDecay(const reco::Candidate* TopPar)
 {
+
+//----------------------------------------------------------------------------
+//  If it is an intermedia top , nest the function
+//  NOTE: Sometime, top can branch to 3 particles:
+//  tau daughters? 3
+//  top dau -6 mass 170.058
+//  top dau 523 mass 5.3252
+//  top dau 1 mass 1.13833
+//  So we need to test all the possible
+//----------------------------------------------------------------------------
+  if (TopPar->numberOfDaughters() != 2)
+  {
+  //std::cout << " tau daughters? " << TopPar->numberOfDaughters()<< std::endl;
+    for(unsigned int i=0; i < TopPar->numberOfDaughters(); ++i)
+    {
+      //std::cout << " top dau " << dau->pdgId() << " mass " << dau->mass()<< std::endl;
+      if ( fabs(TopPar->daughter(i)->pdgId()) == 6)
+      {
+        return GetTopDecay(TopPar->daughter(i));
+      }
+    }
+  }
+
+//----------------------------------------------------------------------------
+//  If this W decays
+//----------------------------------------------------------------------------
   TopDecay temp;
   temp.topidx_ = GetPackedPars(TopPar);
   bool hasProducts = false; //only store the top quarks has daughters
 
+  assert( TopPar->numberOfDaughters() == 2);
   for(unsigned int i=0; i < TopPar->numberOfDaughters(); ++i)
   {
     const reco::Candidate *dau = TopPar->daughter(i);
@@ -386,13 +413,21 @@ int GenParAna::GetLepCount() const
     {
       lepcount++;
     }
-    
   }
+
   return lepcount;
 
-  return true;
 }       // -----  end of function GenParAna::GetLepCount  -----
 
+
+// ===  FUNCTION  ============================================================
+//         Name:  GenParAna::GetTopCount
+//  Description:  
+// ===========================================================================
+int GenParAna::GetTopCount() const
+{
+  return Topidx.size();
+}       // -----  end of function GenParAna::GetTopCount  -----
 
 // ===  FUNCTION  ============================================================
 //         Name:  GenParAna::BookHistogram
@@ -400,20 +435,31 @@ int GenParAna::GetLepCount() const
 // ===========================================================================
 bool GenParAna::BookHistogram()
 {
-  hist->AddTH1( "WPT", " WPT", 400, 0, 400);
-  hist->AddTH2( "WDR", " Decay dR vs expected dR ", 70, 0, 7, 70, 0, 7);
-  hist->AddTH2( "WDR2", " Decay dR vs expected dR with quark pt cut ", 70, 0, 7, 70, 0, 7);
-  hist->AddTH2( "WDRPT", " Decay dR vs expected dR Vs WPT", 400, 0, 400, 140, -7, 7);
+  hist->AddTH1( "WPT", " WPT",  400, 0, 400);
+  hist->AddTH1( "MergedWPT", "Merged WPT",  400, 0, 400);
+  hist->AddTH2( "WDR", " Decay dR vs expected dR",  70, 0, 7, 70, 0, 7);
+  hist->AddTH2( "WDR2", " Decay dR vs expected dR with quark pt cut ",  70, 0, 7, 70, 0, 7);
+  hist->AddTH2( "WDRPT", " Decay dR vs expected dR Vs WPT",  400, 0, 400, 140, -7, 7);
+
+  //hist->AddTH1( "WPT", " WPT", "Gen W PT", "Number of W",  400, 0, 400);
+  //hist->AddTH2( "WDR", " Decay dR vs expected dR", " 2 * M / PT", "diquark DeltaR",  70, 0, 7, 70, 0, 7);
+  //hist->AddTH2( "WDR2", " Decay dR vs expected dR with quark pt cut ", " 2 *M / PT", "diquark DeltaR (PT>20)",  70, 0, 7, 70, 0, 7);
+  //hist->AddTH2( "WDRPT", " Decay dR vs expected dR Vs WPT", "WPT", "2*M/PT - diquark DeltaR",  400, 0, 400, 140, -7, 7);
+
+
   hist->AddTH2( "WDRPT1", " Decay dR Vs WPT", 400, 0, 400, 140, -7, 7);
   hist->AddTH2( "WDRPT2", " Expected dR Vs WPT", 400, 0, 400, 140, -7, 7);
 
   hist->AddTH2( "dPTWPT", " delta PT Vs WPT", 400, 0, 400, 140, 0, 0);
+  hist->AddTH2( "SumPTWPT", "Sum PT Vs WPT", 400, 0, 400, 140, 0, 0);
+  hist->AddTH2( "SumPTWPT-WPT", "Sum PT/WPT  Vs WPT", 400, 0, 400, 140, 0, 0);
   hist->AddTH2( "dPTdR", " delta PT Vs deltaR", 400, -200, 200, 140, -7, 7);
   hist->AddTH2( "dPTWPTdR", " delta PT Vs WPT vs delta R", 400, 0, 400, 200, 0, 200);
 
   hist->AddTH2( "dPTWPTVsWPT", " delta PT/WPT  Vs WPT", 400, 0, 400, 140, 0, 0);
   hist->AddTH2( "dRdijetW", " delta R dijet and W  Vs WPT", 400, 0, 400, 140, -7, 7);
 
+  hist->AddTH2( "WPT-TopPT", "WPT Vs Top PT", 400, 0, 400, 400, 0, 400);
   return true;
 }       // -----  end of function GenParAna::BookHistogram  -----
 
@@ -434,14 +480,18 @@ bool GenParAna::AnaWdiJets() const
     assert(p1->pt() > 0);
     assert(p2->pt() > 0);
     double p1p2DeltaR = reco::deltaR<reco::Candidate::LorentzVector>(p1->p4(), p2->p4());
+    if (p1p2DeltaR < 0.8 && p1p2DeltaR > 0.4)
+      hist->FillTH1("MergedWPT", w->pt());
 
     hist->FillTH1("WPT", w->pt());
     hist->FillTH2("WDR", 2*w->mass() / w->pt(),  p1p2DeltaR);
     if (p1->pt() > 20 && p2->pt() > 20)
     {
       hist->FillTH2("WDR2", 2*w->mass() / w->pt(), p1p2DeltaR);
-      hist->FillTH2("dPTWPT", w->pt(), p1->pt() - p2->pt());
     }
+    hist->FillTH2("dPTWPT", w->pt(), p1->pt() - p2->pt());
+    hist->FillTH2("SumPTWPT", w->pt(), p1->pt() + p2->pt());
+    hist->FillTH2("SumPTWPT-WPT", w->pt(), (p1->pt() + p2->pt())/w->pt());
     hist->FillTH2("dPTWPTVsWPT", w->pt(), fabs(p1->pt() - p2->pt())/w->pt());
     hist->FillTH2("dPTWPTdR", w->pt(), fabs(p1->pt() - p2->pt()), p1p2DeltaR);
     hist->FillTH2("dPTdR", p1->pt() - p2->pt(), p1p2DeltaR);
@@ -451,12 +501,198 @@ bool GenParAna::AnaWdiJets() const
     reco::Candidate::LorentzVector dijetW = p1->p4()+ p2->p4();
     double dijetWDeltaR = reco::deltaR<reco::Candidate::LorentzVector>(dijetW, w->p4());
     hist->FillTH2("dRdijetW", w->pt(), dijetWDeltaR);
-
-    
   }
   return true;
 }       // -----  end of function GenParAna::AnaWdiJets  -----
 
+
+// ===  FUNCTION  ============================================================
+//         Name:  GenParAna::AnaTopandW
+//  Description:  
+// ===========================================================================
+bool GenParAna::AnaTopandW() const
+{
+  for (size_t i = 0; i < Topidx.size(); ++i)
+  {
+    const reco::Candidate* t = Topidx.at(i).topidx_.Pruned;
+    //const reco::Candidate* b = Topidx.at(i).bidx_.Pruned;
+    const reco::Candidate* w = Topidx.at(i).widx_.Widx_.Pruned;
+    assert(t != NULL);
+    assert(w != NULL);
+    hist->FillTH2("WPT-TopPT", w->pt(), t->pt());
+    //if (Topidx.at(i).widx_.isLeptonic_) continue;
+    //const reco::Candidate* p1 = Topidx.at(i).widx_.had1idx_.Pruned;
+    //const reco::Candidate* p2 = Topidx.at(i).widx_.had2idx_.Pruned;
+
+    //double p1p2DeltaR = reco::deltaR<reco::Candidate::LorentzVector>(p1->p4(), p2->p4());
+    //double bp1DeltaR = reco::deltaR<reco::Candidate::LorentzVector>(p1->p4(), b->p4());
+    //double bp2DeltaR = reco::deltaR<reco::Candidate::LorentzVector>(p2->p4(), b->p4());
+    //double bwDeltaR = reco::deltaR<reco::Candidate::LorentzVector>(w->p4(), b->p4());
+
+    //// is top merged in one jet
+    //if (p1p2DeltaR < 0.4 && bp2DeltaR < 0.4 && bp2DeltaR < 0.4) continue;
+
+    // if 
+
+  }
+  return true;
+}       // -----  end of function GenParAna::AnaTopandW  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  GenParAna::GetTop
+//  Description:  
+// ===========================================================================
+bool GenParAna::GetTop(edm::Handle<reco::GenParticleCollection> PrunedGenHdl)
+{
+  bool hasTop = false;
+  for (size_t i = 0; i < PrunedGenHdl->size(); ++i)
+  {
+    if (fabs(PrunedGenHdl->at(i).pdgId()) == 6)
+    {
+      GetTopDecay(&PrunedGenHdl->at(i));
+      hasTop = true;
+    }
+  }
+
+  return hasTop;
+}       // -----  end of function GenParAna::GetTop  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  GenParAna::GetW
+//  Description:  
+// ===========================================================================
+bool GenParAna::GetW(edm::Handle<reco::GenParticleCollection> PrunedGenHdl)
+{
+  bool hasW = false;
+  for (size_t i = 0; i < PrunedGenHdl->size(); ++i)
+  {
+    if (fabs(PrunedGenHdl->at(i).pdgId()) == 24)
+    {
+      GetWDecay(&PrunedGenHdl->at(i));
+      hasW = true;
+    }
+  }
+
+  return hasW;
+}       // -----  end of function GenParAna::GetW  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  GenParAna::GetTau
+//  Description:  
+// ===========================================================================
+bool GenParAna::GetTau(edm::Handle<reco::GenParticleCollection> PrunedGenHdl)
+{
+  bool hastau = false;
+  for (size_t i = 0; i < PrunedGenHdl->size(); ++i)
+  {
+    if (fabs(PrunedGenHdl->at(i).pdgId()) == 15)
+    {
+      GetTauDecay(&PrunedGenHdl->at(i));
+      hastau = true;
+    }
+  }
+  return hastau;
+}       // -----  end of function GenParAna::GetTau  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  GenParAna::GetTauDecay
+//  Description:  
+// ===========================================================================
+bool GenParAna::GetTauDecay(const reco::Candidate* TauPar)
+{
+   // Tau will radia photons, looping over until the final tau decay 
+  for(unsigned int i=0; i < TauPar->numberOfDaughters(); ++i)
+  {
+    //std::cout << " top dau " << dau->pdgId() << " mass " << dau->mass()<< std::endl;
+    if ( fabs(TauPar->daughter(i)->pdgId()) == 15)
+    {
+      return GetTauDecay(TauPar->daughter(i));
+    }
+  }
+
+  //----------------------------------------------------------------------------
+  //  If this is the final tau
+  //----------------------------------------------------------------------------
+  TauDecay temp;
+  temp.tauidx_  = GetPackedPars(TauPar);
+
+  //int lepcount = 0;
+  for (unsigned int i = 0; i < TauPar->numberOfDaughters(); ++i)
+  {
+    const reco::Candidate* dau = TauPar->daughter(i);
+    assert(dau->pdgId() != 15);
+
+    //Get leptonic decay tau
+    if ( fabs(dau->pdgId()) == 11 || fabs(dau->pdgId()) == 13 )
+    {
+      temp.Lepidx_ = GetPackedPars(dau);
+      temp.isLeptonic_ = true;
+    }
+
+    //Get tau neutrino, multiple neutrino from tau?
+    if ( fabs(dau->pdgId()) == 12 || fabs(dau->pdgId()) == 14 ||fabs(dau->pdgId()) == 16 )
+      temp.PrunedNeus.push_back(dau);
+
+    // Get prongs?
+    
+
+  }
+
+  return true;
+}       // -----  end of function GenParAna::GetTauDecay  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  GenParAna::ProdGenJets
+//  Description:  /* cursor */
+// ===========================================================================
+std::vector<fastjet::PseudoJet>  GenParAna::ProdGenJets(const std::vector<const reco::Candidate*> &PackedGens, const double jetPtMin, const double rParam_ )
+{
+  // fastjet inputs
+  std::vector<fastjet::PseudoJet> fjInputs;        
+  for(unsigned int i=0; i < PackedGens.size(); ++i)
+  {
+    const reco::Candidate* gen = PackedGens.at(i);
+    fjInputs.push_back(fastjet::PseudoJet(gen->px(),  gen->py(), gen->pz(), gen->energy())); 
+  }
+
+  // fastjet jet definition: default AntiKT
+  fastjet::JetDefinition fjJetDefinition = fastjet::JetDefinition(fastjet::antikt_algorithm,rParam_);
+
+  // do fasjet area => accept corresponding parameters
+  // default Ghost_EtaMax should be 5
+  double ghostEtaMax = 5.0;
+  // default Active_Area_Repeats 1
+  int    activeAreaRepeats = 1;
+  // default GhostArea 0.01
+  double ghostArea = 0.01;
+  fastjet::GhostedAreaSpec fjActiveArea = fastjet::GhostedAreaSpec(ghostEtaMax,activeAreaRepeats,ghostArea);
+  fjActiveArea.set_fj2_placement(true);
+  fastjet::AreaDefinition fjAreaDefinition = fastjet::AreaDefinition(fastjet::active_area_explicit_ghosts, fjActiveArea);
+
+    // fastjet cluster sequence
+  fastjet::ClusterSequence fjClusterSeq =  fastjet::ClusterSequenceArea( fjInputs, fjJetDefinition, fjAreaDefinition );
+  return fastjet::sorted_by_pt(fjClusterSeq.inclusive_jets(jetPtMin));
+}       // -----  end of function GenParAna::ProdGenJets  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  GenParAna::ProdGenLVs
+//  Description:  
+// ===========================================================================
+std::vector<TLorentzVector> GenParAna::ProdGenLVs(const std::vector<const reco::Candidate*> &PackedGens, const double jetPtMin, const double rParam)
+{
+  
+  std::vector<TLorentzVector> LVs;
+
+  std::vector<fastjet::PseudoJet> tempJets = ProdGenJets(PackedGens, jetPtMin, rParam);
+  for(unsigned int i=0; i < tempJets.size(); ++i)
+  {
+    fastjet::PseudoJet jet = tempJets.at(i);
+    TLorentzVector tempLV(jet.px(), jet.py(), jet.pz(), jet.e());
+    LVs.push_back(tempLV);
+  }
+  return LVs;
+}       // -----  end of function GenParAna::ProdGenLVs  -----
 
 //#include "FWCore/Framework/interface/MakerMacros.h"
 ////define this as a plug-in

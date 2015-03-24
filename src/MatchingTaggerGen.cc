@@ -75,14 +75,32 @@ bool MatchingTaggerGen::BookHistogram() const
   hist->AddTH1("MatchWEta", "Matched GenW Eta", 20, -5, 5);
   hist->AddTH1("EffWPT", "Efficiency GenW PT", 600, 0, 600);
   hist->AddTH1("EffWEta", "Efficiency GenW Eta", 20, -5, 5);
+  hist->AddTH1("WMatchcount", "WMatchcount", 5, 0, 5);
 
+  hist->AddTH1("RecoTopPT", "RecoTopPT", 600, 0, 600);
+  hist->AddTH1("RecoTopM", "RecoTopM", 600, 0, 600);
   hist->AddTH1("MatchDeltaM", "Matched DeltaM with GenW ", 120, 60, 60);
   hist->AddTH2( "T3NotMactchWDRPT", "Not Matched W Decay dR Vs WPT", 400, 0, 400, 140, -7, 7);
+  //hist->AddTH2( "T3NotMactchWDRPT", "Not Matched W Decay dR Vs WPT;RecoW PT;diJet deltaR", 400, 0, 400, 140, -7, 7);
+  //hist->AddTH2( "T3NotMactchWDRPT", "Not Matched W Decay dR Vs WPT", "RecoW PT", "diJet deltaR", 400, 0, 400, 140, -7, 7);
   hist->AddTH2( "T3MactchWDRPT", "Matched W Decay dR Vs WPT", 400, 0, 400, 140, -7, 7);
   hist->AddTH2( "NT3NotMactchWDRPT", "Not Matched W Decay dR Vs WPT", 400, 0, 400, 140, -7, 7);
   hist->AddTH2( "NT3MactchWDRPT", "Matched W Decay dR Vs WPT", 400, 0, 400, 140, -7, 7);
   hist->AddTH2( "N2T3NotMactchWDRPT", "Not Matched W Decay dR Vs WPT", 400, 0, 400, 140, -7, 7);
   hist->AddTH2( "N2T3MactchWDRPT", "Matched W Decay dR Vs WPT", 400, 0, 400, 140, -7, 7);
+
+  //hist->AddTH2( "T3MactchWDRPT", "Matched W Decay dR Vs WPT", "RecoW PT", "diJet deltaR", 400, 0, 400, 140, -7, 7);
+  //hist->AddTH2( "NT3NotMactchWDRPT", "Not Matched W Decay dR Vs WPT", "RecoW PT", "Normalized diJet deltaR", 400, 0, 400, 140, -7, 7);
+  //hist->AddTH2( "NT3MactchWDRPT", "Matched W Decay dR Vs WPT", "RecoW PT", "Normalized diJet deltaR", 400, 0, 400, 140, -7, 7);
+  //hist->AddTH2( "N2T3NotMactchWDRPT", "Not Matched W Decay dR Vs WPT", "RecoW PT", "Normalized diJet deltaR", 400, 0, 400, 140, -7, 7);
+  //hist->AddTH2( "N2T3MactchWDRPT", "Matched W Decay dR Vs WPT", "RecoW PT", "Normalized diJet deltaR", 400, 0, 400, 140, -7, 7);
+
+  
+  hist->AddTH2( "MatchSumPTWPT-WPT", "Match Sum PT/WPT  Vs WPT", 400, 0, 400, 140, 0, 0);
+  hist->AddTH2( "NotMatchSumPTWPT-WPT", "Not Match Sum PT/WPT  Vs WPT", 400, 0, 400, 140, 0, 0);
+  hist->AddTH2( "NotMatchWPT-TopPT", "WPT Vs Top PT", 400, 0, 400, 400, 0, 400);
+
+
   return true;
 }       // -----  end of function MatchingTaggerGen::BookHistogram  -----
 
@@ -113,8 +131,17 @@ bool MatchingTaggerGen::AnaType3WTag(topTagger::type3TopTagger* type3TopTaggerPt
     {
 
       if (! PassType3TopCrite(type3TopTaggerPtr, j)) continue;
+      TLorentzVector jjjTop(0, 0, 0, 0);
+      for (size_t k = 0; k < type3TopTaggerPtr->finalCombfatJets.at(j).size(); ++k)
+      {
+        jjjTop += oriJetsVec->at(type3TopTaggerPtr->finalCombfatJets.at(j).at(k));
+      }
+      if (jjjTop.M() < 80 || jjjTop.M() > 270 ) continue;
+
+
       std::vector<TLorentzVector> jj = GetType3WDijet(type3TopTaggerPtr->finalCombfatJets.at(j));
       int matchcount = MatchingWDijet(pp, jj);
+      hist->FillTH1("WMatchcount", matchcount);
       if (jj.size() < 1) continue;
       if (jj.size() == 1 && (matchcount == -1 || matchcount == 3 ))
         break;
@@ -132,12 +159,15 @@ bool MatchingTaggerGen::AnaType3WTag(topTagger::type3TopTagger* type3TopTaggerPt
         hist->FillTH2("T3MactchWDRPT",  jjW.Pt(), jjDeltaR  );
         hist->FillTH2("NT3MactchWDRPT",  jjW.Pt(), jjDeltaR - 2 * jjW.M()/ jjW.Pt() );
         hist->FillTH2("N2T3MactchWDRPT",  jjW.Pt(), jjDeltaR - 2 * 80.3/ jjW.Pt() );
+
+        hist->FillTH2("MatchSumPTWPT-WPT",  jjW.Pt(), (jj.at(0).Pt() + jj.at(1).Pt()) / jjW.Pt());
       }
       else
       {
         hist->FillTH2("T3NotMactchWDRPT",  jjW.Pt(), jjDeltaR);
         hist->FillTH2("NT3NotMactchWDRPT",  jjW.Pt(), jjDeltaR - 2 * jjW.M()/ jjW.Pt() );
         hist->FillTH2("N2T3NotMactchWDRPT",  jjW.Pt(), jjDeltaR - 2 * 80.3/ jjW.Pt() );
+        hist->FillTH2("NotMatchSumPTWPT-WPT",  jjW.Pt(), (jj.at(0).Pt() + jj.at(1).Pt()) / jjW.Pt());
       }
     }
 
@@ -159,6 +189,49 @@ bool MatchingTaggerGen::AnaType3WTag(topTagger::type3TopTagger* type3TopTaggerPt
   return true;
 }       // -----  end of function MatchingTaggerGen::AnaType3WTag  -----
 
+
+// ===  FUNCTION  ============================================================
+//         Name:  MatchingTaggerGen::FakeType3WTag
+//  Description:  Invert the algorithm from AnaType3WTag() to see the fake
+//  rate of the Wtag in the QCD samples
+// ===========================================================================
+bool MatchingTaggerGen::FakeType3WTag(topTagger::type3TopTagger* type3TopTaggerPtr) 
+{
+  for (size_t j = 0; j < type3TopTaggerPtr->finalCombfatJets.size(); ++j)
+  {
+    if (! PassType3TopCrite(type3TopTaggerPtr, j)) continue;
+    std::vector<TLorentzVector> jj = GetType3WDijet(type3TopTaggerPtr->finalCombfatJets.at(j));
+    //int matchcount = MatchingWDijet(pp, jj);
+    //if (jj.size() < 1) continue;
+    //if (jj.size() == 1 && (matchcount == -1 || matchcount == 3 ))
+    //break;
+
+    //**************************************************************************//
+    //                       Only consider W to dijet case                      //
+    //**************************************************************************//
+    if (jj.size() < 2) continue;
+    TLorentzVector jjjTop(0, 0, 0, 0);
+    for (size_t k = 0; k < type3TopTaggerPtr->finalCombfatJets.at(j).size(); ++k)
+    {
+      jjjTop += oriJetsVec->at(type3TopTaggerPtr->finalCombfatJets.at(j).at(k));
+    }
+
+    if (jjjTop.M() < 80 || jjjTop.M() > 270 ) continue;
+    hist->FillTH1("RecoTopM", jjjTop.M());
+    hist->FillTH1("RecoTopPT", jjjTop.Pt());
+
+    double jjDeltaR = jj.at(0).DeltaR(jj.at(1));
+    TLorentzVector jjW = jj.at(0) + jj.at(1);
+    hist->FillTH2("T3NotMactchWDRPT",  jjW.Pt(), jjDeltaR);
+    hist->FillTH2("NT3NotMactchWDRPT",  jjW.Pt(), jjDeltaR - 2 * jjW.M()/ jjW.Pt() );
+    hist->FillTH2("N2T3NotMactchWDRPT",  jjW.Pt(), jjDeltaR - 2 * 80.3/ jjW.Pt() );
+    hist->FillTH2("NotMatchSumPTWPT-WPT",  jjW.Pt(), (jj.at(0).Pt() + jj.at(1).Pt()) / jjW.Pt());
+    hist->FillTH2("NotMatchWPT-TopPT",  jjW.Pt(), jjjTop.Pt());
+  }
+  
+  return true;
+}       // -----  end of function MatchingTaggerGen::FakeType3WTag  -----
+
 // ===  FUNCTION  ============================================================
 //         Name:  MatchingTaggerGen::AnaType3Gen
 //  Description:  
@@ -166,6 +239,7 @@ bool MatchingTaggerGen::AnaType3WTag(topTagger::type3TopTagger* type3TopTaggerPt
 bool MatchingTaggerGen::AnaType3Gen(topTagger::type3TopTagger* type3TopTaggerPtr, GenParAna *AnaPtr) 
 {
   AnaType3WTag(type3TopTaggerPtr, AnaPtr->Widx);
+  FakeType3WTag(type3TopTaggerPtr);
   return true;
 }       // -----  end of function MatchingTaggerGen::AnaType3Gen  -----
 

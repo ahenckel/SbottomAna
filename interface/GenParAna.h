@@ -26,6 +26,14 @@
 // Boost
 #include <boost/foreach.hpp>
 
+#include "TLorentzVector.h"
+// fastjet
+#include "fastjet/JetDefinition.hh"
+#include "fastjet/ClusterSequence.hh"
+#include "fastjet/ClusterSequenceArea.hh"
+#include "fastjet/PseudoJet.hh"
+#include "fastjet/GhostedAreaSpec.hh"
+
 struct GenPrunePacked
 {
   const reco::Candidate* Pruned = NULL;
@@ -47,6 +55,14 @@ struct TopDecay
   GenPrunePacked topidx_;
   GenPrunePacked bidx_;
   WDecay widx_;
+};
+
+struct TauDecay
+{
+  GenPrunePacked tauidx_;
+  GenPrunePacked Lepidx_;
+  std::vector<const reco::Candidate*> PrunedNeus;
+  bool isLeptonic_ = false;
 };
 
 // ===========================================================================
@@ -76,11 +92,18 @@ class GenParAna
     bool PrintTopDecay() const;
     bool PrintWDecay(WDecay wboson) const;
     bool AnaWdiJets() const;
+    bool AnaTopandW() const;
     bool BookHistogram();
     bool GetGenCount();
     int GetTopCount() const;
     int GetLepCount() const;
+    bool GetTop(edm::Handle<reco::GenParticleCollection> PrunedGenHdl);
 
+    bool GetW(edm::Handle<reco::GenParticleCollection> PrunedGenHdl);
+    bool GetTau(edm::Handle<reco::GenParticleCollection> PrunedGenHdl);
+    bool GetTauDecay(const reco::Candidate* TauPar);
+    std::vector<fastjet::PseudoJet> ProdGenJets(const std::vector<const reco::Candidate*> &PackedGens, const double jetPtMin = 0, const double rParam_ = 0.4);
+    std::vector<TLorentzVector> ProdGenLVs(const std::vector<const reco::Candidate*> &PackedGens, const double jetPtMin = 0, const double rParam = 0.4);
     // ====================  OPERATORS     ===============================
 
     GenParAna& operator = ( const GenParAna &other ); // assignment operator
