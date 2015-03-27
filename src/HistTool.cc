@@ -151,6 +151,7 @@ TH1D* HistTool::AddTH1 (const std::string name, const std::string title,
   else ylb = ylabel;
   TString Title = title +";"+xlb+";"+ylb;
   HisMap[name.c_str()] = fs->make<TH1D>(name.c_str(), Title, nxbins, xmin, xmax);
+  HisMap[name.c_str()]->Sumw2();
   return HisMap[name.c_str()];
 }       // -----  end of function HistTool::AddTH1C  -----
 
@@ -162,6 +163,7 @@ TH1D* HistTool::AddTH1 (const std::string name, const std::string title,
     Int_t nxbins, Axis_t xmin, Axis_t xmax)
 {
   HisMap[name.c_str()] = fs->make<TH1D>(name.c_str(), title.c_str(), nxbins, xmin, xmax);
+  HisMap[name.c_str()]->Sumw2();
   return HisMap[name.c_str()];
 }       // -----  end of function HistTool::AddTH1  -----
 
