@@ -104,6 +104,7 @@ class GenParAna
     bool GetTauDecay(const reco::Candidate* TauPar);
     std::vector<fastjet::PseudoJet> ProdGenJets(const std::vector<const reco::Candidate*> &PackedGens, const double jetPtMin = 0, const double rParam_ = 0.4);
     std::vector<TLorentzVector> ProdGenLVs(const std::vector<const reco::Candidate*> &PackedGens, const double jetPtMin = 0, const double rParam = 0.4);
+    std::vector<const reco::Candidate*> FilterNeutrinos(const std::vector<const reco::Candidate*> &PackedGens) const;
     // ====================  OPERATORS     ===============================
 
     GenParAna& operator = ( const GenParAna &other ); // assignment operator

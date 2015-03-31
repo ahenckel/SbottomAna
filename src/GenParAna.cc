@@ -112,6 +112,17 @@ WDecay GenParAna::GetWDecay(const reco::Candidate* WPar)
   temp.Widx_ = GetPackedPars(WPar);
 
   int hadcount = 0;
+  /*
+   *if (WPar->numberOfDaughters() != 2)
+   *{
+   *  for (unsigned int i = 0; i < WPar->numberOfDaughters(); ++i)
+   *  {
+   *    const reco::Candidate* dau = WPar->daughter(i);
+   *    std::cout <<  i <<" Status " << dau->status() <<" ID " << dau->pdgId() <<" dauter " 
+   *      << dau->numberOfDaughters() << " mass " << dau->mass() <<" pt " << dau->pt()<< std::endl;
+   *  }
+   *}
+   */
   assert( WPar->numberOfDaughters()  == 2);
   for (unsigned int i = 0; i < WPar->numberOfDaughters(); ++i)
   {
@@ -617,6 +628,15 @@ bool GenParAna::GetTauDecay(const reco::Candidate* TauPar)
   //----------------------------------------------------------------------------
   TauDecay temp;
   temp.tauidx_  = GetPackedPars(TauPar);
+/*
+ *  for(unsigned int i=0; i < temp.tauidx_.Packed.size(); ++i)
+ *  {
+ *    const reco::Candidate* can = temp.tauidx_.Packed.at(i);
+ *    std::cout <<  i <<" Status " << can->status() <<" ID " << can->pdgId() <<" dauter " 
+ *      << can->numberOfDaughters() << " mass " << can->mass() <<" pt " << can->pt()<< std::endl;
+ *  }
+ *
+ */
 
   //int lepcount = 0;
   for (unsigned int i = 0; i < TauPar->numberOfDaughters(); ++i)
@@ -693,6 +713,25 @@ std::vector<TLorentzVector> GenParAna::ProdGenLVs(const std::vector<const reco::
   }
   return LVs;
 }       // -----  end of function GenParAna::ProdGenLVs  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  GenParAna::FilterNeutrinos
+//  Description:  Remove neutrino from the packed gen particles
+// ===========================================================================
+std::vector<const reco::Candidate*> GenParAna::FilterNeutrinos(const std::vector<const reco::Candidate*> &PackedGens) const
+{
+  std::vector<const reco::Candidate*>  temp;
+  for(unsigned int i=0; i < PackedGens.size(); ++i)
+  {
+    const reco::Candidate* can = PackedGens.at(i);
+    if (fabs(can->pdgId()) == 12  || fabs(can->pdgId()) == 14 || fabs(can->pdgId()) == 16) 
+      continue;
+    else
+      temp.push_back(can);
+  }
+  return temp;
+}       // -----  end of function GenParAna::FilterNeutrinos  -----
 
 //#include "FWCore/Framework/interface/MakerMacros.h"
 ////define this as a plug-in
