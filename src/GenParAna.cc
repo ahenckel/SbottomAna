@@ -112,18 +112,16 @@ WDecay GenParAna::GetWDecay(const reco::Candidate* WPar)
   temp.Widx_ = GetPackedPars(WPar);
 
   int hadcount = 0;
-  /*
-   *if (WPar->numberOfDaughters() != 2)
-   *{
-   *  for (unsigned int i = 0; i < WPar->numberOfDaughters(); ++i)
-   *  {
-   *    const reco::Candidate* dau = WPar->daughter(i);
-   *    std::cout <<  i <<" Status " << dau->status() <<" ID " << dau->pdgId() <<" dauter " 
-   *      << dau->numberOfDaughters() << " mass " << dau->mass() <<" pt " << dau->pt()<< std::endl;
-   *  }
-   *}
-   */
-  assert( WPar->numberOfDaughters()  == 2);
+  if (WPar->numberOfDaughters() != 2)
+  {
+    for (unsigned int i = 0; i < WPar->numberOfDaughters(); ++i)
+    {
+      const reco::Candidate* dau = WPar->daughter(i);
+      std::cout <<  i <<" Status " << dau->status() <<" ID " << dau->pdgId() <<" dauter " 
+        << dau->numberOfDaughters() << " mass " << dau->mass() <<" pt " << dau->pt()<< std::endl;
+    }
+  }
+  //assert( WPar->numberOfDaughters()  == 2);
   for (unsigned int i = 0; i < WPar->numberOfDaughters(); ++i)
   {
     const reco::Candidate* dau = WPar->daughter(i);

@@ -28,10 +28,10 @@ PatTauAna::PatTauAna(const edm::ParameterSet& iConfig)
   prodTauTag_ = iConfig.getParameter<edm::InputTag>("prodTauTag");
   prodMETTag_ = iConfig.getParameter<edm::InputTag>("prodMETTag");
 
-  DecayMode = iConfig.getUntrackedParameter<std::string>("DecayModeTag",  "decayModeFinding");
-  Isolation = iConfig.getUntrackedParameter<std::string>("IsolationTag", "byLooseCombinedIsolationDeltaBetaCorr3Hits");
+  DecayMode  = iConfig.getUntrackedParameter<std::string>("DecayModeTag",  "decayModeFinding");
+  Isolation  = iConfig.getUntrackedParameter<std::string>("IsolationTag",  "byLooseCombinedIsolationDeltaBetaCorr3Hits");
   MuonReject = iConfig.getUntrackedParameter<std::string>("MuonRejectTag", "againstMuonTight3");
-  EleReject = iConfig.getUntrackedParameter<std::string>("EleRejectTag", "againstElectronMediumMVA5");
+  EleReject  = iConfig.getUntrackedParameter<std::string>("EleRejectTag",  "againstElectronMediumMVA5");
 
   hist = new HistTool("Tau");
   AnaPtr = new GenParAna(hist);
@@ -74,6 +74,7 @@ PatTauAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iSetup.get<SetupRecord>().get(pSetup);
 #endif
 
+  hist->FillTH1("evtcount", 1);
   //----------------------------------------------------------------------------
   //  Analysis Classes
   //----------------------------------------------------------------------------
@@ -209,6 +210,7 @@ bool PatTauAna::PatTauTagging(std::vector<TauDecay> &Tauidx)
 // ===========================================================================
 bool PatTauAna::BookHistograms()
 {
+  hist->AddTH1("evtcount", "evtcount", "evtcount", "Number of Tau", 2, 0, 2);
   hist->AddTH1("TauPT", "Tau PT", "Reco P_{T}^{#tau}", "Number of Tau", 100, 0, 500);
   hist->AddTH1("TauPT_Num", "Numerator of Tau PT", 100, 0, 500);
   hist->AddTH1("TauPT_Dem", "DeNumerator of Tau PT", 100, 0, 500);
