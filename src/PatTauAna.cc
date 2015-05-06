@@ -103,11 +103,11 @@ PatTauAna::beginJob()
   void 
 PatTauAna::endJob() 
 {
-  hist->CalEfficiency("TauPT_Eff", "TauPT_Num", "TauPT_Dem");
-  hist->CalEfficiency("TauEta_Eff", "TauEta_Num", "TauEta_Dem");
-  hist->CalEfficiency("MisstagRate", "EventMETwithTaumisstag", "EventMET");
-  hist->CalEfficiency("TauJetPT_Eff", "TauJetPT_Num", "TauJetPT_Dem");
-  hist->CalEfficiency("TauJetEta_Eff", "TauJetEta_Num", "TauJetEta_Dem");
+  //hist->CalEfficiency("TauPT_Eff", "TauPT_Num", "TauPT_Dem");
+  //hist->CalEfficiency("TauEta_Eff", "TauEta_Num", "TauEta_Dem");
+  //hist->CalEfficiency("MisstagRate", "EventMETwithTaumisstag", "EventMET");
+  //hist->CalEfficiency("TauJetPT_Eff", "TauJetPT_Num", "TauJetPT_Dem");
+  //hist->CalEfficiency("TauJetEta_Eff", "TauJetEta_Num", "TauJetEta_Dem");
 }
 
 // ------------ method called when starting to processes a run  ------------
@@ -214,20 +214,20 @@ bool PatTauAna::BookHistograms()
   hist->AddTH1("TauPT", "Tau PT", "Reco P_{T}^{#tau}", "Number of Tau", 100, 0, 500);
   hist->AddTH1("TauPT_Num", "Numerator of Tau PT", 100, 0, 500);
   hist->AddTH1("TauPT_Dem", "DeNumerator of Tau PT", 100, 0, 500);
-  hist->AddTH1("TauPT_Eff", "Eff of Tau PT", "Gen P_{T}^{#tau}", "Tau ID Efficiency",  100, 0, 500);
+  //hist->AddTH1("TauPT_Eff", "Eff of Tau PT", "Gen P_{T}^{#tau}", "Tau ID Efficiency",  100, 0, 500);
 
   hist->AddTH1("TauJetPT_Num", "Numerator of TauJet PT", 20, 0, 100);
   hist->AddTH1("TauJetPT_Dem", "DeNumerator of TauJet PT", 20, 0, 100);
-  hist->AddTH1("TauJetPT_Eff", "Eff of TauJet PT", "Gen P_{T}^{#TauJet}", "TauJet ID Efficiency",  20, 0, 100);
+  //hist->AddTH1("TauJetPT_Eff", "Eff of TauJet PT", "Gen P_{T}^{#TauJet}", "TauJet ID Efficiency",  20, 0, 100);
 
-  hist->AddTH1("TauEta", "Tau Eta",  "Reco #eta^{#tau}", "Number of Tau", 100, 5, -5);
+  hist->AddTH1("TauEta", "Tau Eta",  "Reco #eta^{#tau}", "Number of Tau", 100, -5, 5);
   hist->AddTH1("TauEta_Num", "Numerator of Tau Eta", 100, -5, 5);
   hist->AddTH1("TauEta_Dem", "DeNumerator of Tau Eta", 100, -5, 5);
-  hist->AddTH1("TauEta_Eff", "Eff of Tau Eta","Gen #eta^{#tau}", "Tau ID Efficiency",  100, -5, 5);
+  //hist->AddTH1("TauEta_Eff", "Eff of Tau Eta","Gen #eta^{#tau}", "Tau ID Efficiency",  100, -5, 5);
 
   hist->AddTH1("TauJetEta_Num", "Numerator of TauJet Eta", 100, -2.5, 2.5);
   hist->AddTH1("TauJetEta_Dem", "DeNumerator of TauJet Eta", 100, -2.5, 2.5);
-  hist->AddTH1("TauJetEta_Eff", "Eff of TauJet Eta","Gen #eta^{#TauJet}", "TauJet ID Efficiency",  100, -2.5, 2.5);
+  //hist->AddTH1("TauJetEta_Eff", "Eff of TauJet Eta","Gen #eta^{#TauJet}", "TauJet ID Efficiency",  100, -2.5, 2.5);
 
   hist->AddTH1("TauPT_Miss", "Misserator of Tau PT", "Gen P_{T}^{#tau}", "Number of Tau not found by PatTau", 100, 0, 500);
   hist->AddTH1("TauEta_Miss", "Misserator of Tau Eta", "Gen #eta^{#tau}", "Number of Tau not found by PatTau", 100, -5, 5);
@@ -386,6 +386,5 @@ bool PatTauAna::SUSYSignalEff()
   }
   return true ;
 }       // -----  end of function PatTauAna::SUSYSignalEff  -----
-
 
 

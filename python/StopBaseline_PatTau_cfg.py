@@ -6,18 +6,21 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20) )
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
-import FWCore.ParameterSet.VarParsing as VarParsing
-options = VarParsing.VarParsing ('analysis')
-# get and parse the command line arguments
-options.parseArguments()
+#import FWCore.ParameterSet.VarParsing as VarParsing
+#options = VarParsing.VarParsing ('analysis')
+## get and parse the command line arguments
+#options.parseArguments()
 
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
+        '/store/mc/Phys14DR/SMS-T2tt_2J_mStop-850_mLSP-100_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_tsg_PHYS14_25_V1-v1/00000/563CD412-C16B-E411-ACE1-C4346BC8E730.root',
+        '/store/mc/Phys14DR/SMS-T2tt_2J_mStop-850_mLSP-100_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_tsg_PHYS14_25_V1-v1/10000/D83EC823-A66B-E411-80CA-00266CFFC4C4.root',
+        '/store/mc/Phys14DR/SMS-T2tt_2J_mStop-850_mLSP-100_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_tsg_PHYS14_25_V1-v1/10000/F414852E-A66B-E411-B879-1CC1DE046F78.root'
         #'file:/data/nbay04/c/benwu/PHY14/TTJets_PU20bx25_PHYS14.root'
-        options.inputFiles
+        #options.inputFiles
     )
 )
 
@@ -114,8 +117,8 @@ process.againstEle = cms.EDAnalyzer('PatTauAna',
                                 #SkipEvent = cms.untracked.vstring('ProductNotFound')"
 )
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string(options.outputFile))
-                                   #fileName = cms.string('outhist.root'))
+                                   #fileName = cms.string(options.outputFile))
+                                   fileName = cms.string('outhist.root'))
 
 process.prod = cms.Sequence(process.goodVertices*  process.prodMuons * process.prodElectrons * process.prodTaus * process.IsoTrack  * process.StopBaseline)
 process.tauAna = cms.Sequence( process.OldDecay * process.Isolation * process.againstMuon * process.againstEle)

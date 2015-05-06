@@ -58,6 +58,9 @@ StopBaseline::StopBaseline(const edm::ParameterSet& iConfig)
    cutflow->GetXaxis()->SetBinLabel(i+1, cutnames.at(i).c_str());
    cutbins->GetXaxis()->SetBinLabel(i+1, cutnames.at(i).c_str());
  }
+ dPhiJ1MET =  fs->make<TH1D>("dPhiJ1MET", "dPhiJ1MET" , 100, 0, 3.2);
+ dPhiJ2MET =  fs->make<TH1D>("dPhiJ2MET", "dPhiJ2MET" , 100, 0, 3.2);
+ dPhiJ3MET =  fs->make<TH1D>("dPhiJ3MET", "dPhiJ3MET" , 100, 0, 3.2);
 
 }
 
@@ -200,7 +203,7 @@ int StopBaseline::CountLeps(const std::vector<T>* vLeps, const std::vector<doubl
 // ===========================================================================
 bool StopBaseline::PassBaseline()
 {
-  bool  passBaseline = true;
+  passBaseline = true;
   cutbins->Fill(0);
   cutflow->Fill(0);
 
@@ -360,8 +363,15 @@ bool StopBaseline::PassJetMETCuts(const double dPhi0cut, const double dPhi1cut, 
 {
   
   std::vector<double> Vphis = GetdPhiJetMET(AnaConsts::dphiArr);
-  if (Vphis.size() < 3) return  false;
-  assert(Vphis.size() >= 3);
+  if (!passBaseline && Vphis.size() < 3) return false;
+  //assert(Vphis.size() >= 3);
+  if (passBaseline)
+  {
+    dPhiJ1MET->Fill(Vphis.at(0));
+    dPhiJ2MET->Fill(Vphis.at(1));
+    dPhiJ3MET->Fill(Vphis.at(2));
+    
+  }
 
   if (Vphis.at(0) < AnaConsts::dPhi0_CUT)  return false;
   if (Vphis.at(1) < AnaConsts::dPhi1_CUT)  return false;
@@ -392,20 +402,22 @@ std::vector<double> StopBaseline::GetdPhiJetMET(const double jetCutsArr[]) const
     }
   }
 
-  /*
-   *for(pt_bimap::right_map::const_iterator it=jetpt.right.begin();
-   *    it!=jetpt.right.end(); ++it)
-   *{
-   *  std::cout << "pt" << it->first <<" order? " << it->second->pt() << std::endl;
-   *}
-   */
+  //for(pt_bimap::left_map::const_iterator it=jetpt.left.begin();
+      //it!=jetpt.left.end(); ++it)
+  //{
+    //std::cout << "pt" << it->second <<" order? " << it->first->pt() << std::endl;
+  //}
 
   std::vector<double> Vphis;
   pat::MET met = prodMETHdl->at(0);
-  for(pt_bimap::right_map::const_iterator it=jetpt.right.begin();
-      it!=jetpt.right.end(); ++it)
+  double lastjetpt = 9999;
+  for(pt_bimap::left_map::const_iterator it=jetpt.left.begin();
+      it!=jetpt.left.end(); ++it)
   {
-    double perDPhi = fabs(TVector2::Phi_mpi_pi( it->second->phi() - met.phi()  ));
+    //std::cout << "pt" << it->second <<" order? " << it->first->pt() <<" lastjet " << lastjetpt << std::endl;
+    assert(it->first->pt() <= lastjetpt);
+    lastjetpt = it->first->pt();
+    double perDPhi = fabs(TVector2::Phi_mpi_pi( it->first->phi() - met.phi()  ));
     Vphis.push_back(perDPhi);
   }
 

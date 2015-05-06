@@ -133,7 +133,11 @@ class StopBaseline : public edm::EDFilter {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of Handler ~~~~~
     TH1D* cutflow;
     TH1D* cutbins;
+    TH1D* dPhiJ1MET;
+    TH1D* dPhiJ2MET;
+    TH1D* dPhiJ3MET;
     std::vector<std::string> cutnames;
+    bool  passBaseline ;
 };
 //
 // constants, enums and typedefs
