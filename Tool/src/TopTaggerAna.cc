@@ -25,9 +25,10 @@ TopTaggerAna::TopTaggerAna (std::string &name, NTupleReader* tr_, std::shared_pt
 :tr(tr_)
 {
   his = new HistTool(OutFile, "", name);
-  his->AddTH1("test", "TEST", 200, 0, 500);
   type3Ptr = new topTagger::type3TopTagger();
   type3Ptr->setnJetsSel(4); // same as  AnaConsts::nJetsSel
+
+  BookHistograms();
 }  // -----  end of method TopTaggerAna::TopTaggerAna  (constructor)  -----
 
 //----------------------------------------------------------------------------
@@ -84,19 +85,14 @@ bool TopTaggerAna::Test()
   genDecayMomIdxVec = tr->getVec<int>            ("genDecayMomIdxVec");
   genDecayStrVec    = tr->getVec<std::string>    ("genDecayStrVec");
 
-  for(unsigned int i=0; i < genDecayStrVec.size(); ++i)
-  {
-    std::cout << genDecayStrVec.at(i) << std::endl;
-  }
-
   //for (int i = 0; i < genDecayMomIdxVec.size(); ++i)
   //{
     //std::cout << " Idx" << genDecayIdxVec[i] <<" Pdg " << genDecayPdgIdVec[i] <<" Mom " << genDecayMomIdxVec[i] << " pt " << genDecayLVec[i].Pt() << std::endl;
-
   //}
+  
   GetGenTop();
 
-  std::vector<int> taggedtops = GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
+  std::vector<int> taggedtops = GetT3TopTagger(30, "jetsLVec", "recoJetsBtag_0", "met");
 
   return true;
 
@@ -138,23 +134,35 @@ bool TopTaggerAna::GetGenTop()
   vTops.clear();
   for (int i = 0; i < genDecayMomIdxVec.size(); ++i)
   {
-    std::cout << " Idx" << genDecayIdxVec[i] <<" Pdg " << genDecayPdgIdVec[i] <<" Mom " << genDecayMomIdxVec[i] << " pt " << genDecayLVec[i].Pt() << std::endl;
     if (abs(genDecayPdgIdVec[i]) == 6)
     {
       TopDecay temp;
       temp.topidx_ = i;
-      temp.bidx_ = GetChild(i, {5});
-      temp.Widx_ = GetChild(i, {24});
-      temp.Lepidx_ = GetChild(temp.Widx_, {11, 13, 15});
-      temp.neuidx_ = GetChild(temp.Widx_, {12, 14, 16});
+      temp.bidx_ = GetChild(genDecayIdxVec[i], {5});
+      temp.Widx_ = GetChild(genDecayIdxVec[i], {24});
+      if (temp.bidx_ == -1 || temp.Widx_ == 1)  // avoid temp top quark
+        continue; 
+      temp.Lepidx_ = GetChild(genDecayIdxVec[temp.Widx_], {11, 13, 15});
+      temp.neuidx_ = GetChild(genDecayIdxVec[temp.Widx_], {12, 14, 16});
       if (temp.Lepidx_ != -1)
       {
         temp.isLeptonic_ = true;
       }
       else
       {
-        std::vector<int> out = GetChilds( temp.Widx_, {1, 2,3, 4, 5});
+        std::vector<int> out = GetChilds( genDecayIdxVec[temp.Widx_], {1, 2,3, 4, 5});
         assert(out.size() == 2);
+        //std::cout << "out size "<< out.size() << " mother " << genDecayIdxVec[temp.Widx_]<< std::endl;
+        //if (out.size() >= 2)
+        //{
+          //for (int j = 0; j < out.size(); ++j)
+          //{
+            
+            //std::cout << " " << out[j] ;
+          //}
+          //std::cout  << std::endl;
+        //}
+
         temp.had1idx_ = out.at(0);
         temp.had2idx_ = out.at(1);
       }
@@ -237,7 +245,9 @@ std::vector<int> TopTaggerAna::GetT3TopTagger(double ptcut,
     }
   } 
 
-  type3Ptr->processEvent(jetsforTT, bjsforTT, tr->getVar<TLorentzVector>(metstr));
+  // Form TLorentzVector of MET
+  TLorentzVector metLVec(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
+  type3Ptr->processEvent(jetsforTT, bjsforTT, metLVec);
 
   std::vector<int> taggedtops;
   for (size_t j = 0; j < type3Ptr->finalCombfatJets.size(); ++j)
@@ -289,3 +299,14 @@ bool TopTaggerAna::CalTaggerEff(std::vector<int> toptags) const
   return true;
 }       // -----  end of function TopTaggerAna::CalTaggerEff  -----
 
+
+// ===  FUNCTION  ============================================================
+//         Name:  TopTaggerAna::FillGenTop
+//  Description:  
+// ===========================================================================
+bool TopTaggerAna::FillGenTop()
+{
+  
+
+  return true;
+}       // -----  end of function TopTaggerAna::FillGenTop  -----

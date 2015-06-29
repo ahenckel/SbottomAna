@@ -100,6 +100,7 @@ class TopTaggerAna
 
 
 
+  bool FillGenTop();
 
 }; // -----  end of class TopTaggerAna  -----
 
