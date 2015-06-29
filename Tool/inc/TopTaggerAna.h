@@ -16,20 +16,24 @@
 
 
 
+#ifndef  __TOPTAGGERANA_INC__
+#define  __TOPTAGGERANA_INC__
+
 #include "HistTool.hh"
 #include "NTupleReader.h"
 
 #include "TLorentzVector.h"
+#include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
 
 struct TopDecay 
 {
-  TLorentzVector topidx_;
-  TLorentzVector bidx_;
-  TLorentzVector Widx_;
-  TLorentzVector Lepidx_;
-  TLorentzVector neuidx_;
-  TLorentzVector had1idx_;
-  TLorentzVector had2idx_;
+  int topidx_;
+  int bidx_;
+  int Widx_;
+  int Lepidx_;
+  int neuidx_;
+  int had1idx_;
+  int had2idx_;
   bool isLeptonic_ = false;
 };
 // ===========================================================================
@@ -69,20 +73,31 @@ class TopTaggerAna
     NTupleReader *tr;
     // ====================  DATA MEMBERS  ===============================
 
-    std::vector<TLorentzVector> genDecayLVec     ;
-    std::vector<int>            genDecayIdxVec   ;
-    std::vector<int>            genDecayPdgIdVec ;
+    std::vector<TLorentzVector> genDecayLVec       ;
+    std::vector<int>            genDecayIdxVec     ;
+    std::vector<int>            genDecayPdgIdVec   ;
     std::vector<int>            genDecayMomIdxVec;
+    std::vector<std::string>    genDecayStrVec;
 
 
 
 
+    std::vector<TopDecay> vTops;
 
+    bool GetGenTop();
+    int GetChild(int parent, std::vector<int> pdgs) const;
+    std::vector<int> GetChilds(int parent, std::vector<int> pdgs) const;
 
+    bool BookHistograms();
 
+    topTagger::type3TopTagger * type3Ptr;
+
+    bool PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, int ic) const;
+    std::vector<int> GetT3TopTagger(double ptcut, std::string jetstr, std::string bjstr, std::string metstr ) const;
 
 
 
 
 }; // -----  end of class TopTaggerAna  -----
 
+#endif   // ----- #ifndef __TOPTAGGERANA_INC__  -----
