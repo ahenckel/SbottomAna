@@ -96,7 +96,7 @@ bool TopTaggerAna::Test()
   //}
   GetGenTop();
 
-  std::vector<TLorentzVector> taggedtops = GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
+  std::vector<int> taggedtops = GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
 
   return true;
 
@@ -139,7 +139,7 @@ bool TopTaggerAna::GetGenTop()
   for (int i = 0; i < genDecayMomIdxVec.size(); ++i)
   {
     std::cout << " Idx" << genDecayIdxVec[i] <<" Pdg " << genDecayPdgIdVec[i] <<" Mom " << genDecayMomIdxVec[i] << " pt " << genDecayLVec[i].Pt() << std::endl;
-    if (fabs(genDecayPdgIdVec[i]) == 6)
+    if (abs(genDecayPdgIdVec[i]) == 6)
     {
       TopDecay temp;
       temp.topidx_ = i;
@@ -176,11 +176,11 @@ int TopTaggerAna::GetChild(int parent, std::vector<int> pdgs) const
   
   for (int i = 0; i < genDecayMomIdxVec.size(); ++i)
   {
-    if (fabs(genDecayMomIdxVec[i]) == parent)
+    if (abs(genDecayMomIdxVec[i]) == parent)
     {
       for(unsigned int j=0; j < pdgs.size(); ++j)
       {
-        if (fabs(genDecayPdgIdVec.at(i)) == pdgs.at(j))
+        if (abs(genDecayPdgIdVec.at(i)) == pdgs.at(j))
         {
           return i;
         }
@@ -200,13 +200,13 @@ std::vector<int> TopTaggerAna::GetChilds(int parent, std::vector<int> pdgs) cons
   
   for (int i = 0; i < genDecayMomIdxVec.size(); ++i)
   {
-    if (fabs(genDecayMomIdxVec[i]) == parent)
+    if (abs(genDecayMomIdxVec[i]) == parent)
     {
       for(unsigned int j=0; j < pdgs.size(); ++j)
       {
-        if (fabs(genDecayPdgIdVec.at(i)) == pdgs.at(j))
+        if (abs(genDecayPdgIdVec.at(i)) == pdgs.at(j))
         {
-          outs.push_back(i)<##>;
+          outs.push_back(i);
         }
       }
     }
@@ -240,9 +240,9 @@ std::vector<int> TopTaggerAna::GetT3TopTagger(double ptcut,
   type3Ptr->processEvent(jetsforTT, bjsforTT, tr->getVar<TLorentzVector>(metstr));
 
   std::vector<int> taggedtops;
-  for (size_t j = 0; j < type3TopTaggerPtr->finalCombfatJets.size(); ++j)
+  for (size_t j = 0; j < type3Ptr->finalCombfatJets.size(); ++j)
   {
-    if (PassType3TopCrite(type3TopTaggerPtr, j))
+    if (PassType3TopCrite(type3Ptr, jetsforTT, bjsforTT, j))
     {
       taggedtops.push_back(j);
     }
@@ -254,20 +254,21 @@ std::vector<int> TopTaggerAna::GetT3TopTagger(double ptcut,
 //         Name:  TopTaggerAna::PassType3TopCrite
 //  Description:  
 // ===========================================================================
-bool TopTaggerAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, int ic) const
+bool TopTaggerAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std::vector<TLorentzVector>& oriJetsVec,
+    std::vector<double>& recoJetsBtagCSVS, int ic) const
 {
     double fatJetm123 = type3TopTaggerPtr->fatJetMassVec[ic];
     // Find a top fat jet passing at least one of the three criteria
     std::vector<int> fatJetPassStatusVec;
     int isTopJet = type3TopTaggerPtr->checkTopCriteria(type3TopTaggerPtr->finalCombfatJets[ic], 
-        *oriJetsVec, *recoJetsBtagCSVS, type3TopTaggerPtr->fatJetSubMassVec[ic], fatJetm123, fatJetPassStatusVec);
+        oriJetsVec, recoJetsBtagCSVS, type3TopTaggerPtr->fatJetSubMassVec[ic], fatJetm123, fatJetPassStatusVec);
 
     if (isTopJet != 1) return false;
 
     TLorentzVector jjjTop(0, 0, 0, 0);
     for (size_t k = 0; k < type3TopTaggerPtr->finalCombfatJets.at(ic).size(); ++k)
     {
-      jjjTop += oriJetsVec->at(type3TopTaggerPtr->finalCombfatJets.at(ic).at(k));
+      jjjTop += oriJetsVec.at(type3TopTaggerPtr->finalCombfatJets.at(ic).at(k));
     }
     if (jjjTop.M() < 80 || jjjTop.M() > 270 ) return false;
     return true;

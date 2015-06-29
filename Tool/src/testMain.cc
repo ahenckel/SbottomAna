@@ -40,6 +40,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
+#include "TError.h"
 
 // SusyAnaTools
 //#include "samples.h"
@@ -93,6 +94,10 @@ int main(int argc, char* argv[])
   }
   std::cout << "No. of Entries in this tree : " << fChain->GetEntries() << std::endl;
 
+  // To remove the warning from TFile::Append
+  // -->  Replacing existing TH1: CrossSection (Potential memory leak)
+  // We need same histname for later on comparison
+  gErrorIgnoreLevel = kFatal;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Initialize output file ~~~~~
   std::shared_ptr<TFile> OutFile(new TFile(outFileName, "RECREATE"));
   HistTool* his = new HistTool(OutFile, "d");

@@ -19,6 +19,8 @@
 #ifndef  __TOPTAGGERANA_INC__
 #define  __TOPTAGGERANA_INC__
 
+#include <cassert>
+
 #include "HistTool.hh"
 #include "NTupleReader.h"
 
@@ -92,8 +94,9 @@ class TopTaggerAna
 
     topTagger::type3TopTagger * type3Ptr;
 
-    bool PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, int ic) const;
+    bool PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std::vector<TLorentzVector>& oriJetsVec, std::vector<double>& recoJetsBtagCSVS, int ic) const;
     std::vector<int> GetT3TopTagger(double ptcut, std::string jetstr, std::string bjstr, std::string metstr ) const;
+    bool CalTaggerEff(std::vector<int> toptags) const;
 
 
 
