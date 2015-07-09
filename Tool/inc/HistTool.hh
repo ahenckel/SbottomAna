@@ -139,6 +139,7 @@ class HistTool
     int FillTH2(int Ncut, std::string HisName, int xvalue, double yvalue, double weight=-999.);
     int FillTH2(std::string HisName, int xvalue, double yvalue, double weight=-999.);
     int FillTH2(std::string HisName, double xvalue, double yvalue, double weight=-999.);
+    bool CalEfficiency(std::string output, std::string Numerator, std::string DeNumerator);
 
     // Output the His TH2
     int WriteTH2();

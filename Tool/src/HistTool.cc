@@ -674,3 +674,12 @@ bool HistTool::FillCutBits(const std::vector<bool>  bits)
 }       // -----  end of function HistTool::FillCutBits  -----
 
 
+// ===  FUNCTION  ============================================================
+//         Name:  HistTool::CalEfficiency
+//  Description:  /* cursor */
+// ===========================================================================
+bool HistTool::CalEfficiency(std::string output, std::string Numerator, std::string DeNumerator)
+{
+  HisMap[output]->Divide(HisMap[Numerator].get(), HisMap[DeNumerator].get());
+  return true;
+}       // -----  end of function HistTool::CalEfficiency  -----

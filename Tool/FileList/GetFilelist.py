@@ -13,7 +13,12 @@ import glob
 import fnmatch
 import os
 
-NtupleDir = "/Users/benwu/Data/Dataset/PHY14_Ntuple/PHYS14_720_Mar14_2014_v2/"
+hostname = os.uname()[1]
+if hostname == 'macbook':
+    NtupleDir = "/Users/benwu/Data/Dataset/PHY14_Ntuple/PHYS14_720_Mar14_2014_v2/"
+if hostname == 'nbay04.fnal.gov':
+    NtupleDir = "/data/nbay04/c/benwu/PHY14_Ntuple/PHYS14_720_Mar14_2014_v2/"
+
 NameDir = {
     "TTbar"                                      : "PU20bx25_TTJets_MSDecaysCKM_madgraph-tauola",
     "WJetsToLNu_HT_600toInf"                     : "PU20bx25_WJetsToLNu_HT-600toInf_madgraph-tauola",

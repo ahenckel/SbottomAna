@@ -26,6 +26,7 @@
 
 #include "TLorentzVector.h"
 #include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
+#include "boost/bimap.hpp"
 
 struct TopDecay 
 {
@@ -47,7 +48,8 @@ class TopTaggerAna
   public:
 
     // ====================  LIFECYCLE     ===============================
-    TopTaggerAna (std::string &name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);
+    //TopTaggerAna (char *name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);
+    TopTaggerAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);
     TopTaggerAna ( const TopTaggerAna &other );                            // copy constructor
     ~TopTaggerAna ();                                                      // destructor
 
@@ -55,13 +57,16 @@ class TopTaggerAna
 
     // ====================  MUTATORS      ===============================
     bool EndTest();
-    bool Test();
+    bool RunTagger();
+    bool GetT3TopTagger(double ptcut, std::string jetstr, std::string bjstr, std::string metstr );
+    bool GetFatTopTagger(std::string jetstr);
 
     // ====================  OPERATORS     ===============================
 
     TopTaggerAna& operator = ( const TopTaggerAna &other ); // assignment operator
 
     // ====================  DATA MEMBERS  ===============================
+    bool goodreco; 
 
   protected:
     // ====================  METHODS       ===============================
@@ -85,8 +90,12 @@ class TopTaggerAna
 
 
     std::vector<TopDecay> vTops;
+    std::vector<int> vToptagged;
+    std::vector<TLorentzVector> jetsforTT;
+    std::vector<TLorentzVector> RecoTops;
+    std::vector<double> bjsforTT;
 
-    bool GetGenTop();
+    int GetGenTop();
     int GetChild(int parent, std::vector<int> pdgs) const;
     std::vector<int> GetChilds(int parent, std::vector<int> pdgs) const;
 
@@ -94,9 +103,9 @@ class TopTaggerAna
 
     topTagger::type3TopTagger * type3Ptr;
 
+    bool SortToptager( boost::bimap<int, double > dm_bimap);
     bool PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std::vector<TLorentzVector>& oriJetsVec, std::vector<double>& recoJetsBtagCSVS, int ic) const;
-    std::vector<int> GetT3TopTagger(double ptcut, std::string jetstr, std::string bjstr, std::string metstr ) const;
-    bool CalTaggerEff(std::vector<int> toptags) const;
+    bool CalTaggerEff() const;
 
 
 

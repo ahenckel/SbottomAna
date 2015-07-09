@@ -21,7 +21,8 @@
 //      Method:  TopTaggerAna
 // Description:  constructor
 //----------------------------------------------------------------------------
-TopTaggerAna::TopTaggerAna (std::string &name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile)
+//TopTaggerAna::TopTaggerAna (char *name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile)
+TopTaggerAna::TopTaggerAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile)
 :tr(tr_)
 {
   his = new HistTool(OutFile, "", name);
@@ -67,7 +68,7 @@ TopTaggerAna::operator = ( const TopTaggerAna &other )
 //         Name:  TopTaggerAna::Test
 //  Description:  
 // ===========================================================================
-bool TopTaggerAna::Test() 
+bool TopTaggerAna::RunTagger()
 {
   genDecayLVec.clear();
   genDecayIdxVec.clear();    
@@ -75,9 +76,9 @@ bool TopTaggerAna::Test()
   genDecayMomIdxVec.clear(); 
   
   //std::cout << " test joe " <<  tr->getVar<double>("joe")<< std::endl;
-  retval = tr->getVar<double>("met") + tr->getVar<double>("mht");
+  //retval = tr->getVar<double>("met") + tr->getVar<double>("mht");
 
-  his->FillTH1("test", tr->getVar<double>("met"));
+  //his->FillTH1("test", tr->getVar<double>("met"));
   //std::cout << " test joe " <<  tr->getVar<double>("joe")<< std::endl;
   genDecayLVec      = tr->getVec<TLorentzVector> ("genDecayLVec");
   genDecayIdxVec    = tr->getVec<int>            ("genDecayIdxVec");
@@ -90,10 +91,17 @@ bool TopTaggerAna::Test()
     //std::cout << " Idx" << genDecayIdxVec[i] <<" Pdg " << genDecayPdgIdVec[i] <<" Mom " << genDecayMomIdxVec[i] << " pt " << genDecayLVec[i].Pt() << std::endl;
   //}
   
-  GetGenTop();
+  int ditop = GetGenTop();
+  FillGenTop();
 
-  std::vector<int> taggedtops = GetT3TopTagger(30, "jetsLVec", "recoJetsBtag_0", "met");
+  //bool goodreco = GetT3TopTagger(ptcut, jetstr, bjstr, metstr);
+  //bool goodreco = GetT3TopTagger(30, "jetsLVec", "recoJetsBtag_0", "met");
 
+  //if (ditop == vTops.size() && goodreco)
+  if (ditop == 1 && goodreco)
+  {
+    CalTaggerEff();
+  }
   return true;
 
 }       // -----  end of function TopTaggerAna::Test  -----
@@ -104,6 +112,8 @@ bool TopTaggerAna::Test()
 // ===========================================================================
 bool TopTaggerAna::EndTest()
 {
+  his->CalEfficiency("TopTagPT_Efficiency", "TopTagPT_Numerator", "TopTagPT_Denominator");
+  his->CalEfficiency("TopTagEta_Efficiency", "TopTagEta_Numerator", "TopTagEta_Denominator");
   his->WriteTH1();
   return true;
 }       // -----  end of function TopTaggerAna::EndTest  -----
@@ -122,6 +132,22 @@ bool TopTaggerAna::BookHistograms()
   his->AddTH1("GenTopEta", "GenTopEta", 20, -5, 5);
   his->AddTH1("CHSTopEta", "CHSTopEta", 20, -5, 5);
   his->AddTH1("PUPPITopEta", "PUPPITopEta", 20, -5, 5);
+
+  his->AddTH1("RecoTopMass", "RecoTopMass", 300, 0, 300);
+  his->AddTH1("MatchedRecoTopMass", "MatchedRecoTopMass", 300, 0, 300);
+
+  his->AddTH1("MissTopTagPT", "MissTopTagPT", 1000, 0, 1000);
+  his->AddTH1("MissTopTagEta", "MissTopTagEta", 20, -5, 5);
+  his->AddTH1("NType3TopTagger", "NType3TopTagger", 10, 0, 10);
+  his->AddTH1("NSortedType3TopTagger", "NSortedType3TopTagger", 10, 0, 10);
+  his->AddTH1("Type3TopTaggerMass", "Type3TopTaggerMass", 100, 100, 200);
+  his->AddTH1("Type3TopTaggerPt", "Type3TopTaggerPt", 120, 0, 1200);
+  his->AddTH1("TopTagPT_Denominator", "TopTagPT_Denominator", 1000, 0, 1000);
+  his->AddTH1("TopTagPT_Numerator", "TopTagPT_Numerator", 1000, 0, 1000);
+  his->AddTH1("TopTagEta_Denominator", "TopTagEta_Denominator", 20, -5, 5);
+  his->AddTH1("TopTagEta_Numerator", "TopTagEta_Numerator", 20, -5, 5);
+  his->AddTH1("TopTagPT_Efficiency", "TopTagPT_Efficiency", 1000, 0, 1000);
+  his->AddTH1("TopTagEta_Efficiency", "TopTagEta_Efficiency", 20, -5, 5);
   return true;
 }       // -----  end of function TopTaggerAna::BookHistograms  -----
 
@@ -129,9 +155,10 @@ bool TopTaggerAna::BookHistograms()
 //         Name:  TopTaggerAna::GetGenTop
 //  Description:  
 // ===========================================================================
-bool TopTaggerAna::GetGenTop() 
+int TopTaggerAna::GetGenTop() 
 {
   vTops.clear();
+  int Nhad = 0;
   for (int i = 0; i < genDecayMomIdxVec.size(); ++i)
   {
     if (abs(genDecayPdgIdVec[i]) == 6)
@@ -148,10 +175,10 @@ bool TopTaggerAna::GetGenTop()
       {
         temp.isLeptonic_ = true;
       }
-      else
-      {
+      else {
         std::vector<int> out = GetChilds( genDecayIdxVec[temp.Widx_], {1, 2,3, 4, 5});
         assert(out.size() == 2);
+        Nhad ++;
         //std::cout << "out size "<< out.size() << " mother " << genDecayIdxVec[temp.Widx_]<< std::endl;
         //if (out.size() >= 2)
         //{
@@ -168,10 +195,13 @@ bool TopTaggerAna::GetGenTop()
       }
       
       vTops.push_back(temp);
+
     }
   }
 
-  return true;
+  assert(Nhad <= vTops.size());
+
+  return Nhad;
 }       // -----  end of function TopTaggerAna::GetGenTop  -----
 
 
@@ -226,11 +256,13 @@ std::vector<int> TopTaggerAna::GetChilds(int parent, std::vector<int> pdgs) cons
 //         Name:  TopTaggerAna::GetT3TopTagger
 //  Description:  /* cursor */
 // ===========================================================================
-std::vector<int> TopTaggerAna::GetT3TopTagger(double ptcut, 
-    std::string jetstr, std::string bjstr, std::string metstr ) const
+bool TopTaggerAna::GetT3TopTagger(double ptcut, std::string jetstr, std::string bjstr, std::string metstr )
 {
-  std::vector<TLorentzVector> jetsforTT;
-  std::vector<double> bjsforTT;
+  jetsforTT.clear();
+  bjsforTT.clear();
+  vToptagged.clear();
+  RecoTops.clear();
+  goodreco = false;
 
   std::vector<TLorentzVector> jets =  tr->getVec<TLorentzVector>(jetstr);
   std::vector<double> bjets  = tr->getVec<double>(bjstr);
@@ -244,20 +276,52 @@ std::vector<int> TopTaggerAna::GetT3TopTagger(double ptcut,
       bjsforTT.push_back(bjets.at(i));
     }
   } 
+  // Some event selection cuts
+  if (jetsforTT.size () <= 3) return false;
 
   // Form TLorentzVector of MET
-  TLorentzVector metLVec(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
-  type3Ptr->processEvent(jetsforTT, bjsforTT, metLVec);
+  //TLorentzVector metLVec(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
+  type3Ptr->runOnlyTopTaggerPart(jetsforTT, bjsforTT);
+  //type3Ptr->processEvent(jetsforTT, bjsforTT, metLVec);
+  
+  
+  //Get Pt order jet list, passing the requirement
+  boost::bimap<int, double > topdm;
 
-  std::vector<int> taggedtops;
   for (size_t j = 0; j < type3Ptr->finalCombfatJets.size(); ++j)
   {
     if (PassType3TopCrite(type3Ptr, jetsforTT, bjsforTT, j))
     {
-      taggedtops.push_back(j);
+      vToptagged.push_back(j);
+      TLorentzVector jjjTop(0, 0, 0, 0);
+      for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(j).size(); ++k)
+      {
+        jjjTop += jetsforTT.at(type3Ptr->finalCombfatJets.at(j).at(k));
+      }
+      his->FillTH1("Type3TopTaggerMass", jjjTop.M());
+      his->FillTH1("Type3TopTaggerPt", jjjTop.Pt());
+      topdm.insert(boost::bimap<int, double >::value_type(j, fabs(jjjTop.M() - 172.5)));
     }
   }
-  return taggedtops;
+
+  his->FillTH1("NType3TopTagger", int(vToptagged.size()));
+
+  SortToptager(topdm);
+  his->FillTH1("NSortedType3TopTagger", int(vToptagged.size()));
+
+  for(unsigned int j=0; j < vToptagged.size(); ++j)
+  {
+    TLorentzVector jjjTop(0, 0, 0, 0);
+    for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(j).size(); ++k)
+    {
+      jjjTop +=  jetsforTT.at(type3Ptr->finalCombfatJets.at(j).at(k));
+    }
+    RecoTops.push_back(jjjTop);
+    his->FillTH1("RecoTopMass", jjjTop.M());
+  }
+
+  goodreco = true;
+  return true;
 }       // -----  end of function TopTaggerAna::GetT3TopTagger  -----
 
 // ===  FUNCTION  ============================================================
@@ -280,7 +344,8 @@ bool TopTaggerAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPt
     {
       jjjTop += oriJetsVec.at(type3TopTaggerPtr->finalCombfatJets.at(ic).at(k));
     }
-    if (jjjTop.M() < 80 || jjjTop.M() > 270 ) return false;
+    if (jjjTop.M() < 100 || jjjTop.M() > 250 ) return false;
+    //if (jjjTop.M() < 80 || jjjTop.M() > 270 ) return false;
     return true;
 }       // -----  end of function TopTaggerAna::PassType3TopCrite  -----
 
@@ -289,13 +354,43 @@ bool TopTaggerAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPt
 //         Name:  TopTaggerAna::CalTaggerEff
 //  Description:  
 // ===========================================================================
-bool TopTaggerAna::CalTaggerEff(std::vector<int> toptags) const
+bool TopTaggerAna::CalTaggerEff() const
 {
-  for (int i = 0; i < toptags.size(); ++i)
+  for(unsigned int i=0; i < vTops.size(); ++i)
   {
+    TopDecay gentop = vTops.at(i);
+    //if (genDecayLVec[gentop.topidx_].Pt() < 10) continue;
+
+    if (gentop.isLeptonic_) continue;
+    his->FillTH1("TopTagPT_Denominator", genDecayLVec[gentop.topidx_].Pt());
+    his->FillTH1("TopTagEta_Denominator", genDecayLVec[gentop.topidx_].Eta());
+
+    bool tagged = false;
+    for(unsigned int j=0; j < RecoTops.size(); ++j)
+    {
+      TLorentzVector jjjTop = RecoTops.at(j);
+      
+      //if (jjjTop.Pt() <=10) continue;
+
+      //if (jjjTop.DeltaR(genDecayLVec[gentop.topidx_]) < 0.8) // match
+      if (jjjTop.DeltaR(genDecayLVec[gentop.topidx_]) < 0.4) // match
+      {
+      
+        his->FillTH1("TopTagPT_Numerator", genDecayLVec[gentop.topidx_].Pt());
+        his->FillTH1("TopTagEta_Numerator", genDecayLVec[gentop.topidx_].Eta());
+        his->FillTH1("MatchedRecoTopMass", jjjTop.M());
+        tagged = true;
+        break;
+      }
+    }
+
+    if (! tagged)
+    {
+        his->FillTH1("MissTopTagPT", genDecayLVec[gentop.topidx_].Pt());
+        his->FillTH1("MissTopTagEta", genDecayLVec[gentop.topidx_].Eta());
+    }
     
   }
-
   return true;
 }       // -----  end of function TopTaggerAna::CalTaggerEff  -----
 
@@ -306,7 +401,73 @@ bool TopTaggerAna::CalTaggerEff(std::vector<int> toptags) const
 // ===========================================================================
 bool TopTaggerAna::FillGenTop()
 {
-  
+  for(unsigned int i=0; i < vTops.size(); ++i)
+  {
+    TopDecay gentop = vTops.at(i);
+    his->FillTH1("GenTopPT", genDecayLVec[gentop.topidx_].Pt());
+    his->FillTH1("GenTopEta", genDecayLVec[gentop.topidx_].Eta());
+  }
 
   return true;
 }       // -----  end of function TopTaggerAna::FillGenTop  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  TopTaggerAna::SortToptager
+//  Description:  
+// ===========================================================================
+bool TopTaggerAna::SortToptager( boost::bimap<int, double >  dm_bimap) 
+{
+  std::vector<int> sortedtagger;
+  std::set<int> jetset;
+  
+  double largerdm = -1;
+  for(boost::bimap<int, double>::right_map::const_iterator it=dm_bimap.right.begin();
+      it!=dm_bimap.right.end(); ++it)
+  {
+    //std::cout << "dm" << it->first <<" inex " << it->second << std::endl;
+    assert(it->first >= largerdm);
+    largerdm = it->first;
+    bool foundduplicatedjets = false;
+    for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(it->second).size(); ++k)
+    {
+      if (!jetset.insert(type3Ptr->finalCombfatJets.at(it->second).at(k)).second)
+      {
+        foundduplicatedjets = true;
+        break;
+      }
+    }
+    if (!foundduplicatedjets)
+    {
+      sortedtagger.push_back(it->second);
+    }
+  }
+
+
+  //for(unsigned int i=0; i < sortedtagger.size(); ++i)
+  //{
+    //std::cout << " index " << sortedtagger.at(i) <<" mass different " << dm_bimap.left.at(sortedtagger.at(i))<< std::endl;
+  //}
+  vToptagged = sortedtagger;
+
+  return true;
+}       // -----  end of function TopTaggerAna::SortToptager  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  TopTaggerAna::GetCMSTopTagger
+//  Description:  
+// ===========================================================================
+bool TopTaggerAna::GetFatTopTagger(std::string jetstr)
+{
+  RecoTops.clear();
+  RecoTops =  tr->getVec<TLorentzVector>(jetstr);
+  his->FillTH1("NType3TopTagger", int(RecoTops.size()));
+  for(unsigned int j=0; j < RecoTops.size(); ++j)
+  {
+    TLorentzVector jjjTop = RecoTops.at(j);
+    his->FillTH1("RecoTopMass", jjjTop.M());
+  }
+
+  goodreco = true;
+  return true;
+}       // -----  end of function TopTaggerAna::GetCMSTopTagger  -----
