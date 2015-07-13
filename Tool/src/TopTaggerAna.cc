@@ -84,7 +84,7 @@ bool TopTaggerAna::RunTagger()
   genDecayIdxVec    = tr->getVec<int>            ("genDecayIdxVec");
   genDecayPdgIdVec  = tr->getVec<int>            ("genDecayPdgIdVec");
   genDecayMomIdxVec = tr->getVec<int>            ("genDecayMomIdxVec");
-  genDecayStrVec    = tr->getVec<std::string>    ("genDecayStrVec");
+  //genDecayStrVec    = tr->getVec<std::string>    ("genDecayStrVec");
 
   //for (int i = 0; i < genDecayMomIdxVec.size(); ++i)
   //{
