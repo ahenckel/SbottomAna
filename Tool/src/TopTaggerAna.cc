@@ -281,6 +281,7 @@ bool TopTaggerAna::GetT3TopTagger(double ptcut, std::string jetstr, std::string 
 
   // Form TLorentzVector of MET
   //TLorentzVector metLVec(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
+  type3Ptr->setdoTopVeto(true);
   type3Ptr->runOnlyTopTaggerPart(jetsforTT, bjsforTT);
   //type3Ptr->processEvent(jetsforTT, bjsforTT, metLVec);
   
