@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     std::cout << "Add File: " << line << std::endl;
     fChain->Add(line.c_str());
   }
-  std::cout << "No. of Entries in this tree : " << fChain->GetEntries() << std::endl;
+  //std::cout << "No. of Entries in this tree : " << fChain->GetEntries() << std::endl;
 
   // To remove the warning from TFile::Append
   // -->  Replacing existing TH1: CrossSection (Potential memory leak)
@@ -140,11 +140,13 @@ int main(int argc, char* argv[])
     //if(tr.getEvtNum() == 1000 ) break;
     //if(tr.getEvtNum()%20000 == 0) std::cout << tr.getEvtNum() << "\t" << ((clock() - t0)/1000000.0) << std::endl;
 
-    topana.GetT3TopTagger(30, "jetsLVec", "recoJetsBtag_0", "met");
-    top20ana.GetT3TopTagger(20, "jetsLVec", "recoJetsBtag_0", "met");
+    topana.GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
+    top20ana.GetT3TopTagger(20, "jetsLVec", "recoJetsBtag", "met");
+    //topana.GetT3TopTagger(30, "jetsLVec", "recoJetsBtag_0", "met");
+    //top20ana.GetT3TopTagger(20, "jetsLVec", "recoJetsBtag_0", "met");
     CMSTopana.GetFatTopTagger("CMSTopLVec");
     HEPTopana.GetFatTopTagger("HEPV2TopLVec");
-    SoftDropTopana.GetFatTopTagger("SoftDropLVec");
+    SoftDropTopana.GetFatTopTagger("AK8SoftDropLVec");
 
     topana.RunTagger();
     top20ana.RunTagger();

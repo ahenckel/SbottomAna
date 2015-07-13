@@ -5,7 +5,7 @@ SDIR       = src
 #CXX       = ~/.vim/bundle/ClangComplete/bin/cc_args.py g++
 CXX        = g++
 
-CXXFLAGS  += -Iinc -std=c++0x 
+CXXFLAGS  += -Iinc -std=c++0x  
 ## Optimization flag
 #CXXFLAGS += -g #-O3
 ## Enable the maximun warning
@@ -13,18 +13,29 @@ CXXFLAGS  += -Iinc -std=c++0x
 
 ## Include ROOT
 CXXFLAGS  += $(shell root-config --cflags)
-CXXFLAGS  += -I../..
 #CXXDEPFLAGS = -MMD -MP
+
+ifneq ($(shell echo $$CMSSW_BASE), )
+  CXXFLAGS  += -I$(CMSSW_BASE)/src/
+else
+  CXXFLAGS  += -I../..
+endif
 
 LD         = g++
 LDFLAGS    =
 
-LIBS       = $(shell root-config --glibs)  -L../../recipeAUX/OxbridgeMT2/.libs -loxbridgekinetics-1.0 
+LIBS       = $(shell root-config --glibs)   
+
+ifneq ($(shell echo $$CMSSW_BASE), )
+  LIBS += -L$(CMSSW_BASE)/lib/${SCRAM_ARCH}/ -lrecipeAUXOxbridgeMT2
+else
+  LIBS += -L../../recipeAUX/OxbridgeMT2/.libs -loxbridgekinetics-1.0 
+endif
 
 #============================================================================#
 #-----------------------------   Include Boost   ----------------------------#
 #============================================================================#
-ifneq ($(shell echo $(BOOSTROOT)), '')
+ifneq ($(shell echo $$BOOSTROOT), )
   CXXFLAGS  += -I$(shell echo $(BOOSTROOT))
 endif
 

@@ -12,12 +12,17 @@ from __future__ import print_function
 import glob
 import fnmatch
 import os
+import re
 
 hostname = os.uname()[1]
+onLPC = False
 if hostname == 'macbook':
     NtupleDir = "/Users/benwu/Data/Dataset/PHY14_Ntuple/PHYS14_720_Mar14_2014_v2/"
-if hostname == 'nbay04.fnal.gov':
+elif hostname == 'nbay04.fnal.gov':
     NtupleDir = "/data/nbay04/c/benwu/PHY14_Ntuple/PHYS14_720_Mar14_2014_v2/"
+elif re.match(r'cmslpc\d+\.fnal\.gov', hostname) != None:
+    NtupleDir = "/eos/uscms/store/user/lpcsusyhad/PHYS14_720_Mar14_2014_v2/"
+    onLPC = True
 
 NameDir = {
     "TTbar"                                      : "PU20bx25_TTJets_MSDecaysCKM_madgraph-tauola",
@@ -81,7 +86,23 @@ NameDir = {
 #"ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola"
 }
 
-if __name__ == "__main__":
+LPCNameDir = {
+    "QCD_HT_500to1000"             : "/eos/uscms/store/user/lpcsusyhad/benwu/PHYS14_FatTop/TopTagTest5/QCD_HT-500To1000_13TeV-madgraph",
+    "Signal_T2tt_mStop425_mLSP325" : "/eos/uscms/store/user/lpcsusyhad/benwu/PHYS14_FatTop/TopTagTest5/SMS-T2tt_2J_mStop-425_mLSP-325_Tune4C_13TeV-madgraph-tauola",
+    "Signal_T2tt_mStop500_mLSP325" : "/eos/uscms/store/user/lpcsusyhad/benwu/PHYS14_FatTop/TopTagTest5/SMS-T2tt_2J_mStop-500_mLSP-325_Tune4C_13TeV-madgraph-tauola",
+    "Signal_T2tt_mStop650_mLSP325" : "/eos/uscms/store/user/lpcsusyhad/benwu/PHYS14_FatTop/TopTagTest5/SMS-T2tt_2J_mStop-650_mLSP-325_Tune4C_13TeV-madgraph-tauola",
+    "Signal_T2tt_mStop850_mLSP100" : "/eos/uscms/store/user/lpcsusyhad/benwu/PHYS14_FatTop/TopTagTest5/SMS-T2tt_2J_mStop-850_mLSP-100_Tune4C_13TeV-madgraph-tauola",
+    "TTbar"                        : "/eos/uscms/store/user/lpcsusyhad/benwu/PHYS14_FatTop/TopTagTest5/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola",
+    "ZJets ToNuNu_HT_100to200"     : "/eos/uscms/store/user/lpcsusyhad/benwu/PHYS14_FatTop/TopTagTest5/ZJetsToNuNu_HT-100to200_Tune4C_13TeV-madgraph-tauola",
+    "ZJetsToNuNu_HT_200to400"      : "/eos/uscms/store/user/lpcsusyhad/benwu/PHYS14_FatTop/TopTagTest5/ZJetsToNuNu_HT-200to400_Tune4C_13TeV-madgraph-tauola",
+    "ZJetsToNuNu_HT_400to600"      : "/eos/uscms/store/user/lpcsusyhad/benwu/PHYS14_FatTop/TopTagTest5/ZJetsToNuNu_HT-400to600_Tune4C_13TeV-madgraph-tauola",
+    "ZJetsToNuNu_HT_600toInf"      : "/eos/uscms/store/user/lpcsusyhad/benwu/PHYS14_FatTop/TopTagTest5/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola",
+}
+
+
+
+
+def GetList():
     for key, value in NameDir.items():
         matches = []
         file = open ("%s.list" % key, "w")
@@ -91,5 +112,23 @@ if __name__ == "__main__":
         file.close()
 
 
+def GetLPClist():
+    for key, value in LPCNameDir.items():
+        matches = []
+        file = open ("%s.list" % key, "w")
+        for root, dirnames, filenames in os.walk( "%s" % value ):
+            for filename in fnmatch.filter(filenames, '*.root'):
+                tempname = os.path.join(root, filename)
+                #print(tempname)
+                tempname = tempname.replace("/eos/uscms", "root://cmsxrootd-site.fnal.gov/")
+                #print(tempname)
+                file.write("%s\n" % tempname)
+        file.close()
 
+
+if __name__ == "__main__":
+    if not onLPC:
+        GetList()
+    else:
+        GetLPClist()
 

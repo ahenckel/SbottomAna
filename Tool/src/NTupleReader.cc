@@ -24,7 +24,7 @@ void NTupleReader::init()
     //gROOT->ProcessLine(".L TupleDict.h+");
     //gInterpreter->GenerateDictionary("vector<TLorentzVector>","TLorentzVector.h;vector");
 
-    nEvtTotal_ = tree_->GetEntries();
+    //nEvtTotal_ = tree_->GetEntries();
     nevt_ = 0;
     isUpdateDisabled_ = false;
     isFirstEvent_ = true;
@@ -96,10 +96,10 @@ void NTupleReader::populateBranchList()
 
 bool NTupleReader::getNextEvent()
 {
-    if(nevt_ >= nEvtTotal_)
-    {
-        return false;
-    }
+    //if(nevt_ >= nEvtTotal_)
+    //{
+        //return false;
+    //}
     //clearTuple();
     int status = tree_->GetEntry(nevt_);
     nevt_++;
