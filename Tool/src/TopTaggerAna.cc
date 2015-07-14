@@ -261,14 +261,14 @@ bool TopTaggerAna::GetT3TopTagger(double ptcut, std::string jetstr, std::string 
 
   std::vector<TLorentzVector> jets =  tr->getVec<TLorentzVector>(jetstr);
   std::vector<double> bjets  = tr->getVec<double>(bjstr);
-  assert(jets.size() == bjets.size());
+  //assert(jets.size() == bjets.size());
   
   for(unsigned int i=0; i < jets.size(); ++i)
   {
     if (jets.at(i).Pt() > ptcut)
     {
       jetsforTT.push_back(jets.at(i));
-      bjsforTT.push_back(bjets.at(i));
+      bjsforTT.push_back(1);
     }
   } 
   // Some event selection cuts
@@ -491,7 +491,7 @@ bool TopTaggerAna::CheckRecoEvent()
     {
       ak4count++;
     }
-    if (bjets.at(i) > AnaConsts::cutCSVS) ak4Bcount++;
+    if (bjets.at(i) > 0.814) ak4Bcount++;
   } 
   if (ak4count < 4) return false;
   if (ak4Bcount < 1) return false;
