@@ -27,6 +27,7 @@
 #include "TLorentzVector.h"
 #include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
 #include "boost/bimap.hpp"
+#include "customize.h"
 
 struct TopDecay 
 {
@@ -48,7 +49,7 @@ class TopTaggerAna
   public:
 
     // ====================  LIFECYCLE     ===============================
-    //TopTaggerAna (char *name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);
+    TopTaggerAna ();
     TopTaggerAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);
     TopTaggerAna ( const TopTaggerAna &other );                            // copy constructor
     ~TopTaggerAna ();                                                      // destructor
@@ -60,7 +61,7 @@ class TopTaggerAna
     bool RunTagger();
     bool GetT3TopTagger(double ptcut, std::string jetstr, std::string bjstr, std::string metstr );
     bool GetFatTopTagger(std::string jetstr);
-
+    bool CheckRecoEvent();
     // ====================  OPERATORS     ===============================
 
     TopTaggerAna& operator = ( const TopTaggerAna &other ); // assignment operator
@@ -85,6 +86,7 @@ class TopTaggerAna
     std::vector<int>            genDecayPdgIdVec   ;
     std::vector<int>            genDecayMomIdxVec;
     std::vector<std::string>    genDecayStrVec;
+    double HT;
 
 
 
@@ -98,18 +100,17 @@ class TopTaggerAna
     int GetGenTop();
     int GetChild(int parent, std::vector<int> pdgs) const;
     std::vector<int> GetChilds(int parent, std::vector<int> pdgs) const;
+    bool FillGenTop();
+    bool CalHT();
 
     bool BookHistograms();
 
     topTagger::type3TopTagger * type3Ptr;
-
     bool SortToptager( boost::bimap<int, double > dm_bimap);
     bool PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std::vector<TLorentzVector>& oriJetsVec, std::vector<double>& recoJetsBtagCSVS, int ic) const;
+
     bool CalTaggerEff() const;
 
-
-
-  bool FillGenTop();
 
 }; // -----  end of class TopTaggerAna  -----
 

@@ -114,16 +114,14 @@ int main(int argc, char* argv[])
   //AnaFunctions::prepareTopTagger();
   ////The passBaselineFunc is registered here
   //tr.registerFunction(&passBaselineFunc);
-
-  //std::string name = "ToTopptest";
-  //TopTaggerAna topana(name, &tr, OutFile);
-  //std::string name = "ToTopptest";
-  TopTaggerAna topana("T3Top30", &tr, OutFile);
-  TopTaggerAna top20ana("T3Top20", &tr, OutFile);
-
-  TopTaggerAna CMSTopana("CMSTop", &tr, OutFile);
-  TopTaggerAna HEPTopana("HEPTop", &tr, OutFile);
-  TopTaggerAna SoftDropTopana("SoftDrop", &tr, OutFile);
+  
+  std::map<std::string, TopTaggerAna*> TopMap;
+  TopMap["T3Top30"] = new TopTaggerAna("T3Top30", &tr, OutFile);
+  TopMap["T3Top20"] = new TopTaggerAna("T3Top20", &tr, OutFile);
+  TopMap["CMSTop"] = new TopTaggerAna("CMSTop", &tr, OutFile);
+  TopMap["HEPTop"] = new TopTaggerAna("HEPTop", &tr, OutFile);
+  TopMap["AK8SoftDrop"] = new TopTaggerAna("AK8SoftDrop", &tr, OutFile);
+  TopMap["CA15SoftDrop"] = new TopTaggerAna("CA15SoftDrop", &tr, OutFile);
 
   //TopTaggerAna topbase("afterbaseline30", &tr, OutFile);
   //TopTaggerAna top20base("afterbaseline20", &tr, OutFile);
@@ -137,29 +135,22 @@ int main(int argc, char* argv[])
     his->FillTH1("NEvent", 1);
     if(tr.getEvtNum()%20000 == 0)
       std::cout << tr.getEvtNum() << "\t" << ((clock() - t0)/1000000.0) << std::endl;
-    //if(tr.getEvtNum() == 1000 ) break;
-    //if(tr.getEvtNum()%20000 == 0) std::cout << tr.getEvtNum() << "\t" << ((clock() - t0)/1000000.0) << std::endl;
 
-    topana.GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
-    top20ana.GetT3TopTagger(20, "jetsLVec", "recoJetsBtag", "met");
-    //topana.GetT3TopTagger(30, "jetsLVec", "recoJetsBtag_0", "met");
-    //top20ana.GetT3TopTagger(20, "jetsLVec", "recoJetsBtag_0", "met");
-    CMSTopana.GetFatTopTagger("CMSTopLVec");
-    HEPTopana.GetFatTopTagger("HEPV2TopLVec");
-    SoftDropTopana.GetFatTopTagger("AK8SoftDropLVec");
+    if (!TopMap.begin()->second->CheckRecoEvent()) continue;
 
-    topana.RunTagger();
-    top20ana.RunTagger();
-    CMSTopana.RunTagger();
-    HEPTopana.RunTagger();
-    SoftDropTopana.RunTagger();
+    TopMap["T3Top30"]->GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
+    TopMap["T3Top20"]->GetT3TopTagger(20, "jetsLVec", "recoJetsBtag", "met");
+    TopMap["CMSTop"]->GetFatTopTagger("CMSTopLVec");
+    TopMap["HEPTop"]->GetFatTopTagger("HEPV2TopLVec");
+    TopMap["AK8SoftDrop"]->GetFatTopTagger("AK8SoftDropLVec");
+    TopMap["CA15SoftDrop"]->GetFatTopTagger("CA15SoftDropLVec");
 
+    for(std::map<std::string, TopTaggerAna*>::const_iterator it=TopMap.begin();
+      it!=TopMap.end(); ++it)
+    {
+      it->second->RunTagger();
+    }
 
-
-    //topana.GetT3TopTagger(30, "PUPPIjetsLVec", "recoPUPPIJetsBtag", "met");
-    //top20ana.GetT3TopTagger(20, "PUPPIjetsLVec", "recoPUPPIJetsBtag", "met");
-    //topana.RunTagger(30, "jetsLVec", "recoJetsBtag_0", "met");
-    //top20ana.RunTagger(20, "jetsLVec", "recoJetsBtag_0", "met");
     //bool passBaseline=tr.getVar<bool>("passBaseline");
     //if (passBaseline)
     //{
@@ -170,19 +161,17 @@ int main(int argc, char* argv[])
       //top20base.RunTagger(20, "PUPPIjetsLVec", "recoPUPPIJetsBtag", "met");
     //}
 
-    //PUPPITopptest.RunTagger(30, "jetsLVec", "recoJetsBtag_0", "met");
-
   }
 
+//----------------------------------------------------------------------------
+//  Write the output
+//----------------------------------------------------------------------------
   his->WriteTPro();
-  topana.EndTest();
-  //topbase.EndTest();
-  top20ana.EndTest();
-  //top20base.EndTest();
-  CMSTopana.EndTest();
-  HEPTopana.EndTest();
-  SoftDropTopana.EndTest();
-
+  for(std::map<std::string, TopTaggerAna*>::const_iterator it=TopMap.begin();
+      it!=TopMap.end(); ++it)
+  {
+    it->second->EndTest();
+  }
 
   return 0;
 }

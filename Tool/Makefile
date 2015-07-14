@@ -36,7 +36,7 @@ endif
 #-----------------------------   Include Boost   ----------------------------#
 #============================================================================#
 ifneq ($(shell echo $$BOOSTROOT), )
-  CXXFLAGS  += -I$(shell echo $(BOOSTROOT))
+  CXXFLAGS  += -isystem $(shell echo $(BOOSTROOT))
 endif
 
 PROGRAMS = testMain
