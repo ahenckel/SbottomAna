@@ -27,7 +27,6 @@
 #include "TLorentzVector.h"
 #include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
 #include "boost/bimap.hpp"
-#include "customize.h"
 
 struct TopDecay 
 {

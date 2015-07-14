@@ -118,6 +118,8 @@ int main(int argc, char* argv[])
   std::map<std::string, TopTaggerAna*> TopMap;
   TopMap["T3Top30"] = new TopTaggerAna("T3Top30", &tr, OutFile);
   TopMap["T3Top20"] = new TopTaggerAna("T3Top20", &tr, OutFile);
+  TopMap["G3Top30"] = new TopTaggerAna("G3Top30", &tr, OutFile);
+  TopMap["G3Top20"] = new TopTaggerAna("G3Top20", &tr, OutFile);
   TopMap["CMSTop"] = new TopTaggerAna("CMSTop", &tr, OutFile);
   TopMap["HEPTop"] = new TopTaggerAna("HEPTop", &tr, OutFile);
   TopMap["AK8SoftDrop"] = new TopTaggerAna("AK8SoftDrop", &tr, OutFile);
@@ -140,6 +142,8 @@ int main(int argc, char* argv[])
 
     TopMap["T3Top30"]->GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
     TopMap["T3Top20"]->GetT3TopTagger(20, "jetsLVec", "recoJetsBtag", "met");
+    TopMap["G3Top30"]->GetT3TopTagger(30, "Gen4LVec", "recoJetsBtag", "met");
+    TopMap["G3Top20"]->GetT3TopTagger(20, "Gen4LVec", "recoJetsBtag", "met");
     TopMap["CMSTop"]->GetFatTopTagger("CMSTopLVec");
     TopMap["HEPTop"]->GetFatTopTagger("HEPV2TopLVec");
     TopMap["AK8SoftDrop"]->GetFatTopTagger("AK8SoftDropLVec");
