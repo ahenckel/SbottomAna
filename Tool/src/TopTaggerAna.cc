@@ -103,6 +103,8 @@ bool TopTaggerAna::RunTagger()
     CalTaggerEff();
   }
 
+  CalMisTag();
+
   return true;
 
 }       // -----  end of function TopTaggerAna::Test  -----
@@ -113,8 +115,17 @@ bool TopTaggerAna::RunTagger()
 // ===========================================================================
 bool TopTaggerAna::EndTest()
 {
+  his->CalEfficiency("TopTagHT_Efficiency", "TopTagHT_Numerator", "TopTagHT_Denominator");
   his->CalEfficiency("TopTagPT_Efficiency", "TopTagPT_Numerator", "TopTagPT_Denominator");
   his->CalEfficiency("TopTagEta_Efficiency", "TopTagEta_Numerator", "TopTagEta_Denominator");
+  his->CalEfficiency("TopTagdR_Efficiency", "TopTagdR_Numerator", "TopTagdR_Denominator");
+  his->CalEfficiency("TopTagHT_Efficiency", "TopTagHT_Numerator", "TopTagHT_Denominator");
+  his->CalEfficiency("TopTagnAK4Js_Efficiency", "TopTagnAK4Js_Numerator", "TopTagnAK4Js_Denominator");
+  his->CalEfficiency("TopTagnBJs_Efficiency", "TopTagnBJs_Numerator", "TopTagnBJs_Denominator");
+  his->CalEfficiency("TopTagMET_Efficiency", "TopTagMET_Numerator", "TopTagMET_Denominator");
+  his->CalEfficiency("TopTagdPhiJ0_Efficiency", "TopTagdPhiJ0_Numerator", "TopTagdPhiJ0_Denominator");
+  his->CalEfficiency("TopTagdPhiJ1_Efficiency", "TopTagdPhiJ1_Numerator", "TopTagdPhiJ1_Denominator");
+  his->CalEfficiency("TopTagdPhiJ2_Efficiency", "TopTagdPhiJ2_Numerator", "TopTagdPhiJ2_Denominator");
   his->WriteTH1();
   return true;
 }       // -----  end of function TopTaggerAna::EndTest  -----
@@ -125,36 +136,79 @@ bool TopTaggerAna::EndTest()
 // ===========================================================================
 bool TopTaggerAna::BookHistograms()
 {
-  his->AddTH1("test", "TEST", 200, 0, 500);
-  his->AddTH1("test2", "TEST3", 200, 0, 1000);
-  his->AddTH1("GenTopPT", "GenTopPT", 1000, 0, 1000);
-  his->AddTH1("CHSTopPT", "CHSTopPT", 1000, 0, 1000);
-  his->AddTH1("PUPPITopPT", "PUPPITopPT", 1000, 0, 1000);
-  his->AddTH1("GenTopEta", "GenTopEta", 20, -5, 5);
-  his->AddTH1("CHSTopEta", "CHSTopEta", 20, -5, 5);
-  his->AddTH1("PUPPITopEta", "PUPPITopEta", 20, -5, 5);
+  his->AddTH1("GenTopPT"             , "GenTopPT"             , "p_{T}^{gen} [GeV]"       , "Events / 10GeV", 100, 0  , 1000);
+  his->AddTH1("GenTopEta"            , "GenTopEta"            , "#eta^{gen}"              , "Events"        , 20 , -5 , 5);
+  his->AddTH1("GenTopMass"           , "GenTopMass"           , "m^{gen}"                 , "Events"        , 100, 150 , 200);
 
-  his->AddTH1("RecoTopMass", "RecoTopMass", 300, 0, 300);
-  his->AddTH1("MatchedRecoTopMass", "MatchedRecoTopMass", 300, 0, 300);
+  his->AddTH1("RecoTopMass"          , "RecoTopMass"          , "m^{reco} [GeV]"      , "Events"        , 100, 0  , 300);
+  his->AddTH1("MatchedRecoTopMass"   , "MatchedRecoTopMass"   , "Matched m^{reco} [GeV]"  , "Events"        , 100, 0  , 300);
 
-  his->AddTH1("MissTopTagPT", "MissTopTagPT", 1000, 0, 1000);
-  his->AddTH1("MissTopTagEta", "MissTopTagEta", 20, -5, 5);
-  his->AddTH1("NRecoTops", "NRecoTops", 10, 0, 10);
-  his->AddTH1("NSortedType3TopTagger", "NSortedType3TopTagger", 10, 0, 10);
-  his->AddTH1("Type3TopTaggerMass", "Type3TopTaggerMass", 100, 100, 200);
-  his->AddTH1("Type3TopTaggerPt", "Type3TopTaggerPt", 120, 0, 1200);
-  his->AddTH1("TopTagPT_Denominator", "TopTagPT_Denominator", 1000, 0, 1000);
-  his->AddTH1("TopTagPT_Numerator", "TopTagPT_Numerator", 1000, 0, 1000);
-  his->AddTH1("TopTagEta_Denominator", "TopTagEta_Denominator", 20, -5, 5);
-  his->AddTH1("TopTagEta_Numerator", "TopTagEta_Numerator", 20, -5, 5);
-  his->AddTH1("TopTagPT_Efficiency", "TopTagPT_Efficiency", 1000, 0, 1000);
-  his->AddTH1("TopTagEta_Efficiency", "TopTagEta_Efficiency", 20, -5, 5);
+  his->AddTH1("MissTopTagPT"         , "MissTopTagPT"         , "NoReco p_{T}^{gen} [GeV]", "Events / 10GeV", 100, 0  , 1000);
+  his->AddTH1("MissTopTagEta"        , "MissTopTagEta"        , "NoReco #eta^{gen}"       , "Events"        , 20 , -5 , 5);
+  his->AddTH1("NRecoTops"            , "NRecoTops"            , "No. of Reco Tops"        , "Events"        , 10 , 0  , 10);
+  his->AddTH1("NSortedType3TopTagger", "NSortedType3TopTagger", "No. of Type3 Tops"       , "Events"        , 10 , 0  , 10);
+  his->AddTH1("Type3TopTaggerMass"   , "Type3TopTaggerMass"   , "Mass of Comb Tops"       , "Events"        , 80 , 100, 300);
+  his->AddTH1("Type3TopTaggerPt"     , "Type3TopTaggerPt"     , "p_{T} of Comb Tops"      , "Events"        , 120, 0  , 1200);
+  his->AddTH1("TopTagPT_Denominator" , "TopTagPT_Denominator" , "p_{T}^{gen} [GeV]"       , "Denominator"   , 120, 0  , 1200);
+  his->AddTH1("TopTagPT_Numerator"   , "TopTagPT_Numerator"   , "p_{T}^{gen} [GeV]"       , "Numerator"     , 120, 0  , 1200);
+  his->AddTH1("TopTagPT_Efficiency"  , "TopTagPT_Efficiency"  , "p_{T}^{gen} [GeV]"       , "Efficiency"    , 120, 0  , 1200);
+  his->AddTH1("TopTagEta_Denominator", "TopTagEta_Denominator", "#eta^{gen} [GeV]"       , "Denominator"   , 20, -5, 5);
+  his->AddTH1("TopTagEta_Numerator"  , "TopTagEta_Numerator"  , "#eta^{gen} [GeV]"       , "Numerator"     , 20, -5, 5);
+  his->AddTH1("TopTagEta_Efficiency" , "TopTagEta_Efficiency" , "#eta^{gen} [GeV]"       , "Efficiency"    , 20, -5, 5);
+  his->AddTH1("TopTagdR_Denominator" , "TopTagdR_Denominator" , "#Delta R^{gen} [GeV]"       , "Denominator"   , 50, 0 , 5);
+  his->AddTH1("TopTagdR_Numerator"   , "TopTagdR_Numerator"   , "#Delta R^{gen} [GeV]"       , "Numerator"     , 50, 0 , 5);
+  his->AddTH1("TopTagdR_Efficiency"  , "TopTagdR_Efficiency"  , "#Delta R^{gen} [GeV]"       , "Efficiency"    , 50, 0 , 5);
 
-  his->AddTH1("DeltaPT_RecoTop", "DeltaPT_RecoTop", 100, -50, 50);
-  his->AddTH1("DeltaEta_RecoTop", "DeltaEta_RecoTop", 100, -5, 5);
-  his->AddTH1("DeltaR_RecoTop", "DeltaR_RecoTop", 40, 0, 0.4);
-  his->AddTH1("DeltaPT_GenTop", "DeltaPT_GenTop", 20, -2, 2);
+  his->AddTH1("DeltaPT_RecoTop", "DeltaPT_RecoTop", "p_{T}^{reco} - p_{T}^{gen} [GeV]", "Events", 100, -50, 50);
+  his->AddTH1("DeltaEta_RecoTop", "DeltaEta_RecoTop", "#eta^{reco} - #eta^{gen}", "Events", 150, -0.5, 0.5);
+  his->AddTH1("DeltaR_RecoTop", "DeltaR_RecoTop", "#Delta R(reco, gen)", "Events", 40, 0, 0.4);
+  his->AddTH1("DeltaPT_GenTop", "DeltaPT_GenTop", "#frac{p_{T}^{reco} - p_{T}^{gen}}{p_{T}^{gen}}", "Events", 20, -2, 2);
+
+  his->AddTH1("TopTagHT_Denominator"       , "TopTagHT_Denominator"       , "HT [GeV]"       , "Denominator"     , 500, 0, 2000);
+  his->AddTH1("TopTagHT_Numerator"         , "TopTagHT_Numerator"         , "HT [GeV]"       , "#geq 1 Reco Tops", 500, 0, 2000);
+  his->AddTH1("TopTagHT_1Top_Numerator"    , "TopTagHT_1Top_Numerator"    , "HT [GeV]"       , "1 Reco Tops"     , 500, 0, 2000);
+  his->AddTH1("TopTagHT_2Top_Numerator"    , "TopTagHT_2Top_Numerator"    , "HT [GeV]"       , "#geq 2 Reco Tops", 500, 0, 2000);
+  his->AddTH1("TopTagHT_Efficiency"        , "TopTagHT_Efficiency"        , "HT [GeV]"       , "Efficiency"      , 500, 0, 2000);
+
+  his->AddTH1("TopTagnAK4Js_Denominator"   , "TopTagnAK4Js_Denominator"   , "No. of AK4 Jets", "Denominator"     , 40 , 0, 40);
+  his->AddTH1("TopTagnAK4Js_Numerator"     , "TopTagnAK4Js_Numerator"     , "No. of AK4 Jets", "#geq 1 Reco Tops", 40 , 0, 40);
+  his->AddTH1("TopTagnAK4Js_1Top_Numerator", "TopTagnAK4Js_1Top_Numerator", "No. of AK4 Jets", "1 Reco Tops"     , 40 , 0, 40);
+  his->AddTH1("TopTagnAK4Js_2Top_Numerator", "TopTagnAK4Js_2Top_Numerator", "No. of AK4 Jets", "#geq 2 Reco Tops", 40 , 0, 40);
+  his->AddTH1("TopTagnAK4Js_Efficiency"    , "TopTagnAK4Js_Efficiency"    , "No. of AK4 Jets", "Efficiency"      , 40 , 0, 40);
+
+
+  his->AddTH1("TopTagnBJs_Denominator"     , "TopTagnBJs_Denominator"     , "No. of b Jets"  , "Denominator"     , 10 , 0, 10);
+  his->AddTH1("TopTagnBJs_Numerator"       , "TopTagnBJs_Numerator"       , "No. of b Jets"  , "#geq 1 Reco Tops", 10 , 0, 10);
+  his->AddTH1("TopTagnBJs_1Top_Numerator"  , "TopTagnBJs_1Top_Numerator"  , "No. of b Jets"  , "1 Reco Tops"     , 10 , 0, 10);
+  his->AddTH1("TopTagnBJs_2Top_Numerator"  , "TopTagnBJs_2Top_Numerator"  , "No. of b Jets"  , "#geq 2 Reco Tops", 10 , 0, 10);
+  his->AddTH1("TopTagnBJs_Efficiency"      , "TopTagnBJs_Efficiency"      , "No. of b Jets"  , "Efficiency"      , 10 , 0, 10);
+
+  his->AddTH1("TopTagMET_Denominator"      , "TopTagMET_Denominator"      , "MET [GeV]"      , "Denominator"     , 200, 0, 800);
+  his->AddTH1("TopTagMET_Numerator"        , "TopTagMET_Numerator"        , "MET [GeV]"      , "#geq 1 Reco Tops", 200, 0, 800);
+  his->AddTH1("TopTagMET_1Top_Numerator"   , "TopTagMET_1Top_Numerator"   , "MET [GeV]"      , "1 Reco Tops"     , 200, 0, 800);
+  his->AddTH1("TopTagMET_2Top_Numerator"   , "TopTagMET_2Top_Numerator"   , "MET [GeV]"      , "#geq 2 Reco Tops", 200, 0, 800);
+  his->AddTH1("TopTagMET_Efficiency"       , "TopTagMET_Efficiency"       , "MET [GeV]"      , "Efficiency"      , 200, 0, 800);
+
+  his->AddTH1("TopTagdPhiJ0_Denominator",    "TopTagdPhiJ0_Denominator",    "dPhi(J0, MET)", "Denominator"     , 200, 0, 4);
+  his->AddTH1("TopTagdPhiJ0_Numerator",      "TopTagdPhiJ0_Numerator",      "dPhi(J0, MET)", "#geq 1 Reco Tops", 200, 0, 4);
+  his->AddTH1("TopTagdPhiJ0_1Top_Numerator", "TopTagdPhiJ0_1Top_Numerator", "dPhi(J0, MET)", "1 Reco Tops"     , 200, 0, 4);
+  his->AddTH1("TopTagdPhiJ0_2Top_Numerator", "TopTagdPhiJ0_2Top_Numerator", "dPhi(J0, MET)", "#geq 2 Reco Tops", 200, 0, 4);
+  his->AddTH1("TopTagdPhiJ0_Efficiency",     "TopTagdPhiJ0_Efficiency",     "dPhi(J0, MET)", "Efficiency"      , 200, 0, 4);
+
+  his->AddTH1("TopTagdPhiJ1_Denominator",    "TopTagdPhiJ1_Denominator",    "dPhi(J1, MET)", "Denominator"     , 200, 0, 4);
+  his->AddTH1("TopTagdPhiJ1_Numerator",      "TopTagdPhiJ1_Numerator",      "dPhi(J1, MET)", "#geq 1 Reco Tops", 200, 0, 4);
+  his->AddTH1("TopTagdPhiJ1_1Top_Numerator", "TopTagdPhiJ1_1Top_Numerator", "dPhi(J1, MET)", "1 Reco Tops"     , 200, 0, 4);
+  his->AddTH1("TopTagdPhiJ1_2Top_Numerator", "TopTagdPhiJ1_2Top_Numerator", "dPhi(J1, MET)", "#geq 2 Reco Tops", 200, 0, 4);
+  his->AddTH1("TopTagdPhiJ1_Efficiency",     "TopTagdPhiJ1_Efficiency",     "dPhi(J1, MET)", "Efficiency"      , 200, 0, 4);
+
+
+  his->AddTH1("TopTagdPhiJ2_Denominator",    "TopTagdPhiJ2_Denominator",   "dPhi(J2, MET)", "Denominator"     ,  200, 0, 4);
+  his->AddTH1("TopTagdPhiJ2_Numerator",      "TopTagdPhiJ2_Numerator",     "dPhi(J2, MET)", "#geq 1 Reco Tops",  200, 0, 4);
+  his->AddTH1("TopTagdPhiJ2_1Top_Numerator", "TopTagdPhiJ2_1Top_Numerator","dPhi(J2, MET)", "1 Reco Tops"     ,  200, 0, 4);
+  his->AddTH1("TopTagdPhiJ2_2Top_Numerator", "TopTagdPhiJ2_2Top_Numerator","dPhi(J2, MET)", "#geq 2 Reco Tops",  200, 0, 4);
+  his->AddTH1("TopTagdPhiJ2_Efficiency",     "TopTagdPhiJ2_Efficiency",    "dPhi(J2, MET)", "Efficiency"      ,  200, 0, 4);
   return true;
+
 }       // -----  end of function TopTaggerAna::BookHistograms  -----
 
 // ===  FUNCTION  ============================================================
@@ -268,11 +322,11 @@ bool TopTaggerAna::GetT3TopTagger(double ptcut, std::string jetstr, std::string 
     if (jets.at(i).Pt() > ptcut)
     {
       jetsforTT.push_back(jets.at(i));
-      bjsforTT.push_back(1);
+      bjsforTT.push_back(0);
     }
   } 
   // Some event selection cuts
-  if (jetsforTT.size () <= 3) return false;
+  //assert(jetsforTT.size () > 3);
 
   // Form TLorentzVector of MET
   //TLorentzVector metLVec(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
@@ -286,33 +340,38 @@ bool TopTaggerAna::GetT3TopTagger(double ptcut, std::string jetstr, std::string 
 
   for (size_t j = 0; j < type3Ptr->finalCombfatJets.size(); ++j)
   {
+    TLorentzVector jjjTop(0, 0, 0, 0);
+    for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(j).size(); ++k)
+    {
+      jjjTop += jetsforTT.at(type3Ptr->finalCombfatJets.at(j).at(k));
+    }
+    his->FillTH1("Type3TopTaggerMass", jjjTop.M());
+    his->FillTH1("Type3TopTaggerPt", jjjTop.Pt());
+
     if (PassType3TopCrite(type3Ptr, jetsforTT, bjsforTT, j))
     {
       vToptagged.push_back(j);
-      TLorentzVector jjjTop(0, 0, 0, 0);
-      for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(j).size(); ++k)
-      {
-        jjjTop += jetsforTT.at(type3Ptr->finalCombfatJets.at(j).at(k));
-      }
-      his->FillTH1("Type3TopTaggerMass", jjjTop.M());
-      his->FillTH1("Type3TopTaggerPt", jjjTop.Pt());
       topdm.insert(boost::bimap<int, double >::value_type(j, fabs(jjjTop.M() - 172.5)));
     }
   }
 
 
-  SortToptager(topdm);
   his->FillTH1("NSortedType3TopTagger", int(vToptagged.size()));
+  SortToptager(topdm);
   his->FillTH1("NRecoTops", int(vToptagged.size()));
 
   for(unsigned int j=0; j < vToptagged.size(); ++j)
   {
     TLorentzVector jjjTop(0, 0, 0, 0);
-    for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(j).size(); ++k)
+    for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(vToptagged.at(j)).size(); ++k)
     {
-      jjjTop +=  jetsforTT.at(type3Ptr->finalCombfatJets.at(j).at(k));
+      jjjTop +=  jetsforTT.at(type3Ptr->finalCombfatJets.at(vToptagged.at(j)).at(k));
     }
     RecoTops.push_back(jjjTop);
+    if (jjjTop.M() < 110 )
+    {
+      std::cout << j << " pass? " << PassType3TopCrite(type3Ptr, jetsforTT, bjsforTT, j) << std::endl;
+    }
     his->FillTH1("RecoTopMass", jjjTop.M());
   }
 
@@ -340,8 +399,6 @@ bool TopTaggerAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPt
       jjjTop += oriJetsVec.at(type3TopTaggerPtr->finalCombfatJets.at(ic).at(k));
     }
     if (jjjTop.M() < 110 || jjjTop.M() > 240 ) return false;
-    //if (jjjTop.M() < 100 || jjjTop.M() > 250 ) return false;
-    //if (jjjTop.M() < 80 || jjjTop.M() > 270 ) return false;
     return true;
 }       // -----  end of function TopTaggerAna::PassType3TopCrite  -----
 
@@ -352,10 +409,11 @@ bool TopTaggerAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPt
 // ===========================================================================
 bool TopTaggerAna::CalTaggerEff() const
 {
+  std::map<int, int> MatchGenReco;
+
   for(unsigned int i=0; i < vTops.size(); ++i)
   {
     TopDecay gentop = vTops.at(i);
-    //if (genDecayLVec[gentop.topidx_].Pt() < 10) continue;
 
     if (gentop.isLeptonic_) continue;
     his->FillTH1("TopTagPT_Denominator", genDecayLVec[gentop.topidx_].Pt());
@@ -365,10 +423,7 @@ bool TopTaggerAna::CalTaggerEff() const
     for(unsigned int j=0; j < RecoTops.size(); ++j)
     {
       TLorentzVector jjjTop = RecoTops.at(j);
-      
-      //if (jjjTop.Pt() <=10) continue;
 
-      //if (jjjTop.DeltaR(genDecayLVec[gentop.topidx_]) < 0.8) // match
       if (jjjTop.DeltaR(genDecayLVec[gentop.topidx_]) < 0.4) // match
       {
       
@@ -380,6 +435,7 @@ bool TopTaggerAna::CalTaggerEff() const
         his->FillTH1("DeltaPT_RecoTop", jjjTop.Pt() - genDecayLVec[gentop.topidx_].Pt());
         his->FillTH1("DeltaPT_GenTop", (jjjTop.Pt() - genDecayLVec[gentop.topidx_].Pt())/ genDecayLVec[gentop.topidx_].Pt());
         tagged = true;
+        MatchGenReco[i] = j;
         break;
       }
     }
@@ -391,6 +447,18 @@ bool TopTaggerAna::CalTaggerEff() const
     }
     
   }
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DiTop DR ~~~~~
+  if (vTops.size() == 2)
+  {
+    his->FillTH1("TopTagdR_Denominator", genDecayLVec[vTops.at(0).topidx_].DeltaR(genDecayLVec[vTops.at(1).topidx_]));
+    if (MatchGenReco.size() == 2) 
+    {
+      assert(MatchGenReco.begin()->second != MatchGenReco.end() -> second );
+      his->FillTH1("TopTagdR_Numerator", genDecayLVec[vTops.at(0).topidx_].DeltaR(genDecayLVec[vTops.at(1).topidx_]));
+    }
+  }
+
   return true;
 }       // -----  end of function TopTaggerAna::CalTaggerEff  -----
 
@@ -405,6 +473,7 @@ bool TopTaggerAna::FillGenTop()
   {
     TopDecay gentop = vTops.at(i);
     his->FillTH1("GenTopPT", genDecayLVec[gentop.topidx_].Pt());
+    his->FillTH1("GenTopMass", genDecayLVec[gentop.topidx_].M());
     his->FillTH1("GenTopEta", genDecayLVec[gentop.topidx_].Eta());
   }
 
@@ -487,14 +556,15 @@ bool TopTaggerAna::CheckRecoEvent()
   int ak4Bcount = 0;
   for(unsigned int i=0; i < jets.size(); ++i)
   {
-    if (jets.at(i).Pt() > 30)
+    if (jets.at(i).Pt() >= 30)
     {
       ak4count++;
+      if (bjets.at(i) > 0.814) ak4Bcount++;
     }
-    if (bjets.at(i) > 0.814) ak4Bcount++;
   } 
   if (ak4count < 4) return false;
   if (ak4Bcount < 1) return false;
+  if (tr->getVar<double>("met") < 200)  return false;
 
   //jets =  tr->getVec<TLorentzVector>("AK8LVec");
   //if (jets.size() == 0) return false;
@@ -516,3 +586,176 @@ bool TopTaggerAna::CalHT()
   } 
   return true;
 }       // -----  end of function TopTaggerAna::CalHT  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  TopTaggerAna::CalMisTag()
+//  Description:  
+// ===========================================================================
+bool TopTaggerAna::CalMisTag()
+{
+
+//----------------------------------------------------------------------------
+//  As funtion of HT
+//----------------------------------------------------------------------------
+  CalHT();
+  his->FillTH1("TopTagHT_Denominator", HT);
+  if (RecoTops.size() >=1 )
+  {
+    his->FillTH1("TopTagHT_Numerator", HT);
+  }
+  if (RecoTops.size() == 1)
+  {
+    his->FillTH1("TopTagHT_1Top_Numerator", HT);
+  }
+  if (RecoTops.size() > 1)
+  {
+    his->FillTH1("TopTagHT_2Top_Numerator", HT);
+  }
+
+
+//----------------------------------------------------------------------------
+//  As a function of nJets 
+//----------------------------------------------------------------------------
+  int nAK4Js = tr->getVec<TLorentzVector>("jetsLVec").size();
+  his->FillTH1("TopTagnAK4Js_Denominator", nAK4Js);
+  if (RecoTops.size() >=1 )
+  {
+    his->FillTH1("TopTagnAK4Js_Numerator", nAK4Js);
+  }
+  if (RecoTops.size() == 1)
+  {
+    his->FillTH1("TopTagnAK4Js_1Top_Numerator", nAK4Js);
+  }
+  if (RecoTops.size() > 1)
+  {
+    his->FillTH1("TopTagnAK4Js_2Top_Numerator", nAK4Js);
+  }
+
+//----------------------------------------------------------------------------
+//  As a function of nJets  -  nGenJets
+//----------------------------------------------------------------------------
+  int nBJs = 0;
+  std::vector<TLorentzVector> jets =  tr->getVec<TLorentzVector>("jetsLVec");
+  std::vector<double> bjets  = tr->getVec<double>("recoJetsBtag");
+  boost::bimap<int, double > jetPtM;
+
+  for(unsigned int i=0; i < jets.size(); ++i)
+  {
+    if (jets.at(i).Pt() >= 30)
+    {
+      jetPtM.insert(boost::bimap<int, double >::value_type(i, jets.at(i).Pt()));
+      if (bjets.at(i) > 0.814) nBJs++;
+    }
+  } 
+
+  his->FillTH1("TopTagnBJs_Denominator", nBJs);
+  if (RecoTops.size() >=1 )
+  {
+    his->FillTH1("TopTagnBJs_Numerator", nBJs);
+  }
+  if (RecoTops.size() == 1)
+  {
+    his->FillTH1("TopTagnBJs_1Top_Numerator", nBJs);
+  }
+  if (RecoTops.size() > 1)
+  {
+    his->FillTH1("TopTagnBJs_2Top_Numerator", nBJs);
+  }
+
+
+//----------------------------------------------------------------------------
+//  As a funtion as MET
+//----------------------------------------------------------------------------
+  double  MET = tr->getVar<double>("met");
+  his->FillTH1("TopTagMET_Denominator", MET);
+  if (RecoTops.size() >=1 )
+  {
+    his->FillTH1("TopTagMET_Numerator", MET);
+  }
+  if (RecoTops.size() == 1)
+  {
+    his->FillTH1("TopTagMET_1Top_Numerator", MET);
+  }
+  if (RecoTops.size() > 1)
+  {
+    his->FillTH1("TopTagMET_2Top_Numerator", MET);
+  }
+
+//----------------------------------------------------------------------------
+//  As a funtion of deltaPhi between leading jet and MET
+//----------------------------------------------------------------------------
+
+  int jetcounting =  0;
+  double dPhiJ0 = 0;
+  double dPhiJ1 = 0;
+  double dPhiJ2 = 0;
+  for(boost::bimap<int, double>::right_map::const_iterator it=jetPtM.right.begin();
+      it!=jetPtM.right.end(); ++it)
+  {
+    //std::cout << "dm" << it->first <<" inex " << it->second <<" test" << jets.at(it->second).Pt()<< std::endl;
+    if (jetcounting == 0)
+    {
+      dPhiJ0 = fabs(TVector2::Phi_mpi_pi( jets.at(it->second).Phi() - tr->getVar<double>("metphi")));
+      jetcounting++;
+      continue;
+    }
+
+    if (jetcounting == 1)
+    {
+      dPhiJ1 = fabs(TVector2::Phi_mpi_pi( jets.at(it->second).Phi() - tr->getVar<double>("metphi")));
+      jetcounting++;
+      continue;
+    }
+    if (jetcounting == 2)
+    {
+      dPhiJ2 = fabs(TVector2::Phi_mpi_pi( jets.at(it->second).Phi() - tr->getVar<double>("metphi")));
+      jetcounting++;
+      break;
+    }
+  }
+
+  his->FillTH1("TopTagdPhiJ0_Denominator", dPhiJ0);
+  if (RecoTops.size() >=1 )
+  {
+    his->FillTH1("TopTagdPhiJ0_Numerator", dPhiJ0);
+  }
+  if (RecoTops.size() == 1)
+  {
+    his->FillTH1("TopTagdPhiJ0_1Top_Numerator", dPhiJ0);
+  }
+  if (RecoTops.size() > 1)
+  {
+    his->FillTH1("TopTagdPhiJ0_2Top_Numerator", dPhiJ0);
+  }
+
+  his->FillTH1("TopTagdPhiJ1_Denominator", dPhiJ1);
+  if (RecoTops.size() >=1 )
+  {
+    his->FillTH1("TopTagdPhiJ1_Numerator", dPhiJ1);
+  }
+  if (RecoTops.size() == 1)
+  {
+    his->FillTH1("TopTagdPhiJ1_1Top_Numerator", dPhiJ1);
+  }
+  if (RecoTops.size() > 1)
+  {
+    his->FillTH1("TopTagdPhiJ1_2Top_Numerator", dPhiJ1);
+  }
+
+  his->FillTH1("TopTagdPhiJ2_Denominator", dPhiJ2);
+  if (RecoTops.size() >=1 )
+  {
+    his->FillTH1("TopTagdPhiJ2_Numerator", dPhiJ2);
+  }
+  if (RecoTops.size() == 1)
+  {
+    his->FillTH1("TopTagdPhiJ2_1Top_Numerator", dPhiJ2);
+  }
+  if (RecoTops.size() > 1)
+  {
+    his->FillTH1("TopTagdPhiJ2_2Top_Numerator", dPhiJ2);
+  }
+
+
+  return true;
+}       // -----  end of function TopTaggerAna::CalMisTag()  -----

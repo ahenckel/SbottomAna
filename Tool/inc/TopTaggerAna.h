@@ -109,6 +109,7 @@ class TopTaggerAna
     bool PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std::vector<TLorentzVector>& oriJetsVec, std::vector<double>& recoJetsBtagCSVS, int ic) const;
 
     bool CalTaggerEff() const;
+    bool CalMisTag();
 
 
 }; // -----  end of class TopTaggerAna  -----
