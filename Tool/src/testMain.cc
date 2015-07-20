@@ -111,9 +111,9 @@ int main(int argc, char* argv[])
 
   NTupleReader tr(fChain);
   ////initialize the type3Ptr defined in the customize.h
-  //AnaFunctions::prepareTopTagger();
+  AnaFunctions::prepareTopTagger();
   ////The passBaselineFunc is registered here
-  //tr.registerFunction(&passBaselineFunc);
+  tr.registerFunction(&passBaselineFunc);
   
   std::map<std::string, TopTaggerAna*> TopMap;
   TopMap["T3Top30"] = new TopTaggerAna("T3Top30", &tr, OutFile);
@@ -138,7 +138,9 @@ int main(int argc, char* argv[])
     if(tr.getEvtNum()%20000 == 0)
       std::cout << tr.getEvtNum() << "\t" << ((clock() - t0)/1000000.0) << std::endl;
 
-    if (!TopMap.begin()->second->CheckRecoEvent()) continue;
+    bool passBaseline=tr.getVar<bool>("passBaseline");
+    if (! passBaseline) continue;
+    //if (!TopMap.begin()->second->CheckRecoEvent()) continue;
 
     TopMap["T3Top30"]->GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
     TopMap["T3Top20"]->GetT3TopTagger(20, "jetsLVec", "recoJetsBtag", "met");
@@ -154,16 +156,9 @@ int main(int argc, char* argv[])
     {
       it->second->RunTagger();
     }
+    //if(tr.getEvtNum() > 200000 ) break;
 
-    //bool passBaseline=tr.getVar<bool>("passBaseline");
-    //if (passBaseline)
-    //{
-      //his->FillTH1("NBase", 1);
-      ////topbase.RunTagger(30, "jetsLVec", "recoJetsBtag_0", "met");
-      ////top20base.RunTagger(20, "jetsLVec", "recoJetsBtag_0", "met");
-      //topbase.RunTagger(30, "PUPPIjetsLVec", "recoPUPPIJetsBtag", "met");
-      //top20base.RunTagger(20, "PUPPIjetsLVec", "recoPUPPIJetsBtag", "met");
-    //}
+
 
   }
 

@@ -80,7 +80,7 @@ void passBaselineFunc(NTupleReader &tr){
 // Pass top tagger requirement?
    bool passTagger = type3Ptr->passNewTaggerReq();
 
-   if( !passTagger ) passBaseline = false;
+   //if( !passTagger ) passBaseline = false;
 
    bool passNewCuts = type3Ptr->passNewCuts();
 
