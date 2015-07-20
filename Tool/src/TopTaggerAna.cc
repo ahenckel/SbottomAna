@@ -121,6 +121,7 @@ bool TopTaggerAna::EndTest()
   his->CalEfficiency("TopTagdR_Efficiency", "TopTagdR_Numerator", "TopTagdR_Denominator");
   his->CalEfficiency("TopTagHT_Efficiency", "TopTagHT_Numerator", "TopTagHT_Denominator");
   his->CalEfficiency("TopTagnAK4Js_Efficiency", "TopTagnAK4Js_Numerator", "TopTagnAK4Js_Denominator");
+  his->CalEfficiency("TopTagnGen4Js_Efficiency", "TopTagnGen4Js_Numerator", "TopTagnGen4Js_Denominator");
   his->CalEfficiency("TopTagnBJs_Efficiency", "TopTagnBJs_Numerator", "TopTagnBJs_Denominator");
   his->CalEfficiency("TopTagMET_Efficiency", "TopTagMET_Numerator", "TopTagMET_Denominator");
   his->CalEfficiency("TopTagdPhiJ0_Efficiency", "TopTagdPhiJ0_Numerator", "TopTagdPhiJ0_Denominator");
@@ -176,6 +177,12 @@ bool TopTaggerAna::BookHistograms()
   his->AddTH1("TopTagnAK4Js_2Top_Numerator", "TopTagnAK4Js_2Top_Numerator", "No. of AK4 Jets", "#geq 2 Reco Tops", 40 , 0, 40);
   his->AddTH1("TopTagnAK4Js_Efficiency"    , "TopTagnAK4Js_Efficiency"    , "No. of AK4 Jets", "Efficiency"      , 40 , 0, 40);
 
+  his->AddTH1("TopTagnGen4Js_Denominator"   , "TopTagnGen4Js_Denominator"   , "No. of Gen4 Jets", "Denominator"     , 40 , 0, 40);
+  his->AddTH1("TopTagnGen4Js_Numerator"     , "TopTagnGen4Js_Numerator"     , "No. of Gen4 Jets", "#geq 1 Reco Tops", 40 , 0, 40);
+  his->AddTH1("TopTagnGen4Js_1Top_Numerator", "TopTagnGen4Js_1Top_Numerator", "No. of Gen4 Jets", "1 Reco Tops"     , 40 , 0, 40);
+  his->AddTH1("TopTagnGen4Js_2Top_Numerator", "TopTagnGen4Js_2Top_Numerator", "No. of Gen4 Jets", "#geq 2 Reco Tops", 40 , 0, 40);
+  his->AddTH1("TopTagnGen4Js_Efficiency"    , "TopTagnGen4Js_Efficiency"    , "No. of Gen4 Jets", "Efficiency"      , 40 , 0, 40);
+
 
   his->AddTH1("TopTagnBJs_Denominator"     , "TopTagnBJs_Denominator"     , "No. of b Jets"  , "Denominator"     , 10 , 0, 10);
   his->AddTH1("TopTagnBJs_Numerator"       , "TopTagnBJs_Numerator"       , "No. of b Jets"  , "#geq 1 Reco Tops", 10 , 0, 10);
@@ -221,6 +228,7 @@ int TopTaggerAna::GetGenTop()
   int Nhad = 0;
   for (int i = 0; i < genDecayMomIdxVec.size(); ++i)
   {
+    //std::cout << " idx " << i <<" ID " << genDecayPdgIdVec[i]  << std::endl;
     if (abs(genDecayPdgIdVec[i]) == 6)
     {
       TopDecay temp;
@@ -454,7 +462,7 @@ bool TopTaggerAna::CalTaggerEff() const
     his->FillTH1("TopTagdR_Denominator", genDecayLVec[vTops.at(0).topidx_].DeltaR(genDecayLVec[vTops.at(1).topidx_]));
     if (MatchGenReco.size() == 2) 
     {
-      if(MatchGenReco.begin()->second != MatchGenReco.end() -> second )
+      if (MatchGenReco[0] != MatchGenReco[1])
         his->FillTH1("TopTagdR_Numerator", genDecayLVec[vTops.at(0).topidx_].DeltaR(genDecayLVec[vTops.at(1).topidx_]));
     }
   }
@@ -564,7 +572,7 @@ bool TopTaggerAna::CheckRecoEvent()
   } 
   if (ak4count < 4) return false;
   if (ak4Bcount < 1) return false;
-  if (tr->getVar<double>("met") < 200)  return false;
+  //if (tr->getVar<double>("met") < 200)  return false;
 
   //jets =  tr->getVec<TLorentzVector>("AK8LVec");
   //if (jets.size() == 0) return false;
@@ -594,10 +602,32 @@ bool TopTaggerAna::CalHT()
 bool TopTaggerAna::CalMisTag()
 {
 
+  CalHT();
+  int nAK4Js = 0;
+  int nBJs = 0;
+  boost::bimap<int, double > jetPtM;
+  std::vector<TLorentzVector> jets =  tr->getVec<TLorentzVector>("jetsLVec");
+  std::vector<double> bjets  = tr->getVec<double>("recoJetsBtag");
+  for(unsigned int i=0; i < jets.size(); ++i)
+  {
+    if (jets.at(i).Pt() >= 30)  
+    {
+      nAK4Js++;
+      jetPtM.insert(boost::bimap<int, double >::value_type(i, jets.at(i).Pt()));
+      if (bjets.at(i) > 0.814) nBJs++;
+    }
+  } 
+
+  int nGen4Js = 0;
+  std::vector<TLorentzVector> Genjets =  tr->getVec<TLorentzVector>("Gen4LVec");
+  for(unsigned int i=0; i < Genjets.size(); ++i)
+  {
+    if (Genjets.at(i).Pt() >= 30)  nGen4Js++;
+  } 
+
 //----------------------------------------------------------------------------
 //  As funtion of HT
 //----------------------------------------------------------------------------
-  CalHT();
   his->FillTH1("TopTagHT_Denominator", HT);
   if (RecoTops.size() >=1 )
   {
@@ -616,7 +646,6 @@ bool TopTaggerAna::CalMisTag()
 //----------------------------------------------------------------------------
 //  As a function of nJets 
 //----------------------------------------------------------------------------
-  int nAK4Js = tr->getVec<TLorentzVector>("jetsLVec").size();
   his->FillTH1("TopTagnAK4Js_Denominator", nAK4Js);
   if (RecoTops.size() >=1 )
   {
@@ -631,23 +660,27 @@ bool TopTaggerAna::CalMisTag()
     his->FillTH1("TopTagnAK4Js_2Top_Numerator", nAK4Js);
   }
 
+
+//----------------------------------------------------------------------------
+//  As a function of nJets  Gen
+//----------------------------------------------------------------------------
+  his->FillTH1("TopTagnGen4Js_Denominator", nGen4Js);
+  if (RecoTops.size() >=1 )
+  {
+    his->FillTH1("TopTagnGen4Js_Numerator", nGen4Js);
+  }
+  if (RecoTops.size() == 1)
+  {
+    his->FillTH1("TopTagnGen4Js_1Top_Numerator", nGen4Js);
+  }
+  if (RecoTops.size() > 1)
+  {
+    his->FillTH1("TopTagnGen4Js_2Top_Numerator", nGen4Js);
+  }
+
 //----------------------------------------------------------------------------
 //  As a function of nJets  -  nGenJets
 //----------------------------------------------------------------------------
-  int nBJs = 0;
-  std::vector<TLorentzVector> jets =  tr->getVec<TLorentzVector>("jetsLVec");
-  std::vector<double> bjets  = tr->getVec<double>("recoJetsBtag");
-  boost::bimap<int, double > jetPtM;
-
-  for(unsigned int i=0; i < jets.size(); ++i)
-  {
-    if (jets.at(i).Pt() >= 30)
-    {
-      jetPtM.insert(boost::bimap<int, double >::value_type(i, jets.at(i).Pt()));
-      if (bjets.at(i) > 0.814) nBJs++;
-    }
-  } 
-
   his->FillTH1("TopTagnBJs_Denominator", nBJs);
   if (RecoTops.size() >=1 )
   {
@@ -684,7 +717,6 @@ bool TopTaggerAna::CalMisTag()
 //----------------------------------------------------------------------------
 //  As a funtion of deltaPhi between leading jet and MET
 //----------------------------------------------------------------------------
-
   int jetcounting =  0;
   double dPhiJ0 = 0;
   double dPhiJ1 = 0;

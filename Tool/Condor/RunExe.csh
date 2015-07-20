@@ -11,7 +11,6 @@ echo "============  Running on" $HOST " ============"
 cd ${CMSSW}/src
 eval `scramv1 runtime -csh`
 cd ${_CONDOR_SCRATCH_DIR}
-tar -xzf FileList.tgz
 
 #============================================================================#
 #--------------------------   To Run the Process   --------------------------#
