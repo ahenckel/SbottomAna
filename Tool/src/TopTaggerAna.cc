@@ -454,8 +454,8 @@ bool TopTaggerAna::CalTaggerEff() const
     his->FillTH1("TopTagdR_Denominator", genDecayLVec[vTops.at(0).topidx_].DeltaR(genDecayLVec[vTops.at(1).topidx_]));
     if (MatchGenReco.size() == 2) 
     {
-      assert(MatchGenReco.begin()->second != MatchGenReco.end() -> second );
-      his->FillTH1("TopTagdR_Numerator", genDecayLVec[vTops.at(0).topidx_].DeltaR(genDecayLVec[vTops.at(1).topidx_]));
+      if(MatchGenReco.begin()->second != MatchGenReco.end() -> second )
+        his->FillTH1("TopTagdR_Numerator", genDecayLVec[vTops.at(0).topidx_].DeltaR(genDecayLVec[vTops.at(1).topidx_]));
     }
   }
 
