@@ -10,7 +10,7 @@
 #include <iostream>
 #include <fstream>
 
-const bool debug = true;
+const bool debug = false;
 const bool doIsoTrksVeto = true;
 
 void passBaselineFunc(NTupleReader &tr){
