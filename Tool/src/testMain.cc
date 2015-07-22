@@ -106,6 +106,9 @@ int main(int argc, char* argv[])
   his->AddTH1("NBase", "Number of Events passed baseline", 2, 0, 2);
   his->FillTPro("XS", 1, GetXS(inputFileList));
 
+  std::vector<std::string> CutOrder = { "noCut", "nJets", "muonVeto", "eleVeto", "isoVeto", "dPhis", "BJets" , "MET", "nTops"};
+  his->Cutorder("Stop", CutOrder, 0);
+
   //clock to monitor the run time
   size_t t0 = clock();
 
@@ -138,8 +141,42 @@ int main(int argc, char* argv[])
     if(tr.getEvtNum()%20000 == 0)
       std::cout << tr.getEvtNum() << "\t" << ((clock() - t0)/1000000.0) << std::endl;
 
+    // CutFlow
+    his->FillTH1("CutFlow", 0);
+    //----------------------------------------------------------------------------
+    //  Ugly nested if statement....
+    //----------------------------------------------------------------------------
+    if (tr.getVar<bool>("passnJets")) 
+    {
+      his->FillTH1("CutFlow", GetCutBin(CutOrder, "nJets"));
+      if (tr.getVar<bool>("passMuonVeto")) 
+      {
+        his->FillTH1("CutFlow", GetCutBin(CutOrder, "muonVeto"));
+        if (tr.getVar<bool>("passEleVeto")) 
+        {
+          his->FillTH1("CutFlow", GetCutBin(CutOrder, "eleVeto"));
+          if (tr.getVar<bool>("passIsoTrkVeto")) 
+          {
+            his->FillTH1("CutFlow", GetCutBin(CutOrder, "isoVeto"));
+            if (tr.getVar<bool>("passdPhis")) 
+            {
+              his->FillTH1("CutFlow", GetCutBin(CutOrder, "dPhis"));
+              if (tr.getVar<bool>("passBJets")) 
+              {
+                his->FillTH1("CutFlow", GetCutBin(CutOrder, "BJets"));
+                if (tr.getVar<bool>("passMET")) his->FillTH1("CutFlow", GetCutBin(CutOrder, "MET"));
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+
     bool passBaseline=tr.getVar<bool>("passBaseline");
     if (! passBaseline) continue;
+    //std::cout<<"Run to \033[0;31m"<<__func__<<"\033[0m at \033[1;36m"<< __FILE__<<"\033[0m, line \033[0;34m"<< __LINE__<<"\033[0m"<< std::endl; 
     //if (!TopMap.begin()->second->CheckRecoEvent()) continue;
 
     TopMap["T3Top30"]->GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
@@ -151,21 +188,22 @@ int main(int argc, char* argv[])
     TopMap["AK8SoftDrop"]->GetFatTopTagger("AK8SoftDropLVec");
     TopMap["CA15SoftDrop"]->GetFatTopTagger("CA15SoftDropLVec");
 
+    if (TopMap["T3Top30"]->GetNTops() >= 1) his->FillTH1("CutFlow", GetCutBin(CutOrder, "nTops"));
+
     for(std::map<std::string, TopTaggerAna*>::const_iterator it=TopMap.begin();
       it!=TopMap.end(); ++it)
     {
       it->second->RunTagger();
     }
-    //if(tr.getEvtNum() > 200000 ) break;
 
-
-
+    //if(tr.getEvtNum() > 200 ) break;
   }
 
 //----------------------------------------------------------------------------
 //  Write the output
 //----------------------------------------------------------------------------
   his->WriteTPro();
+  his->WriteTH1();
   for(std::map<std::string, TopTaggerAna*>::const_iterator it=TopMap.begin();
       it!=TopMap.end(); ++it)
   {
@@ -174,4 +212,5 @@ int main(int argc, char* argv[])
 
   return 0;
 }
+
 

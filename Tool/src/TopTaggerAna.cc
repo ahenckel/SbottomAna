@@ -35,7 +35,7 @@ TopTaggerAna::TopTaggerAna ()
 TopTaggerAna::TopTaggerAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile)
 :tr(tr_)
 {
-  his = new HistTool(OutFile, "", name);
+  his = new HistTool(OutFile, "Top", name);
   type3Ptr = new topTagger::type3TopTagger();
   type3Ptr->setnJetsSel(4); // same as  AnaConsts::nJetsSel
 
@@ -80,6 +80,7 @@ TopTaggerAna::operator = ( const TopTaggerAna &other )
 // ===========================================================================
 bool TopTaggerAna::RunTagger()
 {
+  his->FillTH1("NBase", 1);
   genDecayLVec.clear();
   genDecayIdxVec.clear();    
   genDecayPdgIdVec.clear();  
@@ -137,6 +138,7 @@ bool TopTaggerAna::EndTest()
 // ===========================================================================
 bool TopTaggerAna::BookHistograms()
 {
+  his->AddTH1("NBase", "Number of Events passed baseline", 2, 0, 2);
   his->AddTH1("GenTopPT"             , "GenTopPT"             , "p_{T}^{gen} [GeV]"       , "Events / 10GeV", 100, 0  , 1000);
   his->AddTH1("GenTopEta"            , "GenTopEta"            , "#eta^{gen}"              , "Events"        , 20 , -5 , 5);
   his->AddTH1("GenTopMass"           , "GenTopMass"           , "m^{gen}"                 , "Events"        , 100, 150 , 200);
@@ -791,3 +793,12 @@ bool TopTaggerAna::CalMisTag()
 
   return true;
 }       // -----  end of function TopTaggerAna::CalMisTag()  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  TopTaggerAna::GetNTops
+//  Description:  
+// ===========================================================================
+int TopTaggerAna::GetNTops() const
+{
+  return RecoTops.size();
+}       // -----  end of function TopTaggerAna::GetNTops  -----

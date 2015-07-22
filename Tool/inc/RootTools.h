@@ -25,6 +25,7 @@
 #include "boost/algorithm/string.hpp"
 
 double GetXS(std::string name);
+int GetCutBin( std::vector<std::string> &CutOrder , std::string name);
 
 #endif   // ----- #ifndef __ROOTTOOLS_INC__  -----
 

@@ -26,7 +26,12 @@ HistTool::HistTool (std::shared_ptr<TFile> OutFile_, std::string name, std::stri
 { 
   OutFile->cd();
   if (cutflag != "")
-    OutFile->mkdir(cutflag.c_str());
+  {
+    std::stringstream ss;
+    ss << prefix <<"_"<< cutflag;
+    OutFile->mkdir(ss.str().c_str());
+    cutflag = ss.str();
+  }
   HWeight = -999.;
   CutSize = 0;
 }  // ~~~~~  end of method HistTool::HistTool  (constructor)  ~~~~~

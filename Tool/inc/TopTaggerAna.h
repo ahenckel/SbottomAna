@@ -54,6 +54,7 @@ class TopTaggerAna
     ~TopTaggerAna ();                                                      // destructor
 
     // ====================  ACCESSORS     ===============================
+    int GetNTops() const;
 
     // ====================  MUTATORS      ===============================
     bool EndTest();

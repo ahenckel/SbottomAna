@@ -2,8 +2,11 @@ IDIR       = inc
 ODIR       = obj
 SDIR       = src
 
-#CXX       = ~/.vim/bundle/ClangComplete/bin/cc_args.py g++
-CXX        = g++
+ifneq ("$(wildcard .clang_complete)","")
+  CXX        = g++
+else
+  CXX       = ~/.vim/bundle/ClangComplete/bin/cc_args.py g++
+endif
 
 CXXFLAGS  += -Iinc -std=c++0x  
 ## Optimization flag
