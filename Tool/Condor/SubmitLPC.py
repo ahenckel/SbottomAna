@@ -8,11 +8,11 @@ import subprocess
 import glob
 
 DelExe    = '../testMain'
-OutDir = '/eos/uscms/store/user/benwu/Stop/TopTagger/Jul16/'
+OutDir = '/eos/uscms/store/user/benwu/Stop/TopTagger/Jul23'
 
 tempdir = ''
 UserEMAIL = 'benwu@fnal.gov'
-ProjectName = 'GenJet2'
+ProjectName = 'Mistag'
 Process = {
     #'DYJetsToLL_HT_100to200'                     : ['../FileList/DYJetsToLL_HT_100to200.list',                     1],
     #'DYJetsToLL_HT_200to400'                     : ['../FileList/DYJetsToLL_HT_200to400.list',                     1],
@@ -24,26 +24,72 @@ Process = {
     #'Signal_T1tttt_mGluino1500_mLSP100'          : ['../FileList/Signal_T1tttt_mGluino1500_mLSP100.list',          1],
     #'Signal_T2bb_mSbottom600_mLSP580'            : ['../FileList/Signal_T2bb_mSbottom600_mLSP580.list',            1],
     #'Signal_T2bb_mSbottom900_mLSP100'            : ['../FileList/Signal_T2bb_mSbottom900_mLSP100.list',            1],
-    #'Signal_T2tt_mStop425_mLSP325'                : ['../FileList/Signal_T2tt_mStop425_mLSP325.list',               1],
-    #'Signal_T2tt_mStop500_mLSP325'                : ['../FileList/Signal_T2tt_mStop500_mLSP325.list',               1],
-    #'Signal_T2tt_mStop650_mLSP325'                : ['../FileList/Signal_T2tt_mStop650_mLSP325.list',               1],
-    #'Signal_T2tt_mStop850_mLSP100'                : ['../FileList/Signal_T2tt_mStop850_mLSP100.list',               1],
+    'Signal_T2tt_mStop425_mLSP325'                : ['../FileList/Signal_T2tt_mStop425_mLSP325.list',               1],
+    'Signal_T2tt_mStop500_mLSP325'                : ['../FileList/Signal_T2tt_mStop500_mLSP325.list',               1],
+    'Signal_T2tt_mStop650_mLSP325'                : ['../FileList/Signal_T2tt_mStop650_mLSP325.list',               1],
+    'Signal_T2tt_mStop850_mLSP100'                : ['../FileList/Signal_T2tt_mStop850_mLSP100.list',               1],
     ##'Signal_T5tttt_mGluino1300_mStop300_mCh285'  : ['../FileList/Signal_T5tttt_mGluino1300_mStop300_mCh285.list',  1],
     ##'Signal_T5tttt_mGluino1300_mStop300_mChi280' : ['../FileList/Signal_T5tttt_mGluino1300_mStop300_mChi280.list', 1],
     ##'TTZ'                                        : ['../FileList/TTZ.list',                                        1],
-    'TTbar'                                       : ['../FileList/TTbar.list',                                      44],
+    'TTbar'                                       : ['../FileList/TTbar.list',                                      40],
     'QCD'                                         : ['../FileList/QCD_HT_500to1000.list',                           7],
     ##'T_tW'                                       : ['../FileList/T_tW.list',                                       2],
     ##'Tbar_tW'                                    : ['../FileList/Tbar_tW.list',                                    1],
-    ##'WJetsToLNu_HT_100to200'                     : ['../FileList/WJetsToLNu_HT_100to200.list',                     1],
-    ##'WJetsToLNu_HT_200to400'                     : ['../FileList/WJetsToLNu_HT_200to400.list',                     1],
-    ##'WJetsToLNu_HT_400to600'                     : ['../FileList/WJetsToLNu_HT_400to600.list',                     1],
-    ##'WJetsToLNu_HT_600toInf'                     : ['../FileList/WJetsToLNu_HT_600toInf.list',                     1],
-    #'ZJetsToNuNu_HT_100to200'                     : ['../FileList/ZJetsToNuNu_HT_100to200.list',                    13],
-    #'ZJetsToNuNu_HT_200to400'                     : ['../FileList/ZJetsToNuNu_HT_200to400.list',                    10],
-    #'ZJetsToNuNu_HT_400to600'                     : ['../FileList/ZJetsToNuNu_HT_400to600.list',                    10],
+    'WJetsToLNu_HT_100to200'                     : ['../FileList/WJetsToLNu_HT_100to200.list',                     10],
+    'WJetsToLNu_HT_200to400'                     : ['../FileList/WJetsToLNu_HT_200to400.list',                     10],
+    'WJetsToLNu_HT_400to600'                     : ['../FileList/WJetsToLNu_HT_400to600.list',                     10],
+    'WJetsToLNu_HT_600toInf'                     : ['../FileList/WJetsToLNu_HT_600toInf.list',                     10],
+    'ZJetsToNuNu_HT_100to200'                     : ['../FileList/ZJetsToNuNu_HT_100to200.list',                    13],
+    'ZJetsToNuNu_HT_200to400'                     : ['../FileList/ZJetsToNuNu_HT_200to400.list',                    10],
+    'ZJetsToNuNu_HT_400to600'                     : ['../FileList/ZJetsToNuNu_HT_400to600.list',                    10],
     'ZJetsToNuNu_HT_600toInf'                     : ['../FileList/ZJetsToNuNu_HT_600toInf.list',                    14],
 }
+
+Mergeblock = """#!/usr/bin/env python
+
+# File        : merge.py
+# Author      : Ben Wu
+# Contact     : benwu@fnal.gov
+# Date        : 2015 Jul 20
+#
+# Description : Code to merge output hists
+
+import re
+import glob
+import os
+import subprocess
+
+if __name__ == "__main__":
+    pattern = re.compile(r'^(.*)_\d+\.root$')
+    g = glob.glob("*")
+    # print g
+    process = set()
+    for files in g:
+        match = pattern.match(files)
+        if match is not None:
+            process.add(match.group(1))
+            # print(match.group(1))
+    for prod in process:
+        sub = re.compile(r'^%s_\d+\.root$' % prod)
+        allfile = set()
+        for f in g:
+            if sub.match(f) is not None:
+                allfile.add(f)
+        run = "hadd -f %s.root " % prod
+        mv = "mv "
+        run += " ".join(allfile)
+        mv += " ".join(allfile)
+        cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK)
+                                   for path in os.environ["PATH"].split(os.pathsep))
+        if cmd_exists('hadd'):
+            # print(run)
+            subprocess.call(run, shell=True)
+            if not os.path.isdir("backup"):
+                os.mkdir("backup")
+            mv += " backup"
+            # print mv
+            subprocess.call(mv, shell=True)
+"""
 
 
 
@@ -98,6 +144,7 @@ def SplitPro(key, file, fraction):
 def my_process():
     ## temp dir for submit
     global tempdir
+    global Mergeblock
     tempdir = '/tmp/' + os.getlogin() + "/" + ProjectName +  "/"
     try:
         os.makedirs(tempdir)
@@ -108,6 +155,9 @@ def my_process():
     outdir = OutDir +  "/" + ProjectName + "/"
     try:
         os.makedirs(outdir)
+        f = open("%s/merge.py", 'w')
+        f.writelines(Mergeblock)
+        f.close()
     except OSError:
         pass
 

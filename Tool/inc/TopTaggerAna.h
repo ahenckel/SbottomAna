@@ -104,6 +104,7 @@ class TopTaggerAna
     bool CalHT();
 
     bool BookHistograms();
+    bool ZeroTopTagStudy() const;
 
     topTagger::type3TopTagger * type3Ptr;
     bool SortToptager( boost::bimap<int, double > dm_bimap);

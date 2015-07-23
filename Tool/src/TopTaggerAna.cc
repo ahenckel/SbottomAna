@@ -104,6 +104,11 @@ bool TopTaggerAna::RunTagger()
     CalTaggerEff();
   }
 
+  if (RecoTops.size() == 0)
+  {
+    ZeroTopTagStudy();
+  }
+
   CalMisTag();
 
   return true;
@@ -148,8 +153,12 @@ bool TopTaggerAna::BookHistograms()
 
   his->AddTH1("MissTopTagPT"         , "MissTopTagPT"         , "NoReco p_{T}^{gen} [GeV]", "Events / 10GeV", 100, 0  , 1000);
   his->AddTH1("MissTopTagEta"        , "MissTopTagEta"        , "NoReco #eta^{gen}"       , "Events"        , 20 , -5 , 5);
+
   his->AddTH1("NRecoTops"            , "NRecoTops"            , "No. of Reco Tops"        , "Events"        , 10 , 0  , 10);
   his->AddTH1("NSortedType3TopTagger", "NSortedType3TopTagger", "No. of Type3 Tops"       , "Events"        , 10 , 0  , 10);
+  his->AddTH1("NCombType3TopTagger", "NCombType3TopTagger", "No. of Type3 Tops Comb"       , "Events"        , 10 , 0  , 10);
+  his->AddTH1("NMassType3TopTagger", "NMassType3TopTagger", "No. of Type3 Tops Mass"       , "Events"        , 10 , 0  , 10);
+
   his->AddTH1("Type3TopTaggerMass"   , "Type3TopTaggerMass"   , "Mass of Comb Tops"       , "Events"        , 80 , 100, 300);
   his->AddTH1("Type3TopTaggerPt"     , "Type3TopTaggerPt"     , "p_{T} of Comb Tops"      , "Events"        , 120, 0  , 1200);
   his->AddTH1("TopTagPT_Denominator" , "TopTagPT_Denominator" , "p_{T}^{gen} [GeV]"       , "Denominator"   , 120, 0  , 1200);
@@ -216,6 +225,16 @@ bool TopTaggerAna::BookHistograms()
   his->AddTH1("TopTagdPhiJ2_1Top_Numerator", "TopTagdPhiJ2_1Top_Numerator","dPhi(J2, MET)", "1 Reco Tops"     ,  200, 0, 4);
   his->AddTH1("TopTagdPhiJ2_2Top_Numerator", "TopTagdPhiJ2_2Top_Numerator","dPhi(J2, MET)", "#geq 2 Reco Tops",  200, 0, 4);
   his->AddTH1("TopTagdPhiJ2_Efficiency",     "TopTagdPhiJ2_Efficiency",    "dPhi(J2, MET)", "Efficiency"      ,  200, 0, 4);
+
+  his->AddTH1("0T_GenTopPT"  , "0T_GenTopPT"  , "p_{T}^{gen} [GeV]"   , "Events / 10GeV", 100, 0  , 1000);
+  his->AddTH1("0T_GenTopEta" , "0T_GenTopEta" , "#eta^{gen}"          , "Events"        , 20 , -5 , 5);
+  his->AddTH1("0T_GenTopMass", "0T_GenTopMass", "m^{gen}"             , "Events"        , 100, 150, 200);
+  his->AddTH1("0T_GenTopdR"  , "0T_GenTopdR"  , "#Delta R^{gen} [GeV]", "Events", 50, 0  , 5);
+  his->AddTH1("0T_HT"        , "0T_HT"        , "HT [GeV]"            , "Events / 10GeV", 200, 0  , 2000);
+  his->AddTH1("0T_MET"       , "0T_MET"       , "MET [GeV]"           , "Events / 10GeV", 200, 0  , 2000);
+  his->AddTH1("0T_nAK4Js"    , "0T_nAK4Js"    , "No. of AK4 Jets"     , "Events", 20, 0  , 20);
+  his->AddTH1("0T_nGen4Js"   , "0T_nGen4Js"   , "No. of Gen4 Jets"    , "Events", 10, 0, 10);
+  his->AddTH1("0T_nBJs"      , "0T_nBJs"      , "No. of B Jets"       , "Events", 10, 0, 10);
   return true;
 
 }       // -----  end of function TopTaggerAna::BookHistograms  -----
@@ -347,6 +366,8 @@ bool TopTaggerAna::GetT3TopTagger(double ptcut, std::string jetstr, std::string 
   
   //Get Pt order jet list, passing the requirement
   boost::bimap<int, double > topdm;
+  his->FillTH1("NCombType3TopTagger", int(type3Ptr->finalCombfatJets.size()));
+  int NmassT3 = 0;
 
   for (size_t j = 0; j < type3Ptr->finalCombfatJets.size(); ++j)
   {
@@ -357,6 +378,7 @@ bool TopTaggerAna::GetT3TopTagger(double ptcut, std::string jetstr, std::string 
     }
     his->FillTH1("Type3TopTaggerMass", jjjTop.M());
     his->FillTH1("Type3TopTaggerPt", jjjTop.Pt());
+    if (jjjTop.M() > 110 && jjjTop.M() < 240) NmassT3++;
 
     if (PassType3TopCrite(type3Ptr, jetsforTT, bjsforTT, j))
     {
@@ -365,6 +387,8 @@ bool TopTaggerAna::GetT3TopTagger(double ptcut, std::string jetstr, std::string 
     }
   }
 
+
+  his->FillTH1("NMassType3TopTagger", NmassT3);
 
   his->FillTH1("NSortedType3TopTagger", int(vToptagged.size()));
   SortToptager(topdm);
@@ -462,11 +486,8 @@ bool TopTaggerAna::CalTaggerEff() const
   if (vTops.size() == 2)
   {
     his->FillTH1("TopTagdR_Denominator", genDecayLVec[vTops.at(0).topidx_].DeltaR(genDecayLVec[vTops.at(1).topidx_]));
-    if (MatchGenReco.size() == 2) 
-    {
-      if (MatchGenReco[0] != MatchGenReco[1])
-        his->FillTH1("TopTagdR_Numerator", genDecayLVec[vTops.at(0).topidx_].DeltaR(genDecayLVec[vTops.at(1).topidx_]));
-    }
+    if (MatchGenReco.size() == 2 && MatchGenReco[0] != MatchGenReco[1])
+      his->FillTH1("TopTagdR_Numerator", genDecayLVec[vTops.at(0).topidx_].DeltaR(genDecayLVec[vTops.at(1).topidx_]));
   }
 
   return true;
@@ -790,6 +811,14 @@ bool TopTaggerAna::CalMisTag()
     his->FillTH1("TopTagdPhiJ2_2Top_Numerator", dPhiJ2);
   }
 
+  if (RecoTops.size() == 0)
+  {
+    his->FillTH1("0T_HT", HT);
+    his->FillTH1("0T_MET", MET);
+    his->FillTH1("0T_nAK4Js", nAK4Js);
+    his->FillTH1("0T_nGen4Js", nGen4Js);
+    his->FillTH1("0T_nBJs", nBJs);
+  }
 
   return true;
 }       // -----  end of function TopTaggerAna::CalMisTag()  -----
@@ -802,3 +831,26 @@ int TopTaggerAna::GetNTops() const
 {
   return RecoTops.size();
 }       // -----  end of function TopTaggerAna::GetNTops  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  TopTaggerAna::ZeroTopTagStudy
+//  Description:  
+// ===========================================================================
+bool TopTaggerAna::ZeroTopTagStudy() const
+{
+  
+  for(unsigned int i=0; i < vTops.size(); ++i)
+  {
+    TopDecay gentop = vTops.at(i);
+    his->FillTH1("0T_GenTopPT", genDecayLVec[gentop.topidx_].Pt());
+    his->FillTH1("0T_GenTopMass", genDecayLVec[gentop.topidx_].M());
+    his->FillTH1("0T_GenTopEta", genDecayLVec[gentop.topidx_].Eta());
+  }
+
+  if (vTops.size() == 2)
+  {
+    his->FillTH1("0T_GenTopdR", genDecayLVec[vTops.at(0).topidx_].DeltaR(genDecayLVec[vTops.at(1).topidx_]));
+  }
+
+  return true;
+}       // -----  end of function TopTaggerAna::ZeroTopTagStudy  -----
