@@ -176,8 +176,6 @@ int main(int argc, char* argv[])
 
     bool passBaseline=tr.getVar<bool>("passBaseline");
     if (! passBaseline) continue;
-    //std::cout<<"Run to \033[0;31m"<<__func__<<"\033[0m at \033[1;36m"<< __FILE__<<"\033[0m, line \033[0;34m"<< __LINE__<<"\033[0m"<< std::endl; 
-    //if (!TopMap.begin()->second->CheckRecoEvent()) continue;
 
     TopMap["T3Top30"]->GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
     TopMap["T3Top20"]->GetT3TopTagger(20, "jetsLVec", "recoJetsBtag", "met");
@@ -196,7 +194,7 @@ int main(int argc, char* argv[])
       it->second->RunTagger();
     }
 
-    //if(tr.getEvtNum() > 200 ) break;
+    //if(tr.getEvtNum() > 20000 ) break;
   }
 
 //----------------------------------------------------------------------------
