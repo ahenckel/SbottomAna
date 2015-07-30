@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!usr/bin/env python
 # encoding: utf-8
 
 # File        : PyAna.py
@@ -10,109 +10,60 @@
 # Dedicated studies should has its own class inherit or morm from this class
 
 from PyProcess import PyProcess
-import ROOT
+from Config import Prodmap as PRODMA
 
-Prodmap = {
-    "T2tt_425_325" : { "file" : ["Signal_T2tt_mStop425_mLSP325.root"],
-                      "label" : "T2tt(425, 325)",
-                      "type" : "Signal",
-                      "linecolor" : 1,
-                      "linestyle" : 1,
-                      "markercolor" : 1,
-                      "markerstyle" : 1,
-                      "fillcolor" : 1,
-                      "fillstyle" : 1,
-                      },
-    "T2tt_500_325" : { "file" : ["Signal_T2tt_mStop500_mLSP325.root"],
-                      "label" : "T2tt(425, 325)",
-                      "type" : "Signal",
-                      "linecolor" : 1,
-                      "linestyle" : 1,
-                      "markercolor" : 1,
-                      "markerstyle" : 1,
-                      "fillcolor" : 1,
-                      "fillstyle" : 1,
-                      },
-    "T2tt_650_325" : { "file" : ["Signal_T2tt_mStop650_mLSP325.root"],
-                      "label" : "T2tt(425, 325)",
-                      "type" : "Signal",
-                      "linecolor" : 2,
-                      "linestyle" : 1,
-                      "markercolor" : 1,
-                      "markerstyle" : 1,
-                      "fillcolor" : 1,
-                      "fillstyle" : 1,
-                      },
-    "T2tt_850_100" : { "file" : ["Signal_T2tt_mStop850_mLSP100.root"],
-                      "label" : "T2tt(425, 325)",
-                      "type" : "Signal",
-                      "linecolor" : 3,
-                      "linestyle" : 1,
-                      "markercolor" : 1,
-                      "markerstyle" : 1,
-                      "fillcolor" : 1,
-                      "fillstyle" : 1,
-                      },
-    "TTbar"        : { "file" : ["TTbar.root"],
-                      "type" : "Signal",
-                      "label" : "t#bar{t}",
-                      "linecolor" : ROOT.kRed,
-                      "linestyle" : 1,
-                      "markercolor" : 1,
-                      "markerstyle" : 1,
-                      "fillcolor" : 1,
-                      "fillstyle" : 1,
-                      },
-    "WJetsToLNu"   : { "file" : [ "WJetsToLNu_HT_100to200.root", "WJetsToLNu_HT_200to400.root",
-                                "WJetsToLNu_HT_400to600.root", "WJetsToLNu_HT_600toInf.root"],
-                    "label" : "T2tt(425, 325)",
-                    "type" : "Signal",
-                    "linecolor" : 1,
-                    "linestyle" : 1,
-                    "markercolor" : 1,
-                    "markerstyle" : 1,
-                    "fillcolor" : 1,
-                    "fillstyle" : 1,
-                    },
-    "ZJetsToNuNu"  : { "file" : [ "ZJetsToNuNu_HT_100to200.root", "ZJetsToNuNu_HT_200to400.root",
-                                "ZJetsToNuNu_HT_400to600.root", "ZJetsToNuNu_HT_600toInf.root" ],
-                    "label" : "T2tt(425, 325)",
-                    "type" : "Signal",
-                    "linecolor" : 1,
-                    "linestyle" : 1,
-                    "markercolor" : 1,
-                    "markerstyle" : 1,
-                    "fillcolor" : 1,
-                    "fillstyle" : 1,
-                    },
-    }
 
 class PyAna():
-    global Prodmap
-    def __init__(self, dirname, lumi = 10*1000):
+    def __init__(self, dirname, lumi=10*1000):
+        self.Prodmap = PRODMA
         self.AllProds = {}
         self.Directory = dirname
         self.Lumi = lumi
         self.dirnames = []
-
+        self.FormProcesses()
 
     def FormProcesses(self):
-        for key, vdict in Prodmap.items():
-            self.AllProds[key] = PyProcess(key, ["%s/%s" % (self.Directory, file) for file in vdict["file"]],
-                                           lumi = self.Lumi, label_=vdict["label"], linecolor_=vdict["linecolor"],
-                                           linestyle_=vdict["linestyle"] , markercolor_= vdict["markercolor"],
-                                           markerstyle_= vdict["markerstyle"], fillcolor_=vdict["fillcolor"],
-                                           fillstyle_=vdict["fillstyle"])
+        for key, vdict in self.Prodmap.items():
+            self.AllProds[key] = PyProcess(key, ["%s/%s" % (self.Directory, file) for file in vdict["file"]], vdict)
 
-    def GetHist(self, proname_, dirname_, histname_, norm="Lumi", BaseName = "NBase"):
+# ============================================================================#
+# ----------------------------     User Access     ---------------------------#
+# ============================================================================#
+    def GetProNames(self, ptype=""):
+        if ptype != "":
+            return [signal for signal in self.AllProds.keys() if self.AllProds[signal]["type"] == ptype]
+        else:
+            return self.AllProds.keys()
+
+    def GetDirNames(self):
+        return(self.AllProds.itervalues().next().GetDirnames())
+
+    def GetHistNames(self, directory):
+        return(self.AllProds.itervalues().next().GetHistnames(directory))
+
+    def GetHist(self, proname_, dirname_, histname_, norm="Lumi", BaseName="NBase"):
         hists = []
+        proname, dirname, histname = self.FormListofHist(proname_, dirname_, histname_)
+
+        for hpro in proname:
+            if hpro in ["Data", "Background", "Signal"]:
+                self.MergeProcesses(hpro)
+            for hdist in dirname:
+                for hhist in histname:
+                    # for key, value in self.AllProds.items():
+                    lhist = self.AllProds[hpro].GetHist(hdist, hhist, norm, BaseName)
+                    lhist.proname = hpro
+                    self.SmartLegendEntry(lhist, proname, dirname, histname)
+                    hists.append(lhist)
+        return hists
+
+    def FormListofHist(self, proname_, dirname_, histname_):
         # localProd = self.AllProds.copy()
         if not isinstance(proname_, list):
             proname = [proname_]
         else:
             if len(proname_) == 0:
                 proname = list(self.AllProds.keys())
-                print proname
             else:
                 proname = proname_
 
@@ -121,7 +72,6 @@ class PyAna():
         else:
             if len(dirname_) == 0:
                 dirname = self.AllProds.itervalues().next().GetDirnames()
-                print dirname
             else:
                 dirname = dirname_
 
@@ -132,29 +82,41 @@ class PyAna():
                 histname = self.AllProds.itervalues().next().keys()
             else:
                 histname = histname_
+        return(proname, dirname, histname)
 
+    def MergeProcesses(self, name, prolist=[], **kw):
+        if not isinstance(prolist, list):
+            prolist = [prolist]
 
-        for hpro in proname:
-            for hdist in dirname:
-                for hhist in histname:
-                    # for key, value in self.AllProds.items():
-                    lhist = self.AllProds[hpro].GetHist(hdist, hhist, norm, BaseName)
-                    lhist.linecolor = Prodmap[hpro]["linecolor"]
-                    leglable = ""
-                    if len(proname) != 1:
-                        leglable +=  Prodmap[hpro]["label"] + " "
-                    if len(proname) == 1 and len(dirname) != 1:
-                        leglable +=  hdist + " "
-                    # if len(histname) != 1:
-                    leglable +=  lhist.GetTitle() + " "
-                    lhist.title = leglable
-                    lhist.legendstyle='L'
-                    hists.append(lhist)
-        return hists
+        if len(prolist) == 0:
+            prolist = self.GetProNames(name)
 
+        import copy
+        self.AllProds[name] = copy.deepcopy(self.AllProds[prolist[0]])
+        self.AllProds[name].ProName = name
+        self.AllProds[name].ProList = []
+        self.AllProds[name].ProList.extend(self.AllProds[subprocess].ProList for subprocess in prolist)
 
+        # Assign other attribue
+        for keys, values in kw.iteritems():
+            setattr(self.AllProds[name], keys, values)
 
-    # print "=---"
-   # for key, value in test.AllProds:
-       # print key, value.GetHist("T3Top20", "NBase")
+    def SmartLegendEntry(self, lhist, pronames, dirnames, histnames):
+        leglable = ""
 
+        # Label
+        if len(pronames) != 1:
+            leglable += self.Prodmap[lhist.proname]["label"] + " "
+        if len(dirnames) != 1:
+            leglable += lhist.DirLabel + " " if hasattr(lhist, "DirLabel") else lhist.dirname.split("_")[-1] + " "
+        if len(histnames) != 1:
+            leglable += lhist.HistLabel + " " if hasattr(lhist, "HistLabel") else lhist.histname + " "
+        if len(pronames) == 1 and len(dirnames) == 1 and len(histnames) == 1:
+            leglable += self.Prodmap[lhist.proname]["label"] + " "
+
+        # Lagend Style
+        # Can't do much here. This should be handled in PyDraw
+        lhist.title = leglable.strip()
+
+    def GetSignalBackground(self, proname_, dirname_, histname_, style="line", norm="Lumi", BaseName="NBase"):
+        pass

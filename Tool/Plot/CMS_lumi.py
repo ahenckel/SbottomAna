@@ -4,19 +4,18 @@ import ROOT as rt
 #   Initiated by: Gautier Hamel de Monchenault (Saclay)
 #   Translated in Python by: Joshua Hardenbrook (Princeton)
 #
-
-cmsText     = "CMS";
-cmsTextFont   = 61
+cmsText        = "CMS"
+cmsTextFont    = 61
 
 writeExtraText = True
-extraText   = "Preliminary"
-extraTextFont = 52
+extraText      = "Preliminary"
+extraTextFont  = 52
 
-lumiTextSize     = 0.6
-lumiTextOffset   = 0.2
+lumiTextSize   = 0.6
+lumiTextOffset = 0.2
 
-cmsTextSize      = 0.75
-cmsTextOffset    = 0.1
+cmsTextSize    = 0.75
+cmsTextOffset  = 0.1
 
 relPosX    = 0.045
 relPosY    = 0.035
@@ -92,6 +91,8 @@ def CMS_lumi(pad,  iPeriod,  iPosX, lumi ):
         lumiText += "8 TeV"
     elif ( iPeriod==13 ):
         lumiText += lumi_13TeV
+        lumiText += " (13 TeV)"
+    elif ( iPeriod==23 ):
         lumiText += " (13 TeV)"
 
 

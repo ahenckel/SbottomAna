@@ -11,36 +11,70 @@
 
 from PyHist import PyHist
 
+
 class PyProcess():
-    def __init__(self, name, filelist, lumi = 10*1000, label_="process", linecolor_=1, linestyle_=1, markercolor_=1, markerstyle_=1, fillcolor_=1, fillstyle_=1):
+    def __init__(self, name, filelist, attribute, lumi=10*1000):
         self.ProName = name
         self.ProList = []
         self.lumi = lumi
         for file in filelist:
             self.ProList.append(PyHist(file, Lumi=self.lumi))
-        self.linecolor = linecolor_
-        self.linestyle = linestyle_
-        self.markercolor = markercolor_
-        self.markerstyle = markerstyle_
-        self.fillcolor = fillcolor_
-        self.fillstyle = fillstyle_
+        self.linecolor = attribute["linecolor"] if "linecolor" in attribute else 1
+        self.linestyle = attribute["linestyle"] if "linestyle" in attribute else 1
+        self.markercolor = attribute["markercolor"] if "markercolor" in attribute else 1
+        self.markerstyle = attribute["markerstyle"] if "markerstyle" in attribute else 1
+        self.fillcolor = attribute["fillcolor"] if "fillcolor" in attribute else 0
+        self.fillstyle = attribute["fillstyle"] if "fillstyle" in attribute else 1001
+        self.stype = attribute["type"] if "type" in attribute else "Signal"
+        self.label = attribute["label"] if "label" in attribute else name
 
-
-    def GetHist(self, dirname, histname, norm="Lumi", BaseName = "NBase"):
-        hists = [pros.GetHist(dirname, histname, norm, BaseName) for pros in self.ProList]
+    def GetHist(self, dirname, histname, norm="Lumi", BaseName="NBase"):
         rehist = 0
-        for hist in hists:
-            rehist += hist
+        done = False
+        if not done and histname.find("Efficiency") != -1:
+            rehist = self.GetEfficiency(dirname, histname)
+            done = True
+        if not done:
+            hists = [pros.GetHist(dirname, histname, norm, BaseName) for pros in self.ProList]
+            for hist in hists:
+                rehist += hist
+            for var in vars(hists[0]):
+                if var not in rehist:
+                    setattr(rehist, var, getattr(hists[0], var))
+            done = True
+
+        if done and histname == "CutFlow":
+            rehist.Scale(1/rehist.GetBinContent(1))
+
+        rehist.ptype = self.stype
+        rehist.norm = norm
+        rehist.SetLineColor(self.linecolor)
+        rehist.SetLineStyle(self.linestyle)
+        rehist.SetMarkerColor(self.markercolor)
+        rehist.SetMarkerStyle(self.markerstyle)
+        rehist.SetFillColor(self.fillcolor)
+        rehist.SetFillStyle(self.fillstyle)
         return rehist
 
-
     def GetDirnames(self):
-        # print self.ProList[0].file.walk(maxdepth=0)
         for paths, apples, objects in self.ProList[0].file.walk(maxdepth=0):
             return apples
-            # print paths
-            # print apples
-            # print objects
 
-        # return self.ProList[0].file.walk(depth=0)
+    def GetHistnames(self, directory):
+        for paths, apples, objects in self.ProList[0].file.walk():
+            if paths == directory:
+                return objects
 
+    def GetEfficiency(self, dirname, histname):
+        if histname.find("Efficiency") == -1:
+            print("Wrong")
+            return
+        denorminator = histname.replace("Efficiency", "Denominator")
+        numerator = histname.replace("Efficiency", "Numerator")
+        hdenorminator = self.GetHist(dirname, denorminator, norm="None")
+        hnumerator = self.GetHist(dirname, numerator, norm="None")
+        hdenorminator.Sumw2()
+        hnumerator.Sumw2()
+        hdenorminator.Divide(hnumerator, hdenorminator, 1, 1, "B")
+        hdenorminator.GetYaxis().SetTitle("Efficiency")
+        return hdenorminator
