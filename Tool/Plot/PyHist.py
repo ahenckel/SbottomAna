@@ -27,17 +27,24 @@ class PyHist:
         self.xs = self.file.Get(XSName).GetBinContent(2) if XSName in self.file else 0
         self.Nevent = self.file.Get(EventName).GetBinContent(2) if EventName in self.file else 0
 
-    def GetCutFlow(self, dirname=""):
+    def GetCutFlow(self, dirname="", Norm=None):
         if dirname == "":
             cutflowhist = self.file.Get("CutFlow")
         else:
             cutflowhist = self.file.Get("%s/CutFlow" % dirname)
-        cutflowhist.Scale(1/cutflowhist.GetBinContent(1))
+        if Norm is None:
+            cutflowhist.Scale(1/cutflowhist.GetBinContent(1))
+        else:
+            if "NBase" in self.file and self.file.Get("NBase").GetBinContent(2) != 0:
+                cutflowhist.Scale((self.xs * self.lumi * self.file.Get("NBase").GetBinContent(2) / self.Nevent)
+                                  / cutflowhist.GetBinContent(1))
+            else:
+                cutflowhist.Scale(self.xs * self.lumi/cutflowhist.GetBinContent(1))
         return cutflowhist
 
     def GetHist(self, dirname, histname, norm="Lumi", BaseName="NBase"):
         if histname == "CutFlow":
-            hist = self.GetCutFlow(dirname)
+            hist = self.GetCutFlow(dirname, Norm=norm)
         else:
             if "%s/%s" % (dirname, BaseName) in self.file:
                 nBase = self.file.Get("%s/%s" % (dirname, BaseName)).GetBinContent(2)

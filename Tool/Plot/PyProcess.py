@@ -54,6 +54,10 @@ class PyProcess():
         rehist.SetMarkerStyle(self.markerstyle)
         rehist.SetFillColor(self.fillcolor)
         rehist.SetFillStyle(self.fillstyle)
+        if hasattr(rehist, "HistFun"):
+            rehist.HistFun(rehist)
+        if hasattr(rehist, "DirFun"):
+            rehist.DirFun(rehist)
         return rehist
 
     def GetDirnames(self):

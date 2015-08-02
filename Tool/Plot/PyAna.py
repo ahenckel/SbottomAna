@@ -11,14 +11,15 @@
 
 from PyProcess import PyProcess
 from Config import Prodmap as PRODMA
+from Config import Lumi
 
 
 class PyAna():
-    def __init__(self, dirname, lumi=10*1000):
+    def __init__(self, dirname):
         self.Prodmap = PRODMA
         self.AllProds = {}
         self.Directory = dirname
-        self.Lumi = lumi
+        self.Lumi = Lumi
         self.dirnames = []
         self.FormProcesses()
 
@@ -103,6 +104,7 @@ class PyAna():
 
     def SmartLegendEntry(self, lhist, pronames, dirnames, histnames):
         leglable = ""
+        outname = ""
 
         # Label
         if len(pronames) != 1:
@@ -114,9 +116,18 @@ class PyAna():
         if len(pronames) == 1 and len(dirnames) == 1 and len(histnames) == 1:
             leglable += self.Prodmap[lhist.proname]["label"] + " "
 
+        # Output filename
+        if len(pronames) == 1:
+            outname += lhist.proname + "_"
+        if len(dirnames) == 1:
+            outname += lhist.dirname.split("_")[-1] + "_"
+        if len(histnames) == 1:
+            outname += lhist.histname + "_"
+
         # Lagend Style
         # Can't do much here. This should be handled in PyDraw
         lhist.title = leglable.strip()
+        lhist.outname = outname.strip("_")
 
     def GetSignalBackground(self, proname_, dirname_, histname_, style="line", norm="Lumi", BaseName="NBase"):
         pass

@@ -12,9 +12,14 @@ import ROOT
 import CMS_lumi
 import tdrstyle
 import math
+import time
+import os
+import copy
+import re
 from rootpy.plotting import HistStack
 from rootpy.plotting import Canvas
-from Config import PyColors, PyOutPut
+from Config import PyColors, PyOutPut, Lumi
+from Config import RatioPadFraction as PadFraction
 
 # ### To Do list ########
 # 1. Auto scale the y-axis for the CMS label
@@ -26,7 +31,14 @@ from Config import PyColors, PyOutPut
 
 
 class PyDraw():
-    def __init__(self, Lumi):
+    def __init__(self, OutDir):
+        self.OutDir = OutDir
+        if not os.path.isdir(self.OutDir):
+            try:
+                os.makedirs(self.OutDir)
+            except OSError:
+                pass
+
         self.lumi = Lumi
         tdrstyle.setTDRStyle()
         self.canvas = self.CreatCanvas()
@@ -58,22 +70,45 @@ class PyDraw():
         canvas.SetTicky(0)
         return canvas
 
-    def CanvasRedraw(self, outname="output", norm="None"):
-        self.canvas.Update()
-        self.canvas.Modified()
-        self.canvas.RedrawAxis()
-        if norm == "None" or norm == "Unit":
-            CMS_lumi.CMS_lumi(self.canvas, 23, 11, self.lumi)
-        else:
-            CMS_lumi.CMS_lumi(self.canvas, 13, 11, self.lumi)
+    def CanvasSave(self, canvas=None, outname="output"):
+        if canvas is None:
+            canvas = self.canvas
+        canvas.Update()
 
         for outformat in PyOutPut:
-            self.canvas.SaveAs("%s.%s" % (outname, outformat))
+            canvas.SaveAs("%s/%s.%s" % (self.OutDir, outname, outformat))
+
+    def PadRedraw(self, pad, norm="None", addlatex=(), addline=()):
+        pad.cd()
+        if norm != "No":
+            if norm == "None" or norm == "Unit":
+                CMS_lumi.CMS_lumi(pad, 23, 11, self.lumi)
+            else:
+                CMS_lumi.CMS_lumi(pad, 13, 11, self.lumi)
+
+        if len(addlatex) != 0:
+            self.DrawTLatex(addlatex)
+        if len(addline) != 0:
+            self.DrawTLine(addline)
+
+        pad.Update()
+        pad.Modified()
+        pad.RedrawAxis()
+
+    def CanvasRedrawSave(self, canvas=None, **kw):
+        if canvas is None:
+            canvas = self.canvas
+        self.PadRedraw(canvas, norm=kw.get('norm', 'None'), addlatex=kw.get('addlatex', ()),
+                       addline=kw.get('addline', ()))
+        self.CanvasSave(canvas=canvas,
+                        outname=kw.get('outname', "output_%s" % time.strftime("%y%m%d_%H%M%S")))
 
 # ============================================================================#
 # ------------------------------     Legend     ------------------------------#
 # ============================================================================#
     def SetLegend(self, hislegs, location):
+        if location == "None":
+            return None
         x1 = 0.0
         y1 = 0.0
         x2 = 1.0
@@ -81,7 +116,7 @@ class PyDraw():
 
         dy = 0.05 * len(hislegs)
 
-        dx = 0.05 + 0.02 * max([len(lstr.strip()) for lstr in hislegs])
+        dx = 0.03 + 0.025 * max([len(lstr.strip()) for lstr in hislegs])
 
         # x3 --- x2
         #  |      |
@@ -89,7 +124,7 @@ class PyDraw():
 
         if location == "topright":
             x2 = 0.98
-            y2 = 0.90
+            y2 = 0.88
             x1 = x2 - dx
             y1 = y2 - dy
 
@@ -181,8 +216,7 @@ class PyDraw():
 # ============================================================================#
 # -------------------------------     Axis     -------------------------------#
 # ============================================================================#
-    def SetYaxis(self, yaxis, histItgl):
-        yaxis.SetTitleOffset(1.25)
+    def SetYaxisTitle(self, yaxis, histItgl):
         # For normailzation
         UnitItgl = [False for itgl in histItgl if math.fabs(itgl - 1) > 0.01]
         orgTitle = yaxis.GetTitle()
@@ -194,57 +228,434 @@ class PyDraw():
                 orgTitle += " (Norm. to Unity)"
         yaxis.SetTitle(orgTitle)
 
+    def UpdateAxis(self, hists, kw, prefix=""):
+        yaxis = hists[0].GetYaxis()
+
+        # Set Axis properties
+        if prefix == "Ratio":
+            self.UpdateRatioAxis(hists[0])
+        if prefix == "":
+            yaxis.SetTitleOffset(1.25)
+
+        # Set YAxis Title
+        if prefix == "":
+            self.SetYaxisTitle(yaxis, [hist.Integral() for hist in hists if hist.Integral() != 0.0])
+        if prefix == "Ratio":
+            RatioYTitle = [hist.RatioYTitle for hist in hists if hasattr(hist, "RatioYTitle")]
+            RatioYTitle = list(set(RatioYTitle))
+            if len(RatioYTitle) == 1:
+                yaxis.SetTitle(RatioYTitle[0])
+            else:
+                if "RatioOpt" in kw:
+                    yaxis.SetTitle(kw["RatioOpt"])
+                else:
+                    yaxis.SetTitle("Ratio")
+
+        # Set Yaxis range
+        self.SetAxisRange(hists, kw, prefix=prefix, axis="Y")
+
+    def SetAxisRange(self, hists, kw, prefix="", axis="Y"):
+        if len(hists) == 0:
+            raise AssertionError()
+
+        if axis == "Y":
+            haxis = hists[0].GetYaxis()
+        elif axis == "X":
+            haxis = hists[0].GetXaxis()
+        else:
+            return None
+
+        returnmin = None
+        returnmax = None
+        histmin = None
+        histmax = None
+
+        if axis == "Y":
+            histmax = max([hist.GetMaximum() for hist in hists])
+            histmin = min([hist.GetMinimum() for hist in hists])
+        # elif axis == "X":
+            # # Define X max as the last non-zero bin
+            # histmax  = max([hist.GetMaximum() for hist in hists])
+            # histmin  = min([hist.GetMinimum() for hist in hists])
+
+        # For Min
+        if prefix + axis + "Min" in kw:
+            axisMin = kw[prefix+axis+"Min"]
+            returnmin = axisMin
+        if prefix + axis + "MinScale" in kw:
+            axisScaleMin = kw[prefix + axis + "MinScale"] * histmin if histmin is not None else None
+            templist = [v for v in [returnmin, axisScaleMin] if v is not None]
+            returnmin = None if len(templist) == 0 else min(templist)
+        # Not getting set from Input, try hists
+        if returnmin is None:
+            attrname = prefix + axis + "Min"
+            fromhistmin = [getattr(hist, attrname) for hist in hists if hasattr(hist, attrname)]
+            attrname = prefix + axis + "MinScale"
+            fromhistminScale = [getattr(hist, attrname) for hist in hists if hasattr(hist, attrname)]
+            templist = fromhistmin + [v * histmin for v in fromhistminScale] if histmin is not None else []
+            returnmin = None if len(templist) == 0 else min(templist)
+        # Still None? Set to default
+        if returnmin is None:
+            returnmin = histmin if histmin <= 0 else 0
+
+        # For Max
+        if prefix + axis + "Max" in kw:
+            axisMax = kw[prefix+axis+"Max"]
+            returnmax = axisMax
+        if prefix + axis + "MaxScale" in kw:
+            axisScaleMax = kw[prefix + axis + "MaxScale"] * histmax if histmax is not None else None
+            templist = [v for v in [returnmax, axisScaleMax] if v is not None]
+            returnmax = None if len(templist) == 0 else max(templist)
+        # Not getting set from Input, try hists
+        if returnmax is None:
+            attrname = prefix + axis + "Max"
+            fromhistMax = [getattr(hist, attrname) for hist in hists if hasattr(hist, attrname)]
+            attrname = prefix + axis + "MaxScale"
+            fromhistMaxScale = [getattr(hist, attrname) for hist in hists if hasattr(hist, attrname)]
+            templist = fromhistMax + [v * histmax for v in fromhistMaxScale] if histmax is not None else []
+            returnmax = None if len(templist) == 0 else max(templist)
+        # Still None? Set to default
+        if returnmax is None:
+            returnmax = 1.2 * histmax if histmax > 0 else 0.8 * histmax
+
+        if haxis is not None:
+            haxis.SetRangeUser(returnmin, returnmax)
+
+# ============================================================================#
+# ----------------------------     Tex & Line     ----------------------------#
+# ============================================================================#
+    def DrawTLatex(self, addlatex):
+        """Getting list of tuple as (x, y, latex, color, size, align, front)."""
+        if not isinstance(addlatex, list):
+            addlatex = [addlatex]
+        latex = ROOT.TLatex()
+        latex.SetNDC()
+        for entry in addlatex:
+            if len(entry) > 3:
+                latex.SetTextColor(entry[3])
+            if len(entry) > 4:
+                latex.SetTextSize(entry[4])
+            if len(entry) > 5:
+                latex.SetTextAlign(entry[5])
+            if len(entry) > 6:
+                latex.SetTextFont(entry[6])
+            latex.DrawLatex(entry[0], entry[1], entry[2])
+
+    def DrawTLine(self, addline):
+        """Getting list of tuple as (x1, y1, x2, y2, color, style, width)."""
+        if not isinstance(addline, list):
+            addline = [addline]
+        line = ROOT.TLine()
+        for entry in addline:
+            if len(entry) > 4:
+                line.SetLineColor(entry[4])
+            if len(entry) > 5:
+                line.SetLineStyle(entry[5])
+            if len(entry) > 6:
+                line.SetLineWidth(entry[6])
+            line.DrawLine(entry[0], entry[1], entry[2], entry[3])
+
+# ============================================================================#
+# -------------------------------     Ratio     ------------------------------#
+# ============================================================================#
+    def PrepRatioPad(self, loc="top", canvas=None):
+        if canvas is None:
+            canvas = self.canvas
+        # split canvas
+        canvas.cd()
+        canvas.Range(0, 0, 1, 1)
+        if loc == "top":
+            setattr(canvas, "toppad", ROOT.TPad("top",  "toppad",  0.0, 1.0/PadFraction, 1.0, 1.0))
+            # setattr(canvas, "toppad", ROOT.TPad("top",  "toppad",  0.01, 0.25, 0.99, 0.99))
+            canvas.toppad.Draw()
+            canvas.toppad.cd()
+            canvas.toppad.SetFillColor(0)
+            canvas.toppad.SetBorderMode(0)
+            canvas.toppad.SetBorderSize(0)
+            canvas.toppad.SetTickx(1)
+            canvas.toppad.SetTicky(1)
+            canvas.toppad.SetLeftMargin(canvas.GetLeftMargin())
+            canvas.toppad.SetRightMargin(canvas.GetRightMargin())
+            canvas.toppad.SetTopMargin(canvas.GetTopMargin())
+            canvas.toppad.SetBottomMargin(0)
+            canvas.toppad.SetFrameFillStyle(0)
+            canvas.toppad.SetFrameBorderMode(0)
+            canvas.toppad.cd()
+
+        if loc == "bot":
+            setattr(canvas, "botpad", ROOT.TPad("bot",  "botpad",  0.0, 0.0, 1.0, 1.0/PadFraction))
+            # setattr(canvas, "botpad", ROOT.TPad("bot",  "botpad",  0.01, 0.01, 0.99, 0.25))
+            canvas.botpad.Draw()
+            canvas.botpad.cd()
+            canvas.botpad.SetFillColor(0)
+            canvas.botpad.SetBorderMode(0)
+            canvas.botpad.SetBorderSize(2)
+            canvas.botpad.SetTickx(1)
+            canvas.botpad.SetTicky(1)
+            canvas.botpad.SetLeftMargin(canvas.GetLeftMargin())
+            canvas.botpad.SetRightMargin(canvas.GetRightMargin())
+            canvas.botpad.SetTopMargin(0)
+            canvas.botpad.SetBottomMargin(3*canvas.GetBottomMargin())
+            canvas.botpad.SetFrameFillStyle(0)
+            canvas.botpad.SetFrameBorderMode(0)
+            canvas.botpad.cd()
+
+        return canvas
+
+    def DrawRatioPlot(self, hists, kw, canvas=None):
+        if canvas is None:
+            canvas = self.canvas
+        self.PrepRatioPad(loc="bot", canvas=canvas)
+
+        formular = kw.get("RatioOpt", "A/B")
+        ratiohist = kw.get("RatioHist", None)
+
+        rhists = []
+        # Setting up the ratio hist
+        # 1. No input hist, but only two hists in plot
+        if ratiohist is None:
+            if len(hists) == 2:
+                rhists.append(self.GetRatioPlot(formular, hists, hists))
+        else:
+            if not isinstance(ratiohist, list):
+                ratiohist = [ratiohist]
+            rhists = self.GetRatioPlot(formular, ratiohist, hists)
+
+        for rit in range(0, len(rhists)):
+            rhists[rit].SetFillColor(0)
+            if rit == 0:
+                rhists[rit].Draw("hist")
+            else:
+                rhists[rit].Draw("hist same")
+
+        # if yaxis != None:
+            # yaxis.SetTitle(formular)
+            # # yaxis.SetTitle("Ratio")
+
+        if len(rhists) > 0:
+            self.UpdateAxis(rhists, kw, prefix="Ratio")
+        else:
+            self.DrawTLatex((0.12, 0.2, "No Ratio Plot!", 2, 0.7))
+
+        self.PadRedraw(canvas.botpad, norm="No",
+                       addlatex=kw.get('addratiolatex', ()),
+                       addline=kw.get('addratioline', ()))
+
+    def GetRatioPlot(self, formular, ratioObj, hists):
+        rhists = []
+        for obji in range(0, len(ratioObj)):
+            obj = ratioObj[obji]
+            if isinstance(obj, str):
+                rhists.append(self.GetHistWithStr(hists, obj))
+            elif isinstance(obj, list):
+                temp = []
+                for j in obj:
+                    temp += self.GetHistWithStr(hists, j)
+                rhists.append(temp)
+            else:
+                return ratioObj
+
+        # Merge the hist expect the first element
+        for i in range(1, len(rhists)):
+            lhists = rhists[i]
+            hist = copy.deepcopy(lhists[0])
+            for subhist in lhists[1:]:
+                hist += subhist
+            rhists[i] = hist
+
+        if len(rhists) == 0:
+            return []
+
+        if len(rhists) == 1:
+            return list(rhists[0])
+
+        # Now evalute the formula
+        # Assert rhists is [[], hist, hist..]
+        ratios = []
+        for As in rhists[0]:
+            histformular = copy.deepcopy(rhists)
+            histformular[0] = As
+            ratios.append(self.EvalRatioFormular(formular, histformular, len(rhists[0])))
+        return ratios
+
+    def GetHistWithStr(self, hists, objstr):
+        lpro = [hist.proname for hist in hists]
+        ldir = [hist.dirname for hist in hists]
+        lhist = [hist.histname for hist in hists]
+
+        npro = lpro.count(objstr)
+        ndir = ldir.count(objstr)
+        nhist = lhist.count(objstr)
+        nobj = npro + ndir + nhist
+        rehist = []
+        if nobj == 0:
+            print("No Obj found")
+            raise AssertionError()
+            return None
+        if npro != 0:
+            for hist in hists:
+                if hist.proname == objstr:
+                    rehist.append(hist)
+        if ndir != 0:
+            for hist in hists:
+                if hist.dirname == objstr:
+                    rehist.append(hist)
+        if nhist != 0:
+            for hist in hists:
+                if hist.histname == objstr:
+                    rehist.append(hist)
+        if len(rehist) != nobj:
+            raise AssertionError()
+        return rehist
+
+    def EvalRatioFormular(self, formular, rhists, Alen):
+        Ahist = rhists[0]
+        Bhist = rhists[1]
+
+        if len(rhists) > 2:
+            Chist = rhists[2]
+
+        if len(rhists) > 3:
+            print Chist.title
+            Dhist = rhists[3]
+
+        operator = formular
+        ytitle = formular
+        operator = operator.replace("A", "Ahist").replace("B", "Bhist").replace("C", "Chist").replace("D", "Dhist")
+        rhist = eval(operator)
+
+        ytitle = ytitle.replace("A", "%Ahist%").replace("B", "%Bhist%").replace("C", "%Chist%").replace("D", "%Dhist%")
+        if len(rhists) > 0:
+            ytitle = ytitle.replace("%Ahist%", Ahist.title) if Alen == 1 else ytitle.replace("%Ahist%", "X")
+        if len(rhists) > 1:
+            ytitle = ytitle.replace("%Bhist%", Bhist.title)
+        if len(rhists) > 2:
+            ytitle = ytitle.replace("%Chist%", Chist.title)
+        if len(rhists) > 3:
+            ytitle = ytitle.replace("%Dhist%", Dhist.title)
+
+        while True:
+            ma = re.match(r"(.*)/(.*)", ytitle)
+            if ma is None:
+                break
+            if len(ma.groups()) == 2:
+                ytitle = "#frac{%s}{%s}" % (ma.group(1), ma.group(2))
+            else:
+                break
+
+        if not hasattr(rhist, "RatioYTitle"):
+            setattr(rhist, "RatioYTitle", ytitle)
+
+        return rhist
+
+    def UpdateRatioAxis(self, hist):
+        fraction = PadFraction / 2
+        hist.GetXaxis().SetTitleSize(ROOT.gStyle.GetTitleSize('X')*fraction)
+        hist.GetXaxis().SetLabelSize(ROOT.gStyle.GetLabelSize("X")*fraction)
+        hist.GetXaxis().SetTickLength(ROOT.gStyle.GetTickLength("X")*fraction)
+
+        hist.GetYaxis().SetTitleOffset(ROOT.gStyle.GetTitleOffset('Y')/PadFraction)
+        hist.GetYaxis().SetTitleSize(ROOT.gStyle.GetTitleSize('Y')*fraction)
+        hist.GetYaxis().SetLabelSize(ROOT.gStyle.GetLabelSize("Y")*fraction)
+        hist.GetYaxis().SetTickLength(ROOT.gStyle.GetTickLength("Y"))
+        hist.GetYaxis().SetNdivisions(110)
+        hist.GetYaxis().CenterTitle()
+
 # ============================================================================#
 # -------------------------------     Tools     ------------------------------#
 # ============================================================================#
+    def GetSmartOutName(self, hists, kw):
+        if "outname" in kw:
+            return kw
 
+        kw["outname"] = ""
+        histoutname = list(set(hist.outname for hist in hists))
+        if len(histoutname) == 0:
+            return
+        if len(histoutname) == 1 and histoutname[0] != "":
+            kw["outname"] = histoutname[0]
+        else:
+            kw["outname"] = "_VS_".join(histoutname)
+
+        return kw
+
+    def GetCommonOpt(self, hists, kw):
+        attrs = {}
+
+        for hist in hists:
+            histvar = vars(hist)
+            for k, v in histvar.iteritems():
+                if k[0] == "_":
+                    continue
+                if k not in attrs:
+                    attrs[k] = set()
+                    attrs[k].add(v)
+                else:
+                    attrs[k].add(v)
+
+        for k, v in attrs.iteritems():
+            if k in kw:
+                pass
+            else:
+                if len(v) == 1:
+                    kw[k] = list(v)[0]
+
+    def UpdateKWargs(self, hists, kw):
+        self.GetSmartOutName(hists, kw)
+        self.GetCommonOpt(hists, kw)
+
+    def UpdateLineColor(self, hists):
+        from Config import PyColors
+        if len(set(hist.GetLineColor() for hist in hists)) == 1:
+            for it in range(0, len(hists)):
+                if it <= len(PyColors):
+                    hists[it].SetLineColor(PyColors[it])
 # ============================================================================#
 # -------------------------------     Draw     -------------------------------#
 # ============================================================================#
     def DrawLineComparison(self, hists, **kw):
-        outname = kw.get('outname', "output")
-        addlatex = kw.get('addlatex', ())
-        options = kw.get('options', "hist")
+        """ A funtion for comparing lines """
+
+        self.UpdateKWargs(hists, kw)
         legloc = kw.get('legloc', "topright")
+        options = kw.get('DrawOpt', "hist")
+
         self.canvas.cd()
         self.canvas.Clear()
 
-        ymax = 0
-        localColor = False
-        if len(set(hist.GetLineColor() for hist in hists)) == 1:
-            localColor = True
+        self.UpdateLineColor(hists)
+
+        if 'RatioOpt' in kw or 'RatioHist' in kw:
+            canvas = self.PrepRatioPad(loc="top")
 
         for it in range(0, len(hists)):
-
-            if localColor and it <= len(PyColors):
-                hists[it].SetLineColor(PyColors[it])
-
             hists[it].SetFillColor(0)
             if it == 0:
-                yaxis = hists[it].GetYaxis()
                 hists[it].Draw(options)
             else:
                 hists[it].Draw("%s same" % options)
 
-            ymax = max(ymax, hists[it].GetMaximum())
-
-        self.SetYaxis(yaxis, [hist.Integral() for hist in hists if hist.Integral() != 0.0])
-        yaxis.SetRangeUser(0, 1.2*ymax)
+        if len(hists) > 0:
+            self.UpdateAxis(hists, kw)
 
         leg = self.SetLegend([hist.title for hist in hists], legloc)
         # leg = self.SetAutoLegend(hists)
-        self.LegendAddEntry(leg, hists)
         if leg is not None:
+            self.LegendAddEntry(leg, hists)
             leg.Draw()
-        if len(addlatex) != 0:
-            latex = ROOT.TLatex()
-            latex.SetNDC()
-            print(addlatex)
-            latex.DrawLatex(*addlatex)
-        self.CanvasRedraw(outname=outname, norm=hists[0].norm)
-        return self.canvas
+
+        if 'RatioOpt' in kw or 'RatioHist' in kw:
+            self.PadRedraw(canvas.toppad, norm=kw.get('norm', 'None'),
+                           addlatex=kw.get('addlatex', ()),
+                           addline=kw.get('addline', ()))
+            self.DrawRatioPlot(hists, kw, canvas=canvas)
+            self.CanvasSave(canvas=canvas,
+                            outname=kw.get('outname', "output_%s" % time.strftime("%y%m%d_%H%M%S")))
+        else:
+            return self.CanvasRedrawSave(**kw)
 
     def DrawStackPlot(self, hists):
+    # def DrawStackPlot(self, stack, overlay=None, ontop=None, **kwhists):
         self.canvas.cd()
         self.canvas.Clear()
 

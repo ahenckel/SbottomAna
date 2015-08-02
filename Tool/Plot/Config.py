@@ -27,6 +27,9 @@ PyColors = [
 
 PyOutPut = ["png", "root"]
 
+Lumi = 10 * 1000
+RatioPadFraction = 4
+
 #============================================================================#
 #---------------------------     Processes Map     --------------------------#
 #============================================================================#
@@ -122,10 +125,16 @@ def PrintHist(hist):
 #============================================================================#
 HIST_Proper = {
     "MissTopTagPT": {
-        "RebinX": 2,
+        "RebinX": 5,
         "HistLabel": "----",
         "Logy": False,
-        "Logx": False, "UserFun": PrintHist}
+        "Logx": False,
+        "YScale": 1.2,
+        "YMax": 0,
+        # "DrawOpt": "P text",
+        # "legloc" : "None",
+        # "HistFun": PrintHist
+    }
 }
 
 DIR_Proper = {
