@@ -80,7 +80,7 @@ class PyAna():
             histname = [histname_]
         else:
             if len(histname_) == 0:
-                histname = self.AllProds.itervalues().next().keys()
+                histname = self.AllProds.itervalues().next().GetHistnames(dirname[0])
             else:
                 histname = histname_
         return(proname, dirname, histname)
