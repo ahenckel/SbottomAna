@@ -48,12 +48,12 @@ class PyProcess():
 
         rehist.ptype = self.stype
         rehist.norm = norm
-        rehist.SetLineColor(self.linecolor)
-        rehist.SetLineStyle(self.linestyle)
-        rehist.SetMarkerColor(self.markercolor)
-        rehist.SetMarkerStyle(self.markerstyle)
-        rehist.SetFillColor(self.fillcolor)
-        rehist.SetFillStyle(self.fillstyle)
+        setattr(rehist, "Linecolor", self.linecolor)
+        setattr(rehist, "Linestyle", self.linestyle)
+        setattr(rehist, "Markercolor", self.markercolor)
+        setattr(rehist, "Markerstyle", self.markerstyle)
+        setattr(rehist, "Fillcolor", self.fillcolor)
+        setattr(rehist, "Fillstyle", self.fillstyle)
         if hasattr(rehist, "HistFun"):
             rehist.HistFun(rehist)
         if hasattr(rehist, "DirFun"):

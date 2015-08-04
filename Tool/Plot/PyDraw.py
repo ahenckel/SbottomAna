@@ -11,12 +11,10 @@
 import ROOT
 import CMS_lumi
 import tdrstyle
-import math
 import time
 import os
 import copy
 import re
-from rootpy.plotting import HistStack
 from rootpy.plotting import Canvas
 from Config import PyColors, PyOutPut, Lumi
 
@@ -154,7 +152,12 @@ class PyDraw():
         if dy == 0:
             return None
 
-        return ROOT.TLegend(x1, y1, x2, y2)
+        leg = ROOT.TLegend(x1, y1, x2, y2)
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0)
+        leg.SetTextFont(62)
+        leg.SetTextSize(0.045)
+        return leg
 
     def SetAutoLegend(self, hists):
         loclist = ["topright", "bottomright", "bottomcenter", "bottomleft"]
@@ -194,11 +197,6 @@ class PyDraw():
         return self.SetLegend([hist.title for hist in hists], res[0])
 
     def LegendAddEntry(self, leg, hists):
-        leg.SetBorderSize(0)
-        leg.SetFillStyle(0)
-        leg.SetTextFont(62)
-        leg.SetTextSize(0.045)
-
         from collections import defaultdict
         typedict = defaultdict(list)
         histdict = {}
@@ -217,15 +215,15 @@ class PyDraw():
 # ============================================================================#
 # -------------------------------     Axis     -------------------------------#
 # ============================================================================#
-    def SetYaxisTitle(self, yaxis, histItgl):
+    def SetYaxisTitle(self, yaxis, hists):
         # For normailzation
-        UnitItgl = [False for itgl in histItgl if math.fabs(itgl - 1) > 0.01]
+        UnitItgl = [hist.norm for hist in hists]
         orgTitle = yaxis.GetTitle()
 
         if len(orgTitle) == 0:
             orgTitle = "a.u."
         else:
-            if len(UnitItgl) == 0:
+            if len(set(UnitItgl)) == 0 and UnitItgl[0] == "Unit":
                 orgTitle += " (Norm. to Unity)"
         yaxis.SetTitle(orgTitle)
 
@@ -238,11 +236,15 @@ class PyDraw():
         if prefix == "Ratio":
             self.UpdateRatioAxis(hists[0], loc)
         if prefix == "":
-            yaxis.SetTitleOffset(1.25)
+            hists[0].GetYaxis().SetTitleSize(ROOT.gStyle.GetTitleSize("Y"))
+            hists[0].GetYaxis().SetLabelSize(ROOT.gStyle.GetLabelSize("Y"))
+            hists[0].GetXaxis().SetTitleSize(ROOT.gStyle.GetTitleSize("X"))
+            hists[0].GetXaxis().SetLabelSize(ROOT.gStyle.GetLabelSize("X"))
+            # hists[0].GetYaxis().SetTitleOffset(ROOT.gStyle.GetTitleOffset("Y"))
 
         # Set YAxis Title
         if prefix == "" or (prefix == "Ratio" and loc == "top"):
-            self.SetYaxisTitle(yaxis, [hist.Integral() for hist in hists if hist.Integral() != 0.0])
+            self.SetYaxisTitle(yaxis, hists)
         if prefix == "Ratio" and loc == "bot":
             RatioYTitle = [hist.RatioYTitle for hist in hists if hasattr(hist, "RatioYTitle")]
             RatioYTitle = list(set(RatioYTitle))
@@ -279,6 +281,8 @@ class PyDraw():
         histmax = None
 
         if axis == "Y":
+            [hist.SetMaximum() for hist in hists]
+            [hist.SetMinimum() for hist in hists]
             histmax = max([hist.GetMaximum() for hist in hists])
             histmin = min([hist.GetMinimum() for hist in hists])
         elif axis == "X":
@@ -325,16 +329,20 @@ class PyDraw():
         if returnmax is None:
             returnmax = 1.25 * histmax if histmax > 0 else 0.8 * histmax
 
-        if haxis is not None:
-            haxis.SetRangeUser(returnmin, returnmax)
+        if hists[0].InheritsFrom("THStack") and axis == "Y":
+            hists[0].SetMinimum(returnmin)
+            hists[0].SetMaximum(returnmax)
+        else:
+            if haxis is not None:
+                haxis.SetRangeUser(returnmin, returnmax)
 
     def UpdateRatioAxis(self, hist, position):
         """Setting the axis label and title in ratio plot. Not full optimized yet.
         Currently purely edit by hand."""
         if position == "top":
-            hist.GetYaxis().SetTitleOffset(1)
-            hist.GetYaxis().SetTitleSize(ROOT.gStyle.GetTitleSize('Y') / 1.1)
-            hist.GetYaxis().SetLabelSize(ROOT.gStyle.GetLabelSize("Y") / 1.1)
+            hist.GetYaxis().SetTitleOffset(0.8)
+            hist.GetYaxis().SetTitleSize(ROOT.gStyle.GetTitleSize('Y'))
+            hist.GetYaxis().SetLabelSize(ROOT.gStyle.GetLabelSize("Y"))
             hist.GetYaxis().SetTickLength(ROOT.gStyle.GetTickLength("Y"))
 
         if position == "bot":
@@ -348,6 +356,7 @@ class PyDraw():
             hist.GetYaxis().SetTitleOffset(ROOT.gStyle.GetTitleOffset('Y')/4)
             hist.GetYaxis().SetNdivisions(110)
             hist.GetYaxis().CenterTitle()
+            hist.GetYaxis().CenterLabels()
 
 # ============================================================================#
 # ----------------------------     Tex & Line     ----------------------------#
@@ -401,9 +410,6 @@ class PyDraw():
         if reentry[3] is None:
             reentry[3] = ymax
         return tuple(reentry)
-
-
-
 
 # ============================================================================#
 # -------------------------------     Ratio     ------------------------------#
@@ -652,25 +658,26 @@ class PyDraw():
 # ============================================================================#
     def DrawLineComparison(self, hists, **kw):
         """ A funtion for comparing lines """
-
         self.UpdateKWargs(hists, kw)
         legloc = kw.get('legloc', "topright")
         options = kw.get('DrawOpt', "hist")
 
         self.canvas.cd()
         self.canvas.Clear()
-        self.UpdateLineColor(hists)
 
         if 'RatioOpt' in kw or 'RatioHist' in kw:
             canvas = self.PrepRatioPad(loc="top")
 
         for it in range(0, len(hists)):
+            hists[it].SetLineColor(hists[it].Linecolor)
+            hists[it].SetLineStyle(hists[it].Linestyle)
             hists[it].SetFillColor(0)
             if it == 0:
                 hists[it].Draw(options)
             else:
                 hists[it].Draw("%s same" % options)
 
+        self.UpdateLineColor(hists)
         leg = self.SetLegend([hist.title for hist in hists], legloc)
         # leg = self.SetAutoLegend(hists)
         if leg is not None:
@@ -690,12 +697,11 @@ class PyDraw():
             return self.CanvasRedrawSave(**kw)
 
     def DrawStackPlot(self, stackHists, overlayHists=None, ontopHists=None, **kw):
-        lcanvas = self.CreatCanvas()
-        canvas = lcanvas
-        canvas.cd()
-        hists = []
+        """ A funtion for comparing lines """
+        self.canvas.cd()
+        self.canvas.Clear()
 
-        stack = HistStack()
+        hists = []
         hists += stackHists
         if overlayHists is not None:
             self.UpdateLineColor(overlayHists)
@@ -703,23 +709,31 @@ class PyDraw():
         if ontopHists is not None:
             self.UpdateLineColor(ontopHists)
             hists += ontopHists
-
         self.UpdateKWargs(hists, kw)
         legloc = kw.get('legloc', "topright")
-        options = kw.get('DrawOpt', "hist")
+        options = kw.get('DrawOpt', '')
+
         if 'RatioOpt' in kw or 'RatioHist' in kw:
-            canvas = self.PrepRatioPad(loc="top", canvas=lcanvas)
+            canvas = self.PrepRatioPad(loc="top")
 
         leg = self.SetLegend([hist.title for hist in hists], legloc)
-
-##########################
+        ##########################
         # Draw Stack
+        stack = ROOT.THStack("stack", "stack")
+        ROOT.SetOwnership(stack, False)  # Trick to fix the crashing at the end of run
         for hist in stackHists:
+            hist.SetFillColor(hist.Fillcolor)
+            hist.SetFillStyle(hist.Fillstyle)
+            hist.SetLineColor(hist.Linecolor)
             stack.Add(hist)
             leg.AddEntry(hist, hist.title, "f")
         stack.Draw(options)
-        totalStack = stack.GetHistogram()
-        hists.insert(0, totalStack)
+
+        setattr(stack, "norm", hists[0].norm)
+        stack.GetXaxis().SetTitle(hists[0].GetXaxis().GetTitle())
+        stack.GetYaxis().SetTitle(hists[0].GetYaxis().GetTitle())
+        hists.insert(0, stack)
+        totalStack = stack.GetStack().Last().Integral()
 
         # Draw overlayHists
         if overlayHists is not None:
@@ -736,7 +750,7 @@ class PyDraw():
 
         leg.Draw()
 
-##########################
+        #########################
         if 'RatioOpt' in kw or 'RatioHist' in kw:
             self.UpdateAxis(hists, kw, prefix="Ratio", loc="top")
             self.PadRedraw(canvas.toppad, norm=kw.get('norm', 'None'),
@@ -747,7 +761,7 @@ class PyDraw():
                             outname=kw.get('outname', "output_%s" % time.strftime("%y%m%d_%H%M%S")))
         else:
             self.UpdateAxis(hists, kw)
-            return self.CanvasRedrawSave(canvas=canvas, **kw)
+            return self.CanvasRedrawSave(**kw)
 
     def DrawSBPlot(self, hists):
         self.canvas.cd()
