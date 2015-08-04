@@ -13,7 +13,6 @@ import CMS_lumi
 import tdrstyle
 import time
 import os
-import copy
 import re
 from rootpy.plotting import Canvas
 from Config import PyColors, PyOutPut, Lumi
@@ -340,7 +339,7 @@ class PyDraw():
         """Setting the axis label and title in ratio plot. Not full optimized yet.
         Currently purely edit by hand."""
         if position == "top":
-            hist.GetYaxis().SetTitleOffset(0.8)
+            hist.GetYaxis().SetTitleOffset(1.0)
             hist.GetYaxis().SetTitleSize(ROOT.gStyle.GetTitleSize('Y'))
             hist.GetYaxis().SetLabelSize(ROOT.gStyle.GetLabelSize("Y"))
             hist.GetYaxis().SetTickLength(ROOT.gStyle.GetTickLength("Y"))
@@ -514,9 +513,12 @@ class PyDraw():
         # Merge the hist expect the first element
         for i in range(1, len(rhists)):
             lhists = rhists[i]
-            hist = copy.deepcopy(lhists[0])
-            for subhist in lhists[1:]:
-                hist += subhist
+            if len(lhists) > 1:
+                hist = lhists[0].Clone()
+                for subhist in lhists[1:]:
+                    hist += subhist
+            else:
+                hist = lhists[0]
             rhists[i] = hist
 
         if len(rhists) == 0:
@@ -529,8 +531,8 @@ class PyDraw():
         # Assert rhists is [[], hist, hist..]
         ratios = []
         for As in rhists[0]:
-            histformular = copy.deepcopy(rhists)
-            histformular[0] = As
+            histformular = rhists[1:]
+            histformular.insert(0, As)
             ratios.append(self.EvalRatioFormular(formular, histformular, len(rhists[0])))
         return ratios
 
@@ -565,15 +567,14 @@ class PyDraw():
         return rehist
 
     def EvalRatioFormular(self, formular, rhists, Alen):
-        Ahist = rhists[0]
-        Bhist = rhists[1]
+        Ahist = self.GetHistForEval(rhists[0])
+        Bhist = self.GetHistForEval(rhists[1])
 
         if len(rhists) > 2:
-            Chist = rhists[2]
+            Chist = self.GetHistForEval(rhists[2])
 
         if len(rhists) > 3:
-            print Chist.title
-            Dhist = rhists[3]
+            Dhist = self.GetHistForEval(rhists[3])
 
         operator = formular
         ytitle = formular
@@ -603,6 +604,16 @@ class PyDraw():
             setattr(rhist, "RatioYTitle", ytitle)
 
         return rhist
+
+    def GetHistForEval(self, hist):
+        rehist = None
+        if hist.InheritsFrom("THStack"):
+            rehist = hist.GetStack().Last().Clone()
+        else:
+            rehist = hist.Clone()
+        setattr(rehist, "title", hist.title)
+        return rehist
+
 
 # ============================================================================#
 # -------------------------------     Tools     ------------------------------#
@@ -653,11 +664,26 @@ class PyDraw():
             for it in range(0, len(hists)):
                 if it <= len(PyColors):
                     hists[it].SetLineColor(PyColors[it])
+
+    def CopyLocalHists(self, hists):
+        if hists is None:
+            return None
+        if len(hists) == 0:
+            return []
+
+        rehist = []
+        for i, hist in enumerate(hists):
+            rehist.append(hist.Clone())
+            for k, v in vars(hist).iteritems():
+                setattr(rehist[i], k, v)
+        return rehist
+
 # ============================================================================#
 # -------------------------------     Draw     -------------------------------#
 # ============================================================================#
-    def DrawLineComparison(self, hists, **kw):
+    def DrawLineComparison(self, hists_, **kw):
         """ A funtion for comparing lines """
+        hists = self.CopyLocalHists(hists_)
         self.UpdateKWargs(hists, kw)
         legloc = kw.get('legloc', "topright")
         options = kw.get('DrawOpt', "hist")
@@ -698,6 +724,9 @@ class PyDraw():
 
     def DrawStackPlot(self, stackHists, overlayHists=None, ontopHists=None, **kw):
         """ A funtion for comparing lines """
+        stackHists = self.CopyLocalHists(stackHists)
+        overlayHists = self.CopyLocalHists(overlayHists)
+        ontopHists = self.CopyLocalHists(ontopHists)
         self.canvas.cd()
         self.canvas.Clear()
 
@@ -730,6 +759,10 @@ class PyDraw():
         stack.Draw(options)
 
         setattr(stack, "norm", hists[0].norm)
+        setattr(stack, "proname", "Stack")
+        setattr(stack, "title", "Stack")
+        setattr(stack, "dirname", hists[0].dirname)
+        setattr(stack, "histname", hists[0].histname)
         stack.GetXaxis().SetTitle(hists[0].GetXaxis().GetTitle())
         stack.GetYaxis().SetTitle(hists[0].GetYaxis().GetTitle())
         hists.insert(0, stack)
@@ -738,14 +771,20 @@ class PyDraw():
         # Draw overlayHists
         if overlayHists is not None:
             for hist in overlayHists:
-                hist.Draw("l same")
+                hist.SetLineColor(hist.Linecolor)
+                hist.SetLineStyle(hist.Linestyle)
+                hist.Draw("Hist same")
                 leg.AddEntry(hist, hist.title, "l")
 
         if ontopHists is not None:
             for hist in ontopHists:
                 temphist = hist.Clone()
-                temphist.Scale(totalStack.Integral() / temphist.Integral())
-                temphist.Draw("l same")
+                temphist.SetLineColor(hist.Linecolor)
+                temphist.SetLineStyle(hist.Linestyle)
+                if temphist.Integral() != 0:
+                    temphist.Scale(totalStack / temphist.Integral())
+                temphist.Draw("Hist same")
+                temphist.title += "#scale[0.8]{#color[2]{x Norm}}"
                 leg.AddEntry(temphist, temphist.title, "l")
 
         leg.Draw()
@@ -758,7 +797,7 @@ class PyDraw():
                            addline=kw.get('addline', ()))
             self.DrawRatioPlot(hists, kw, canvas=canvas)
             return self.CanvasSave(canvas=canvas,
-                            outname=kw.get('outname', "output_%s" % time.strftime("%y%m%d_%H%M%S")))
+                                   outname=kw.get('outname', "output_%s" % time.strftime("%y%m%d_%H%M%S")))
         else:
             self.UpdateAxis(hists, kw)
             return self.CanvasRedrawSave(**kw)
