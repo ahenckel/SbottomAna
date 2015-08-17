@@ -650,6 +650,7 @@ int HistTool::DrawTH2()
 bool HistTool::SetWeight(double weight)
 {
   HWeight = weight;
+  return true;
 }       // -----  end of function HistTool::SetWeight  -----
 
 // ===  FUNCTION  ============================================================

@@ -65,7 +65,7 @@ tupleTest: $(ODIR)/NTupleReader.o  $(ODIR)/tupleReadTest.o
 	$(LD) $^ $(LIBS)  -o $@
 
 
-testMain: $(TOOLS) $(ODIR)/testMain.o  $(ODIR)/NTupleReader.o    $(ODIR)/TopTaggerAna.o
+testMain: $(TOOLS) $(ODIR)/testMain.o  $(ODIR)/NTupleReader.o  $(ODIR)/TopTaggerAna.o $(ODIR)/Type3Bhad.o
 	$(LD) $^ $(LIBS)  -o $@
 
 #$(PROGRAM):     $(OBJS)
