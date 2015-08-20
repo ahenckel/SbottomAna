@@ -83,6 +83,17 @@ class PyHist:
         if "RebinX" in hist:
             self.Hist1DRebinX(hist.histname, hist)
 
+        ## Setting some default
+        if not hasattr(hist, "outname"):
+            setattr(hist, "outname", hist.histname)
+        if not hasattr(hist, "Linecolor"):
+            setattr(hist, "Linecolor", 1)
+        if not hasattr(hist, "Linestyle"):
+            setattr(hist, "Linestyle", 1)
+        if not hasattr(hist, "ptype"):
+            setattr(hist, "ptype", "Signal")
+        # hist.title = hist.dirname
+
         return hist
 
     def Hist1DRebinX(self, histname, hist):
@@ -94,3 +105,12 @@ class PyHist:
         import re
         matchout = re.sub(r"(\d+)", str(avgbinwidth), label)
         hist.SetYTitle(matchout)
+
+    def GetDirnames(self):
+        for paths, apples, objects in self.file.walk(maxdepth=0):
+            return apples
+
+    def GetHistnames(self, directory):
+        for paths, apples, objects in self.file.walk():
+            if paths == directory:
+                return objects

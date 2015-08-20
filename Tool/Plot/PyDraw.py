@@ -13,9 +13,10 @@ import CMS_lumi
 import tdrstyle
 import time
 import os
+import math
 import re
 from rootpy.plotting import Canvas
-from Config import PyColors, PyOutPut, Lumi
+from Config import PyOutPut, Lumi
 
 # ### To Do list ########
 # 1. Auto scale the y-axis for the CMS label
@@ -75,11 +76,11 @@ class PyDraw():
             canvas.SaveAs("%s/%s.%s" % (self.OutDir, outname, outformat))
         return canvas
 
-    def PadRedraw(self, pad, norm="None", addlatex=(), addline=()):
+    def PadRedraw(self, pad, norm=None, addlatex=(), addline=()):
         pad.cd()
         pad.Update()
         if norm != "No":
-            if norm == "None" or norm == "Unit":
+            if norm is None or norm == "None" or norm == "Unit":
                 CMS_lumi.CMS_lumi(pad, 23, 11, self.lumi)
             else:
                 CMS_lumi.CMS_lumi(pad, 13, 11, self.lumi)
@@ -243,25 +244,31 @@ class PyDraw():
 
         # Set YAxis Title
         if prefix == "" or (prefix == "Ratio" and loc == "top"):
-            self.SetYaxisTitle(yaxis, hists)
-        if prefix == "Ratio" and loc == "bot":
-            RatioYTitle = [hist.RatioYTitle for hist in hists if hasattr(hist, "RatioYTitle")]
-            RatioYTitle = list(set(RatioYTitle))
-            if len(RatioYTitle) == 1:
-                yaxis.SetTitle(RatioYTitle[0])
+            if "YTitle" in kw:
+                yaxis.SetTitle(kw["YTitle"])
             else:
-                if "RatioOpt" in kw:
-                    yaxis.SetTitle(kw["RatioOpt"])
+                self.SetYaxisTitle(yaxis, hists)
+        if prefix == "Ratio" and loc == "bot":
+            if "RatioYTitle" in kw:
+                yaxis.SetTitle(kw["RatioYTitle"])
+            else:
+                RatioYTitle = [hist.RatioYTitle for hist in hists if hasattr(hist, "RatioYTitle")]
+                RatioYTitle = list(set(RatioYTitle))
+                if len(RatioYTitle) == 1:
+                    yaxis.SetTitle(RatioYTitle[0])
                 else:
-                    yaxis.SetTitle("Ratio")
+                    if "RatioOpt" in kw:
+                        yaxis.SetTitle(kw["RatioOpt"])
+                    else:
+                        yaxis.SetTitle("Ratio")
 
         # Set Yaxis range
-        if prefix == "Ratio" and loc == "boc":
-            self.SetAxisRange(hists, kw, prefix=prefix, axis="Y")
+        if prefix == "Ratio" and loc == "bot":
             self.SetAxisRange(hists, kw, prefix=prefix, axis="X")
+            self.SetAxisRange(hists, kw, prefix=prefix, axis="Y")
         else:
-            self.SetAxisRange(hists, kw, prefix="", axis="Y")
             self.SetAxisRange(hists, kw, prefix="", axis="X")
+            self.SetAxisRange(hists, kw, prefix="", axis="Y")
 
     def SetAxisRange(self, hists, kw, prefix="", axis="Y"):
         if len(hists) == 0:
@@ -306,7 +313,8 @@ class PyDraw():
             returnmin = None if len(templist) == 0 else min(templist)
         # Still None? Set to default
         if returnmin is None:
-            returnmin = histmin if histmin <= 0 else 0
+            returnmin = histmin
+            # returnmin = histmin if histmin <= 0 else 0
 
         # For Max
         if prefix + axis + "Max" in kw:
@@ -355,7 +363,7 @@ class PyDraw():
             hist.GetYaxis().SetTitleOffset(ROOT.gStyle.GetTitleOffset('Y')/4)
             hist.GetYaxis().SetNdivisions(110)
             hist.GetYaxis().CenterTitle()
-            hist.GetYaxis().CenterLabels()
+            # hist.GetYaxis().CenterLabels()
 
 # ============================================================================#
 # ----------------------------     Tex & Line     ----------------------------#
@@ -470,7 +478,7 @@ class PyDraw():
         # 1. No input hist, but only two hists in plot
         if ratiohist is None:
             if len(hists) == 2:
-                rhists.append(self.GetRatioPlot(formular, hists, hists))
+                rhists = self.GetRatioPlot(formular, hists, hists)
         else:
             if not isinstance(ratiohist, list):
                 ratiohist = [ratiohist]
@@ -508,17 +516,17 @@ class PyDraw():
                     temp += self.GetHistWithStr(hists, j)
                 rhists.append(temp)
             else:
-                return ratioObj
+                rhists.append(obj)
 
         # Merge the hist expect the first element
         for i in range(1, len(rhists)):
             lhists = rhists[i]
-            if len(lhists) > 1:
+            if isinstance(lhists, list) and len(lhists) >= 1:
                 hist = lhists[0].Clone()
                 for subhist in lhists[1:]:
                     hist += subhist
             else:
-                hist = lhists[0]
+                hist = lhists
             rhists[i] = hist
 
         if len(rhists) == 0:
@@ -530,6 +538,9 @@ class PyDraw():
         # Now evalute the formula
         # Assert rhists is [[], hist, hist..]
         ratios = []
+        if not isinstance(rhists[0], list):
+            rhists[0] = [rhists[0]]
+
         for As in rhists[0]:
             histformular = rhists[1:]
             histformular.insert(0, As)
@@ -678,6 +689,75 @@ class PyDraw():
                 setattr(rehist[i], k, v)
         return rehist
 
+    def MergeHistCate(self, hists):
+        bkhist = 0
+        rehist = {}
+        from collections import defaultdict
+        rehist = defaultdict(lambda: defaultdict(None))
+        for hist in hists:
+            if hist.ptype == "Background":
+                rehist["Background"][hist.proname] = hist
+                if bkhist == 0:
+                    bkhist = hist.Clone("Background")
+                else:
+                    bkhist += hist
+            if hist.ptype == "Data":
+                rehist["Data"][hist.proname] = hist
+                setattr(hist, "legOpt", "m")
+                rehist.append(hist)
+            if hist.ptype == "Signal":
+                rehist["Signal"][hist.proname] = hist
+                setattr(hist, "legOpt", "l")
+        rehist["Background"]["Total"] = bkhist
+        return rehist
+
+    def CalSignificance(self, hists, formular=None):
+        rehists = []
+        for k, v in hists["Signal"].iteritems():
+            temphist = v.Clone(k)
+            for k1, v1 in vars(v).iteritems():
+                setattr(temphist, k1, v1)
+            if formular == "S/B":
+                rehists.append(self.SigSBRatio(temphist, hists["Background"]["Total"]))
+            if formular is None:
+                rehists.append(self.SigFormular15(temphist, hists["Background"]["Total"]))
+        return rehists
+
+    def SigSBRatio(self, sighist, bkhist):
+        print bkhist.Integral()
+        for ibins in range(1, sighist.GetNbinsX()):
+            newcontent = 0
+            newerror = 0
+            if bkhist.GetBinContent(ibins) == 0:
+                newcontent = 0
+                newerror = 0
+            else:
+                newcontent = sighist.GetBinContent(ibins) / bkhist.GetBinContent(ibins)
+                newerror = 0
+            sighist.SetBinContent(ibins, newcontent)
+            sighist.GetBinError(ibins, newerror)
+        return sighist
+
+    def SigFormular15(self, sighist, bkhist, sigunc=0.10, bkunc=0.15, **kw):
+        print bkhist.Integral()
+        for ibins in range(1, sighist.GetNbinsX()):
+            newcontent = 0
+            newerror = 0
+            if bkhist.GetBinContent(ibins) == 0:
+                newcontent = 0
+                newerror = 0
+            else:
+                # S/sqrt(S + B + sigma_S^2 + sigma_B^2 + 1.5)
+                denominator = sighist.GetBinContent(ibins) + bkhist.GetBinContent(ibins)
+                + (sigunc * sighist.GetBinContent(ibins))**2 + (bkunc * bkhist.GetBinContent(ibins))**2 + 1.5
+                newcontent = sighist.GetBinContent(ibins) / math.sqrt(denominator)
+                # print sighist.GetBinContent(ibins), bkhist.GetBinContent(ibins), (sigunc * sighist.GetBinContent(ibins))**2 , (bkunc * bkhist.GetBinContent(ibins))**2, denominator, newcontent
+                newerror = 0
+            sighist.SetBinContent(ibins, newcontent)
+            sighist.GetBinError(ibins, newerror)
+        return sighist
+
+
 # ============================================================================#
 # -------------------------------     Draw     -------------------------------#
 # ============================================================================#
@@ -802,65 +882,23 @@ class PyDraw():
             self.UpdateAxis(hists, kw)
             return self.CanvasRedrawSave(**kw)
 
-    def DrawSBPlot(self, hists):
-        self.canvas.cd()
-        self.canvas.Clear()
+    def DrawSBPlot(self, hists_, **kw):
+        """A function for calculating the significance."""
+        inhists = self.CopyLocalHists(hists_)
+        self.UpdateKWargs(inhists, kw)
+        linehists = []
 
-        # leg = self.SetAutoLegend(hists)
-        leg = self.SetLegend([hist.title.replace('Top_', '') for hist in hists if hist.ptype == "Signal"], "topright")
-        leg.SetBorderSize(0)
-        leg.SetFillStyle(0)
-        leg.SetTextFont(62)
-        leg.SetTextSize(0.045)
+        # Getting pro, dir and hist set
+        # proSet = set([hist.proname for hist in inhists])
+        dirSet = set([hist.dirname for hist in inhists])
+        histSet = set([hist.histname for hist in inhists])
 
-        yaxis = 0
-        bkhist = 0
-        for hist in hists:
-            if hist.ptype == "Background":
-                if bkhist == 0:
-                    bkhist = hist.Clone("Background")
-                else:
-                    bkhist += hist
-                # print hist.title, hist.GetFillColor(), hist.GetFillStyle()
-                # stack.Add(hist)
+        if len(histSet) > 1:
+            raise AssertionError()
 
-        bkhist.GetXaxis().SetTitle(hists[0].GetXaxis().GetTitle())
-        bkhist.GetYaxis().SetTitle(hists[0].GetYaxis().GetTitle())
-        # yaxis = .GetYaxis()
-        ymax = 0
+        for hdir in list(dirSet):
+            dirhists = [hist for hist in inhists if hist.dirname == hdir]
+            mhists = self.MergeHistCate(dirhists)
+            linehists += self.CalSignificance(mhists, kw.get("SigOpt", None))
 
-        coloridx = 0
-
-        for hist in hists:
-            if hist.ptype == "Data":
-                hist.Draw("p same")
-                leg.AddEntry(hist, hist.title, "m")
-                ymax = max(ymax, hist.GetMaximum())
-            if hist.ptype == "Signal":
-                hist.Divide(bkhist)
-                for ibins in range(1, hist.GetNbinsX()):
-                    print (hist.title, ibins, hist.GetBinCenter(ibins), hist.GetBinContent(ibins), hist.GetBinError(ibins))
-                    if hist.GetBinCenter(ibins) < 3:
-                        ymax = max(ymax, hist.GetBinContent(ibins))
-                    # if hist.GetBinContent(ibins) != 0 and hist.GetBinError(ibins) / hist.GetBinContent(ibins) > 0.5:
-                        # hist.SetBinContent(ibins, 0)
-                hist.SetFillColor(0)
-                hist.SetLineColor(PyColors[coloridx])
-                coloridx += 1
-                if yaxis == 0:
-                    yaxis = hist.GetYaxis()
-                    xaxis = hist.GetXaxis()
-                    xaxis.SetRangeUser(0, 3)
-                    hist.Draw("hist")
-                else:
-                    hist.Draw("hist same")
-                leg.AddEntry(hist, hist.title.replace('Top_', ''), "l")
-                print(ymax)
-
-        # self.SetYaxis(yaxis, [hist.Integral() for hist in hists if hist.Integral() != 0.0])
-        yaxis.SetRangeUser(0, 1.5*ymax)
-        # xaxis.SetRangeUser(0, 3)
-        leg.Draw()
-
-        self.CanvasRedraw(norm=hists[0].norm)
-        return self.canvas
+        return self.DrawLineComparison(linehists, **kw)

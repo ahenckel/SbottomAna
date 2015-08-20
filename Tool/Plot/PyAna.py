@@ -32,7 +32,7 @@ class PyAna():
 # ============================================================================#
     def GetProNames(self, ptype=""):
         if ptype != "":
-            return [signal for signal in self.AllProds.keys() if self.AllProds[signal]["type"] == ptype]
+            return [signal for signal in self.AllProds.keys() if self.AllProds[signal].stype == ptype]
         else:
             return self.AllProds.keys()
 
@@ -48,6 +48,9 @@ class PyAna():
 
         for hpro in proname:
             if hpro in ["Data", "Background", "Signal"]:
+                if hpro in self.AllProds:
+                    self.AllProds.pop(hpro, None)
+
                 self.MergeProcesses(hpro)
             for hdist in dirname:
                 for hhist in histname:
@@ -96,7 +99,8 @@ class PyAna():
         self.AllProds[name] = copy.deepcopy(self.AllProds[prolist[0]])
         self.AllProds[name].ProName = name
         self.AllProds[name].ProList = []
-        self.AllProds[name].ProList.extend(self.AllProds[subprocess].ProList for subprocess in prolist)
+        for subprocess in prolist:
+            self.AllProds[name].ProList.extend(self.AllProds[subprocess].ProList)
 
         # Assign other attribue
         for keys, values in kw.iteritems():
