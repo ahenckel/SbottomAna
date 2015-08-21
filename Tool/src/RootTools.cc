@@ -63,3 +63,22 @@ double GetXS(std::string name)
   return xSecArr[foundidx];
 }       // -----  end of function GetXS  -----
 
+// ===  FUNCTION  ============================================================
+//         Name:  GetCutBin
+//  Description:  /* cursor */
+// ===========================================================================
+int GetCutBin( std::vector<std::string> &CutOrder , std::string name) 
+{
+  std::vector<std::string>::iterator  it = std::find(CutOrder.begin(), CutOrder.end(), name);
+  if (it == CutOrder.end())
+  {
+    std::cout << "Warning: wrong cut name!! " << std::endl;
+    return -1;
+  } else
+  {
+    return std::distance(CutOrder.begin(), it);
+  } 
+  
+  return -1;
+}       // -----  end of function GetCutBin  -----
+

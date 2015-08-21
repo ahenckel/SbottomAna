@@ -54,6 +54,7 @@
 
 #include "TopTaggerAna.h"
 
+bool PrintTLorentz(int event, std::string name, std::vector<TLorentzVector> obj);
 int main(int argc, char* argv[])
 {
 
@@ -106,6 +107,9 @@ int main(int argc, char* argv[])
   his->AddTH1("NBase", "Number of Events passed baseline", 2, 0, 2);
   his->FillTPro("XS", 1, GetXS(inputFileList));
 
+  std::vector<std::string> CutOrder = { "noCut", "nJets", "muonVeto", "eleVeto", "isoVeto", "dPhis", "BJets" , "MET", "nTops"};
+  his->Cutorder("Stop", CutOrder, 0);
+
   //clock to monitor the run time
   size_t t0 = clock();
 
@@ -116,13 +120,18 @@ int main(int argc, char* argv[])
   tr.registerFunction(&passBaselineFunc);
   
   std::map<std::string, TopTaggerAna*> TopMap;
-  TopMap["T3Top30"] = new TopTaggerAna("T3Top30", &tr, OutFile);
-  TopMap["T3Top20"] = new TopTaggerAna("T3Top20", &tr, OutFile);
-  TopMap["G3Top30"] = new TopTaggerAna("G3Top30", &tr, OutFile);
-  TopMap["G3Top20"] = new TopTaggerAna("G3Top20", &tr, OutFile);
+  TopMap["T3Top"] = new TopTaggerAna("T3Top", &tr, OutFile);
+  TopMap["T3bhad"] = new TopTaggerAna("T3bhad", &tr, OutFile);
+  TopMap["T3bhad"]->SetType3BHad(true);
+  TopMap["T3bhadTight"] = new TopTaggerAna("T3bhadTight", &tr, OutFile);
+  TopMap["T3bhadTight"]->SetType3BHad(true);
+  TopMap["T3bhadTight"]->SetType3BhadWindow(140, 200);
+  //TopMap["T3Top20"] = new TopTagger;Ana("T3Top20", &tr, OutFile);
+  //TopMap["G3Top30"] = new TopTaggerAna("G3Top30", &tr, OutFile);
+  //TopMap["G3Top20"] = new TopTaggerAna("G3Top20", &tr, OutFile);
   TopMap["CMSTop"] = new TopTaggerAna("CMSTop", &tr, OutFile);
   TopMap["HEPTop"] = new TopTaggerAna("HEPTop", &tr, OutFile);
-  TopMap["AK8SoftDrop"] = new TopTaggerAna("AK8SoftDrop", &tr, OutFile);
+  //TopMap["AK8SoftDrop"] = new TopTaggerAna("AK8SoftDrop", &tr, OutFile);
   TopMap["CA15SoftDrop"] = new TopTaggerAna("CA15SoftDrop", &tr, OutFile);
 
   //TopTaggerAna topbase("afterbaseline30", &tr, OutFile);
@@ -138,27 +147,125 @@ int main(int argc, char* argv[])
     if(tr.getEvtNum()%20000 == 0)
       std::cout << tr.getEvtNum() << "\t" << ((clock() - t0)/1000000.0) << std::endl;
 
+    // CutFlow
+    his->FillTH1("CutFlow", 0);
+    //----------------------------------------------------------------------------
+    //  Ugly nested if statement....
+    //----------------------------------------------------------------------------
+    if (tr.getVar<bool>("passnJets")) 
+    {
+      his->FillTH1("CutFlow", GetCutBin(CutOrder, "nJets"));
+      if (tr.getVar<bool>("passMuonVeto")) 
+      {
+        his->FillTH1("CutFlow", GetCutBin(CutOrder, "muonVeto"));
+        if (tr.getVar<bool>("passEleVeto")) 
+        {
+          his->FillTH1("CutFlow", GetCutBin(CutOrder, "eleVeto"));
+          if (tr.getVar<bool>("passIsoTrkVeto")) 
+          {
+            his->FillTH1("CutFlow", GetCutBin(CutOrder, "isoVeto"));
+            if (tr.getVar<bool>("passdPhis")) 
+            {
+              his->FillTH1("CutFlow", GetCutBin(CutOrder, "dPhis"));
+              if (tr.getVar<bool>("passBJets")) 
+              {
+                his->FillTH1("CutFlow", GetCutBin(CutOrder, "BJets"));
+                if (tr.getVar<bool>("passMET")) his->FillTH1("CutFlow", GetCutBin(CutOrder, "MET"));
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+
     bool passBaseline=tr.getVar<bool>("passBaseline");
     if (! passBaseline) continue;
-    //if (!TopMap.begin()->second->CheckRecoEvent()) continue;
 
-    TopMap["T3Top30"]->GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
-    TopMap["T3Top20"]->GetT3TopTagger(20, "jetsLVec", "recoJetsBtag", "met");
-    TopMap["G3Top30"]->GetT3TopTagger(30, "Gen4LVec", "recoJetsBtag", "met");
-    TopMap["G3Top20"]->GetT3TopTagger(20, "Gen4LVec", "recoJetsBtag", "met");
-    TopMap["CMSTop"]->GetFatTopTagger("CMSTopLVec");
+    //TopMap["T3Top20"]->GetT3TopTagger(20, "jetsLVec", "recoJetsBtag", "met");
+    //TopMap["G3Top30"]->GetT3TopTagger(30, "Gen4LVec", "recoJetsBtag", "met");
+    //TopMap["G3Top20"]->GetT3TopTagger(20, "Gen4LVec", "recoJetsBtag", "met");
+    //TopMap["AK8SoftDrop"]->GetFatTopTagger("AK8SoftDropLVec");
+
+    TopMap["T3Top"]->GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
+    TopMap["T3bhad"]->GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
+    TopMap["T3bhadTight"]->GetT3TopTagger(30, "jetsLVec", "recoJetsBtag", "met");
     TopMap["HEPTop"]->GetFatTopTagger("HEPV2TopLVec");
-    TopMap["AK8SoftDrop"]->GetFatTopTagger("AK8SoftDropLVec");
+    TopMap["CMSTop"]->GetFatTopTagger("CMSTopLVec");
     TopMap["CA15SoftDrop"]->GetFatTopTagger("CA15SoftDropLVec");
+
+    if (TopMap["T3Top"]->GetNTops() >= 1) his->FillTH1("CutFlow", GetCutBin(CutOrder, "nTops"));
 
     for(std::map<std::string, TopTaggerAna*>::const_iterator it=TopMap.begin();
       it!=TopMap.end(); ++it)
     {
       it->second->RunTagger();
     }
-    //if(tr.getEvtNum() > 200000 ) break;
+
+    TopMap["T3bhad"]->GetBoverlapHad();
+
+    //if ( TopMap["T3Top30"]->GetBoverlapHad() && TopMap["HEPTop"]->GetNTops() == 2 && TopMap["T3Top30"]->GetNTops() < TopMap["HEPTop"]->GetNTops() )
+    //if (tr.getEvtNum()  == 11260)
+    //if ( TopMap["HEPTop"]->GetNTops() == 2 && TopMap["T3Top30"]->GetNTops() < TopMap["HEPTop"]->GetNTops() )
+    //if ( TopMap["T3Top"]->GetBoverlapHad() )
+    if (false)
+    {
+
+      int event = tr.getEvtNum();
+      //PrintTLorentz(event, "HEPTop", TopMap["HEPTop"]->RecoTops);
+      PrintTLorentz(event, "T3Top", TopMap["T3Top"]->RecoTops);
+      PrintTLorentz(event, "AK4Jet", tr.getVec<TLorentzVector>("jetsLVec"));
+      PrintTLorentz(event, "GEN4Jet", tr.getVec<TLorentzVector>("Gen4LVec"));
 
 
+      std::vector<TLorentzVector> genDecayLVec     = tr.getVec<TLorentzVector> ("genDecayLVec");
+
+      std::vector<TopDecay> vTops =  TopMap["T3Top"]->vTops;
+      std::vector<TLorentzVector> tempTop;
+      std::vector<TLorentzVector> tempW;
+      std::vector<TLorentzVector> tempb;
+      std::vector<TLorentzVector> tempLep;
+      std::vector<TLorentzVector> temphad;
+      for(unsigned int i=0; i < vTops.size(); ++i)
+      {
+        TopDecay gentop = vTops.at(i);
+        if (gentop.topidx_ != -1) tempTop.push_back(genDecayLVec[gentop.topidx_]);
+        if (gentop.Widx_ != -1) tempW.push_back(genDecayLVec[gentop.Widx_]);
+        if (gentop.bidx_ != -1) tempb.push_back(genDecayLVec[gentop.bidx_]);
+        if (gentop.Lepidx_ != -1) tempLep.push_back(genDecayLVec[gentop.Lepidx_]);
+        if (gentop.had1idx_ != -1 && gentop.had1idx_ <= genDecayLVec.size())
+        {
+          temphad.push_back(genDecayLVec[gentop.had1idx_]);
+        }
+        if (gentop.had2idx_ != -1 && gentop.had2idx_ <= genDecayLVec.size())
+        {
+          temphad.push_back(genDecayLVec[gentop.had2idx_]);
+        }
+      }
+      PrintTLorentz(event, "Top", tempTop);
+      PrintTLorentz(event, "W", tempW);
+      PrintTLorentz(event, "Lep", tempLep);
+      PrintTLorentz(event, "B", tempb);
+      PrintTLorentz(event, "Had", temphad);
+
+      // Type3 Jets
+      std::vector<TLorentzVector> jetsforTT;
+      std::vector<TLorentzVector> jetsforTTplt;
+
+      for(unsigned int i=0; i < tr.getVec<TLorentzVector>("jetsLVec").size(); ++i)
+      {
+        if (tr.getVec<TLorentzVector>("jetsLVec").at(i).Pt() > 30) 
+          jetsforTT.push_back(tr.getVec<TLorentzVector>("jetsLVec").at(i));
+      }
+      
+      for(unsigned int i=0; i < TopMap["T3Top"]->Type3Jets.size(); ++i)
+      {
+        jetsforTTplt.push_back(jetsforTT.at(TopMap["T3Top"]->Type3Jets.at(i)));
+      }
+      PrintTLorentz(event, "T3Jet", jetsforTTplt);
+
+    }
 
   }
 
@@ -166,6 +273,7 @@ int main(int argc, char* argv[])
 //  Write the output
 //----------------------------------------------------------------------------
   his->WriteTPro();
+  his->WriteTH1();
   for(std::map<std::string, TopTaggerAna*>::const_iterator it=TopMap.begin();
       it!=TopMap.end(); ++it)
   {
@@ -175,3 +283,19 @@ int main(int argc, char* argv[])
   return 0;
 }
 
+// ===  FUNCTION  ============================================================
+//         Name:  PrintTLorentz
+//  Description:  /* cursor */
+// ===========================================================================
+bool PrintTLorentz(int event, std::string name, std::vector<TLorentzVector> obj) 
+{
+  for (int i = 0; i < obj.size(); ++i)
+  {
+    TLorentzVector temp = obj.at(i);
+    if (temp.Pt()<3) continue;
+    std::cout << event <<"," << name <<"," << temp.Px() <<"," << temp.Py() <<"," <<
+      temp.Pz()<<"," << temp.E()<< std::endl;
+  }
+
+  return true;
+}       // -----  end of function PrintTLorentz  -----

@@ -23,6 +23,7 @@
 
 #include "HistTool.hh"
 #include "NTupleReader.h"
+#include "Type3Bhad.h"
 
 #include "TLorentzVector.h"
 #include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
@@ -30,6 +31,7 @@
 
 struct TopDecay 
 {
+  TopDecay(): topidx_(-1), bidx_(-1), Widx_(-1), Lepidx_(-1), neuidx_(-1),had1idx_(-1), had2idx_(-1), isLeptonic_(false) {}
   int topidx_;
   int bidx_;
   int Widx_;
@@ -54,6 +56,10 @@ class TopTaggerAna
     ~TopTaggerAna ();                                                      // destructor
 
     // ====================  ACCESSORS     ===============================
+    int GetNTops() const;
+    std::vector<TLorentzVector> RecoTops;
+    std::vector<TopDecay> vTops;
+    std::vector<int> Type3Jets;
 
     // ====================  MUTATORS      ===============================
     bool EndTest();
@@ -64,6 +70,9 @@ class TopTaggerAna
     // ====================  OPERATORS     ===============================
 
     TopTaggerAna& operator = ( const TopTaggerAna &other ); // assignment operator
+    bool GetBoverlapHad() const;
+    bool SetType3BHad(bool run);
+    bool SetType3BhadWindow(int low, int high) const;
 
     // ====================  DATA MEMBERS  ===============================
     bool goodreco; 
@@ -90,10 +99,8 @@ class TopTaggerAna
 
 
 
-    std::vector<TopDecay> vTops;
     std::vector<int> vToptagged;
     std::vector<TLorentzVector> jetsforTT;
-    std::vector<TLorentzVector> RecoTops;
     std::vector<double> bjsforTT;
 
     int GetGenTop();
@@ -103,14 +110,18 @@ class TopTaggerAna
     bool CalHT();
 
     bool BookHistograms();
+    bool ZeroTopTagStudy() const;
 
     topTagger::type3TopTagger * type3Ptr;
+    Type3Bhad * t3bhadPtr;
     bool SortToptager( boost::bimap<int, double > dm_bimap);
     bool PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std::vector<TLorentzVector>& oriJetsVec, std::vector<double>& recoJetsBtagCSVS, int ic) const;
 
     bool CalTaggerEff() const;
     bool CalMisTag();
+    bool RunType3BHad;
 
+    std::vector<int> SortType3Tagger( boost::bimap<int, double > & dm_bimap);
 
 }; // -----  end of class TopTaggerAna  -----
 
