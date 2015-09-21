@@ -82,3 +82,38 @@ int GetCutBin( std::vector<std::string> &CutOrder , std::string name)
   return -1;
 }       // -----  end of function GetCutBin  -----
 
+// ===  FUNCTION  ============================================================
+//         Name:  PrintTLorentz
+//  Description:  /* cursor */
+// ===========================================================================
+bool PrintTLorentz(int event, std::string name, std::vector<TLorentzVector> obj) 
+{
+  for (int i = 0; i < obj.size(); ++i)
+  {
+    TLorentzVector temp = obj.at(i);
+    if (temp.Pt()<3) continue;
+    std::cout << event <<"," << name <<"," << temp.Px() <<"," << temp.Py() <<"," <<
+      temp.Pz()<<"," << temp.E()<< std::endl;
+  }
+
+  return true;
+}       // -----  end of function PrintTLorentz  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  CalMT
+//  Description:  /* cursor */
+// ===========================================================================
+double CalMT(TLorentzVector J1, TLorentzVector J2)
+{
+  return sqrt(2 * J1.Pt() * J2.Pt() * (1 - cos(J1.DeltaPhi(J2))));
+}       // -----  end of function CalMT  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  CalMCT
+//  Description:  /* cursor */
+// ===========================================================================
+double CalMCT(TLorentzVector J1, TLorentzVector J2)
+{
+  return sqrt(2 * J1.Pt() * J2.Pt() * (1 + cos(J1.DeltaPhi(J2))));
+}       // -----  end of function CalMCT  -----

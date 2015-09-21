@@ -99,7 +99,7 @@ std::vector<std::string> HistTool::Cutorder()
 //         Name:  HistTool::Cutorder
 //  Description:  
 // ===========================================================================
-int HistTool::Cutorder(std::string ana, std::vector<std::string> CutOrder, unsigned int Nbits)
+int HistTool::Cutorder(std::string ana, std::vector<std::string>& CutOrder, unsigned int Nbits)
 {
   order = CutOrder;
   CutSize = order.size();
@@ -130,6 +130,7 @@ int HistTool::AddTH1C (const std::string& name, const std::string& title,
     TString maptitle = title+" ("+order.at(i)+")";
     AddTH1(mapname.Data(), maptitle.Data(), xlabel, ylabel, nxbins, xmin, xmax, logx, logy);
   }
+  AddTH1(name.c_str(), title.c_str(), xlabel, ylabel, nxbins, xmin, xmax, logx, logy);
 
   return 1;
 }       // -----  end of function HistTool::AddTH1C  -----
@@ -147,6 +148,7 @@ int HistTool::AddTH1C (const std::string& name, const std::string& title,
     TString maptitle = title+" ("+order.at(i)+")";
     AddTH1(mapname.Data(), maptitle.Data(), nxbins, xmin, xmax);
   }
+  AddTH1(name.c_str(), title.c_str(), nxbins, xmin, xmax);
   return 1;
 }       // -----  end of function HistTool::AddTH1C  -----
 
@@ -197,6 +199,7 @@ TH1F* HistTool::AddTH1 (const std::string& name, const std::string& title,
 // ===========================================================================
 int HistTool::FillTH1(int Ncut, std::string HisName, double value, double weight)
 {
+  if (Ncut+1 == CutSize) FillTH1(HisName, value, weight);
   TString mapname = HisName+"_"+static_cast<Long_t>(Ncut);
   if (HisMap.find(mapname.Data()) == HisMap.end())
     return 0;
@@ -211,6 +214,8 @@ int HistTool::FillTH1(int Ncut, std::string HisName, double value, double weight
 
 int HistTool::FillTH1(int Ncut, std::string HisName, int value, double weight)
 {
+  if (Ncut + 1 == CutSize) 
+    FillTH1(HisName, value, weight);
   TString mapname = HisName+"_"+static_cast<Long_t>(Ncut);
   if (HisMap.find(mapname.Data()) == HisMap.end())
     return 0;

@@ -15,6 +15,7 @@ import time
 import os
 import math
 import re
+import copy
 from rootpy.plotting import Canvas
 from Config import PyOutPut, Lumi
 
@@ -76,9 +77,18 @@ class PyDraw():
             canvas.SaveAs("%s/%s.%s" % (self.OutDir, outname, outformat))
         return canvas
 
-    def PadRedraw(self, pad, norm=None, addlatex=(), addline=()):
+    def PadRedraw(self, pad, kw):
+        addlatex=kw.get('addlatex', ())
+        addline=kw.get('addline', ())
+        if hasattr(pad, "ratio"):
+            addlatex=kw.get('Ratioaddlatex', ())
+            addline=kw.get('Ratioaddline', ())
+        norm=kw.get('norm', None)
         pad.cd()
         pad.Update()
+        pad.SetLogx(kw.get("Logx", False))
+        pad.SetLogy(kw.get("Logy", False))
+
         if norm != "No":
             if norm is None or norm == "None" or norm == "Unit":
                 CMS_lumi.CMS_lumi(pad, 23, 11, self.lumi)
@@ -97,8 +107,7 @@ class PyDraw():
     def CanvasRedrawSave(self, canvas=None, **kw):
         if canvas is None:
             canvas = self.canvas
-        self.PadRedraw(canvas, norm=kw.get('norm', 'None'), addlatex=kw.get('addlatex', ()),
-                       addline=kw.get('addline', ()))
+        self.PadRedraw(canvas, kw)
         self.CanvasSave(canvas=canvas,
                         outname=kw.get('outname', "output_%s" % time.strftime("%y%m%d_%H%M%S")))
 
@@ -115,6 +124,7 @@ class PyDraw():
 
         dy = 0.05 * len(hislegs)
 
+        # dx = 0.015 * max([len(lstr.strip()) for lstr in hislegs])
         dx = 0.03 + 0.025 * max([len(lstr.strip()) for lstr in hislegs])
 
         # x3 --- x2
@@ -126,6 +136,15 @@ class PyDraw():
             y2 = 0.88
             x1 = x2 - dx
             y1 = y2 - dy
+
+        if location == "topleft":
+            x3 = 0.1575
+            # y3 = 0.85
+            y3 = 0.75
+            x1 = x3
+            y1 = y3 -dy
+            x2 = x1 + dx
+            y2 = y3
 
         if location == "bottomright":
             x4 = 0.98
@@ -276,8 +295,10 @@ class PyDraw():
 
         if axis == "Y":
             haxis = hists[0].GetYaxis()
+            haxis.SetMoreLogLabels(kw.get("Logy", False))
         elif axis == "X":
             haxis = hists[0].GetXaxis()
+            haxis.SetMoreLogLabels(kw.get("Logx", False))
         else:
             return None
 
@@ -461,6 +482,7 @@ class PyDraw():
             canvas.botpad.SetBottomMargin(3*canvas.GetBottomMargin())
             canvas.botpad.SetFrameFillStyle(0)
             canvas.botpad.SetFrameBorderMode(0)
+            setattr(canvas.botpad, "ratio", True)
             canvas.botpad.cd()
 
         return canvas
@@ -500,9 +522,10 @@ class PyDraw():
         else:
             self.DrawTLatex((0.12, 0.2, "No Ratio Plot!", 2, 0.7))
 
-        self.PadRedraw(canvas.botpad, norm="No",
-                       addlatex=kw.get('Ratioaddlatex', ()),
-                       addline=kw.get('Ratioaddline', ()))
+        tempkw = copy.deepcopy(kw)
+        tempkw["norm"] = "No"
+        self.PadRedraw(canvas.botpad, tempkw)
+        del tempkw
 
     def GetRatioPlot(self, formular, ratioObj, hists):
         rhists = []
@@ -724,7 +747,7 @@ class PyDraw():
         return rehists
 
     def SigSBRatio(self, sighist, bkhist):
-        print bkhist.Integral()
+        # print bkhist.Integral()
         for ibins in range(1, sighist.GetNbinsX()):
             newcontent = 0
             newerror = 0
@@ -739,7 +762,7 @@ class PyDraw():
         return sighist
 
     def SigFormular15(self, sighist, bkhist, sigunc=0.10, bkunc=0.15, **kw):
-        print bkhist.Integral()
+        # print bkhist.Integral()
         for ibins in range(1, sighist.GetNbinsX()):
             newcontent = 0
             newerror = 0
@@ -755,6 +778,16 @@ class PyDraw():
                 newerror = 0
             sighist.SetBinContent(ibins, newcontent)
             sighist.GetBinError(ibins, newerror)
+            if newcontent > 100:
+                sighist.SetBinContent(ibins, 0)
+                sighist.GetBinError(ibins, 0)
+        sighist.SetBinContent(0, 0)
+        sighist.GetBinError(0, 0)
+        sighist.SetBinContent(sighist.GetNbinsX()+1, 0)
+        sighist.GetBinError(sighist.GetNbinsX()+1, 0)
+        # print sighist.dirname
+        # sighist.title = sighist.dirname
+        # sighist.title = sighist.title.replace("Top_", "")
         return sighist
 
 
@@ -792,9 +825,7 @@ class PyDraw():
 
         if 'RatioOpt' in kw or 'RatioHist' in kw:
             self.UpdateAxis(hists, kw, prefix="Ratio", loc="top")
-            self.PadRedraw(canvas.toppad, norm=kw.get('norm', 'None'),
-                           addlatex=kw.get('addlatex', ()),
-                           addline=kw.get('addline', ()))
+            self.PadRedraw(canvas.toppad, kw)
             self.DrawRatioPlot(hists, kw, canvas=canvas)
             self.CanvasSave(canvas=canvas,
                             outname=kw.get('outname', "output_%s" % time.strftime("%y%m%d_%H%M%S")))
@@ -872,9 +903,7 @@ class PyDraw():
         #########################
         if 'RatioOpt' in kw or 'RatioHist' in kw:
             self.UpdateAxis(hists, kw, prefix="Ratio", loc="top")
-            self.PadRedraw(canvas.toppad, norm=kw.get('norm', 'None'),
-                           addlatex=kw.get('addlatex', ()),
-                           addline=kw.get('addline', ()))
+            self.PadRedraw(canvas.toppad, kw)
             self.DrawRatioPlot(hists, kw, canvas=canvas)
             return self.CanvasSave(canvas=canvas,
                                    outname=kw.get('outname', "output_%s" % time.strftime("%y%m%d_%H%M%S")))

@@ -36,13 +36,15 @@ to the PyDraw and applied during the plot making.
 _Label name is the key to control the package. They should be consistent
 between Config.py and input arguments._
 
-   | Label     | Describtion                                                                   | Owner | Default   | Applied Function       | 
-   | -------   | -----------                                                                   | ----- | --------  | ------------------     | 
-   | RebinX    | rebin the x axis of the histogram, <br> and updatet the y-axis label if applicable | Owner | 1         | PyHist.SetHistProperty | 
-   | Logy      | Set canvas yaxis on log scale (Need to find a void to avoid 0)                | Owner | False     | TBI                    | 
-   | Logx      | Set canvas xaxis on log scale (Need to find a void to avoid 0)                | Owner | False     | TBI                    | 
-   | YMax      | Setting the maximum of the y-axis, always use the largest input               | Owner | None      | TBI                    | 
-   | YMaxScale | Scale of the Maximum of the histogram                                         | Owner | 1.2       | TBI                    | 
-   | HistLabel | Legend Label corresponding to histname in file                                | Owner | histname  | PyDraw                 | 
-   | DirLabel  | Legend Label corresponding to direcotry in file                               | Owner | directory | PyDraw                 | 
+| Label     | Describtion                                                                   | Owner | Default   | Applied Function       | 
+| -------   | -----------                                                                   | ----- | --------  | ------------------     | 
+| RebinX    | rebin the x axis of the histogram, <br> and updatet the y-axis label if applicable | Owner | 1         | PyHist.SetHistProperty | 
+| Logy      | Set canvas yaxis on log scale (Need to find a void to avoid 0)                | Owner | False     | TBI                    | 
+| Logx      | Set canvas xaxis on log scale (Need to find a void to avoid 0)                | Owner | False     | TBI                    | 
+| YMax      | Setting the maximum of the y-axis, always use the largest input               | Owner | None      | TBI                    | 
+| YMaxScale | Scale of the Maximum of the histogram                                         | Owner | 1.2       | TBI                    | 
+| HistLabel | Legend Label corresponding to histname in file                                | Owner | histname  | PyDraw                 | 
+| DirLabel  | Legend Label corresponding to direcotry in file                               | Owner | directory | PyDraw                 | 
+| DrawOpt| Painting option as in ROOT             | Owner | hist | PyDraw | 
+| legloc | Location of TLegend (None for not drawing) | Owner | topright | PyDraw |
 

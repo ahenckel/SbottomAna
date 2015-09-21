@@ -94,6 +94,8 @@ def CMS_lumi(pad,  iPeriod,  iPosX, lumi ):
         lumiText += " (13 TeV)"
     elif ( iPeriod==23 ):
         lumiText += " (13 TeV)"
+    elif ( iPeriod==33):
+        lumiText += "CMS Simulation"
 
 
     latex = rt.TLatex()
