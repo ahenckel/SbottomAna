@@ -42,8 +42,8 @@ ifneq ($(shell echo $$BOOSTROOT), )
   CXXFLAGS  += -isystem $(shell echo $(BOOSTROOT))
 endif
 
-PROGRAMS = testMain
-PROGRAM = testMain
+PROGRAMS = testBottom
+#PROGRAM = testMain
 
 TOOLS =  $(ODIR)/HistTool.o    $(ODIR)/RootTools.o   
 
@@ -68,10 +68,11 @@ tupleTest: $(ODIR)/NTupleReader.o  $(ODIR)/tupleReadTest.o
 testMain: $(TOOLS) $(ODIR)/testMain.o  $(ODIR)/NTupleReader.o  $(ODIR)/TopTaggerAna.o $(ODIR)/Type3Bhad.o
 	$(LD) $^ $(LIBS)  -o $@
 
-#$(PROGRAM):     $(OBJS)
-	#@echo "Linking $(PROGRAM) ..."
-	#@$(LD) $(OBJS) $(LIBS) -o $(PROGRAM)
-	#@echo "done"
+testBottom: $(TOOLS) $(ODIR)/testBottom.o  $(ODIR)/NTupleReader.o  $(ODIR)/ComAna.o $(ODIR)/SBDiJet.o \
+	$(ODIR)/SBISR.o $(ODIR)/PassCut.o  $(ODIR)/SBMulti.o
+	@echo "Linking $(PROGRAM) ..."
+	$(LD) $^ $(LIBS)  -o $@
+	@echo "done"
 
 clean:
 	rm -f $(ODIR)/*.o $(ODIR)/*.d $(PROGRAMS) core AutoDict_vector*
