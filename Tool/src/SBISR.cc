@@ -129,7 +129,8 @@ bool SBISR::CheckCut()
   int jet30count = 0;
   for (int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
   {
-    if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > 30) 
+    if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > 30 &&
+        fabs(tr->getVec<TLorentzVector> ("jetsLVec").at(i).Eta()) < 2.4)
     {
       jet30count++;
     }
@@ -146,8 +147,8 @@ bool SBISR::CheckCut()
   }
   cutbit.set(1, Dijet70);
 
-  // First Jet is not tagged as a b-jet
-  cutbit.set(2, tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 && tr->getVec<double>("recoJetsBtag_0").at(0) <  CVS );
+  // First Jet is not tagged as a b-jet (loose CSV point)
+  cutbit.set(2, tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 && tr->getVec<double>("recoJetsBtag_0").at(0) <  0.423 );
 
   // Second or third or both jets are b-jet
   bool bjets23 = false;
@@ -180,8 +181,7 @@ bool SBISR::CheckCut()
   double nonbHT = 0;
   for (int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
   {
-    
-    if(tr->getVec<double>("recoJetsBtag_0").at(i) > CVS)
+    if(tr->getVec<double>("recoJetsBtag_0").at(i) < CVS)
       nonbHT += tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt();
   }
   cutbit.set(10, nonbHT > 250);
