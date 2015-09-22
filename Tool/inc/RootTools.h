@@ -23,6 +23,7 @@
 // boost
 #include "boost/tokenizer.hpp"
 #include "boost/algorithm/string.hpp"
+#include "NTupleReader.h"
 
 // ROOT
 #include "TLorentzVector.h"
@@ -31,6 +32,8 @@ double GetXS(std::string name);
 int GetCutBin( std::vector<std::string> &CutOrder , std::string name);
 double CalMT(TLorentzVector J1, TLorentzVector J2);
 double CalMCT(TLorentzVector J1, TLorentzVector J2);
+bool PrintEvent(NTupleReader *tr);;
+std::vector<TLorentzVector> GetGenParticles(const std::vector<int> pdgid, const NTupleReader *tr);
 
 #endif   // ----- #ifndef __ROOTTOOLS_INC__  -----
 

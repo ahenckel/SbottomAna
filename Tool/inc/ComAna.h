@@ -21,10 +21,12 @@
 #include <sstream>
 #include <bitset>
 #include <memory>
+#include "boost/bimap.hpp"
 
 #include "NTupleReader.h"
 #include "HistTool.hh"
 #include "RootTools.h"
+#include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
 
 #define NBITS 20
 // ===========================================================================
@@ -63,6 +65,7 @@ class ComAna
 
   protected:
     // ====================  METHODS       ===============================
+    int GetType3TopTagger();
 
     // ====================  DATA MEMBERS  ===============================
     HistTool *his;
@@ -78,10 +81,18 @@ class ComAna
 
     bool Book2TLVHistos(std::string name);
     bool Fill2TLVHistos(int NCut, std::string name, TLorentzVector LV1, TLorentzVector LV2);
+
+
+    bool PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std::vector<TLorentzVector>& oriJetsVec, 
+        std::vector<double>& recoJetsBtagCSVS, int ic) const;
+    std::vector<int> SortToptager( boost::bimap<int, double > dm_bimap);
     // ====================  DATA MEMBERS  ===============================
     std::bitset<NBITS> cutbit;
     std::vector<std::string> CutOrder;
     std::map<std::string, std::string>  CutMap;
+
+    topTagger::type3TopTagger * type3Ptr;
+    std::vector<TLorentzVector> vRecoTops;
 
     // Event variables
     int j30count;

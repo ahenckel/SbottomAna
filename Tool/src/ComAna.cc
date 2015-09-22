@@ -27,6 +27,8 @@ ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &Out
   tr(tr_)
 {
   his = new HistTool(OutFile, "Cut", name);
+  type3Ptr = new topTagger::type3TopTagger();
+  type3Ptr->setnJetsSel(4); // same as  AnaConsts::nJetsSel
   //BookHistograms();
 }  // -----  end of method ComAna::ComAna  (constructor)  -----
 
@@ -78,6 +80,9 @@ bool ComAna::BookHistograms()
   //  MET
   his->AddTH1C("MET", "MET", "MET [GeV]", "Events"     , 200, 0, 800);
   his->AddTH1C("METPhi", "METPhi", "#phi MET [GeV]", "Events"     , 20, -5, 5);
+
+  // Ntops
+  his->AddTH1C("NRecoTops"            , "NRecoTops"            , "No. of Reco Tops"        , "Events"        , 5 , 0  , 5);
   return true;
 }       // -----  end of function ComAna::BookHistograms  -----
 
@@ -107,6 +112,9 @@ bool ComAna::FillCut(int NCut)
   // MET
   his->FillTH1(NCut, "MET", tr->getVar<double>("met") );
   his->FillTH1(NCut, "METPhi", tr->getVar<double>("metphi") );
+
+  // NTops
+  his->FillTH1(NCut, "NRecoTops", int(vRecoTops.size()));
   return true;
 }       // -----  end of function ComAna::FillCut  -----
 
@@ -162,7 +170,7 @@ bool ComAna::RunEvent()
 {
   j30count = CountJets(30);
   GetLeadingJets();
-  
+  GetType3TopTagger();
 
   return true;
 }       // -----  end of function ComAna::RunEvent  -----
@@ -352,3 +360,131 @@ bool ComAna::Fill2TLVHistos(int NCut, std::string name, TLorentzVector LV1, TLor
 
   return true;
 }       // -----  end of function ComAna::Fill2TLVHistos  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::GetType3TopTagger
+//  Description:  
+// ===========================================================================
+int ComAna::GetType3TopTagger()
+{
+  vRecoTops.clear();
+  std::vector<TLorentzVector> jetsforTT;
+  std::vector<double> bjsforTT;
+  std::vector<int> vToptagged;
+
+  const std::string jetstr= "jetsLVec";
+  const std::string bjstr = "recoJetsBtag_0";
+  const double ptcut =30;
+
+  //----------------------------------------------------------------------------
+  //  Get Jets for tagger
+  //----------------------------------------------------------------------------
+  std::vector<TLorentzVector> jets = tr->getVec<TLorentzVector>(jetstr);
+  std::vector<double> bjets  = tr->getVec<double>(bjstr);
+  assert(jets.size() == bjets.size());
+
+  for(unsigned int i=0; i < jets.size(); ++i)
+  {
+    if (jets.at(i).Pt() > ptcut)
+    {
+      jetsforTT.push_back(jets.at(i));
+      bjsforTT.push_back(bjets.at(i));
+    }
+  } 
+
+  // Some event selection cuts
+  if(jetsforTT.size () <= 3) return vRecoTops.size();
+
+  // Run the Top Tagger
+  type3Ptr->setdoTopVeto(true);
+  type3Ptr->runOnlyTopTaggerPart(jetsforTT, bjsforTT);
+
+  //Get Pt order jet list, passing the requirement
+  boost::bimap<int, double > topdm;
+  for (size_t j = 0; j < type3Ptr->finalCombfatJets.size(); ++j)
+  {
+    TLorentzVector jjjTop(0, 0, 0, 0);
+    for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(j).size(); ++k)
+    {
+      jjjTop += jetsforTT.at(type3Ptr->finalCombfatJets.at(j).at(k));
+    }
+
+    if (PassType3TopCrite(type3Ptr, jetsforTT, bjsforTT, j))
+    {
+      vToptagged.push_back(j);
+      topdm.insert(boost::bimap<int, double >::value_type(j, fabs(jjjTop.M() - 172.5)));
+    }
+  }
+  vToptagged = SortToptager(topdm);
+
+  for(unsigned int j=0; j < vToptagged.size(); ++j)
+  {
+    TLorentzVector jjjTop(0, 0, 0, 0);
+    for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(vToptagged.at(j)).size(); ++k)
+    {
+      jjjTop +=  jetsforTT.at(type3Ptr->finalCombfatJets.at(vToptagged.at(j)).at(k));
+    }
+    vRecoTops.push_back(jjjTop);
+  }
+
+  return vRecoTops.size();
+}       // -----  end of function ComAna::GetType3TopTagger  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::PassType3TopCrite
+//  Description:  
+// ===========================================================================
+bool ComAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std::vector<TLorentzVector>& oriJetsVec,
+    std::vector<double>& recoJetsBtagCSVS, int ic) const
+{
+    double fatJetm123 = type3TopTaggerPtr->fatJetMassVec[ic];
+    // Find a top fat jet passing at least one of the three criteria
+    std::vector<int> fatJetPassStatusVec;
+    int isTopJet = type3TopTaggerPtr->checkTopCriteria(type3TopTaggerPtr->finalCombfatJets[ic], 
+        oriJetsVec, recoJetsBtagCSVS, type3TopTaggerPtr->fatJetSubMassVec[ic], fatJetm123, fatJetPassStatusVec);
+
+    if (isTopJet != 1) return false;
+
+    TLorentzVector jjjTop(0, 0, 0, 0);
+    for (size_t k = 0; k < type3TopTaggerPtr->finalCombfatJets.at(ic).size(); ++k)
+    {
+      jjjTop += oriJetsVec.at(type3TopTaggerPtr->finalCombfatJets.at(ic).at(k));
+    }
+    if (jjjTop.M() < 110 || jjjTop.M() > 240 ) return false;
+    return true;
+}       // -----  end of function ComAna::PassType3TopCrite  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SortToptager
+//  Description:  
+// ===========================================================================
+std::vector<int> ComAna::SortToptager( boost::bimap<int, double >  dm_bimap) 
+{
+  std::vector<int> sortedtagger;
+  std::set<int> jetset;
+  
+  double largerdm = -1;
+  for(boost::bimap<int, double>::right_map::const_iterator it=dm_bimap.right.begin();
+      it!=dm_bimap.right.end(); ++it)
+  {
+    //std::cout << "dm" << it->first <<" inex " << it->second << std::endl;
+    assert(it->first >= largerdm);
+    largerdm = it->first;
+    bool foundduplicatedjets = false;
+    for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(it->second).size(); ++k)
+    {
+      if (!jetset.insert(type3Ptr->finalCombfatJets.at(it->second).at(k)).second)
+      {
+        foundduplicatedjets = true;
+        break;
+      }
+    }
+    if (!foundduplicatedjets)
+    {
+      sortedtagger.push_back(it->second);
+    }
+  }
+
+  return sortedtagger;
+}       // -----  end of function ComAna::SortToptager  -----
+

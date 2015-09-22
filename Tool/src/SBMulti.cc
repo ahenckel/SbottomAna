@@ -87,9 +87,10 @@ bool SBMulti::InitCutOrder(std::string ana)
   CutOrder.push_back("MuonVeto");
   CutOrder.push_back("IskVeto");
   CutOrder.push_back("MET200");
+  CutOrder.push_back("dPhiJMET");
+  CutOrder.push_back("TopVeto");
 
   //CutOrder.push_back("HT250");
-  //CutOrder.push_back("dPhiJMET");
   //CutOrder.push_back("PTNonB");
   //CutOrder.push_back("MCT");
   //CutOrder.push_back("TriJets");
@@ -98,18 +99,21 @@ bool SBMulti::InitCutOrder(std::string ana)
   //CutOrder.push_back("23JetB");
 
   //Set the cutbit of each cut
+
   CutMap["NoCut"]    = "00000000000000000";
   CutMap["EleVeto"]  = "00000000000000001";
   CutMap["MuonVeto"] = "00000000000000011";
   CutMap["IskVeto"]  = "00000000000000111";
   CutMap["MET200"]   = "00000000000001111";
+  CutMap["dPhiJMET"] = "00000000000011111";
+  CutMap["TopVeto"]  = "00000000000111111";
 
-  //CutMap["TriJets"]  = "00000000000011111";
+
   //CutMap["DiJet70"] = "00000000000111111";
   //CutMap["1JetNotB"]  = "00000000001111111";
   //CutMap["HT250"]    = "00000000011111111";
   //CutMap["23JetB"]   = "00000000111111111";
-  //CutMap["dPhiJMET"] = "00000001111111111";
+  //CutMap["TriJets"] = "00000001111111111";
   //CutMap["PTNonB"]   = "00000001111111111";
   //CutMap["MCT"]      = "00000001111111111";
 
@@ -139,6 +143,12 @@ bool SBMulti::CheckCut()
 
   // MET > 200 GeV
   cutbit.set(3, tr->getVar<double>("met") > 200);
+
+  // dPhi 1, 2, 3 for QCD rejection
+  cutbit.set(4, tr->getVar<bool>("passdPhis"));
+
+  // Veto Top using Type3 
+  cutbit.set(5, ComAna::GetType3TopTagger() == 0);
 /*
  *
  *  // Exactly 3 jet with pT > 30GeV and |eta| < 2.5
@@ -178,8 +188,6 @@ bool SBMulti::CheckCut()
  *  cutbit.set(7, tr->getVar<double>("mht") > 250);
  *
  *  
- *  // dPhi 1, 2, 3 for QCD rejection
- *  cutbit.set(9, tr->getVar<bool>("passdPhis"));
  *
  *  // Pt (non-b jet) > 250GeV
  *  double nonbHT = 0;

@@ -16,7 +16,7 @@ import plotly.plotly as py
 
 
 def PlotEvent(num, lines):
-    outname = 'bhadoverlap_%s' % num
+    outname = 'T2bb900_%s' % num
     tlzv = []
     for line in lines:
         tlzv.append([line[0].strip(), ROOT.TLorentzVector(
@@ -26,7 +26,7 @@ def PlotEvent(num, lines):
     shapelist = []
     objlist = list(set([l[0] for l in tlzv]))
 
-    objlist = ['B', 'Top', 'Had', 'HEPTop', 'W', 'T3Top', 'AK4Jet']
+    objlist = ['B', 'AK4Jet', 'HEPTop', 'MET']
 
     objdict = defaultdict(list)
 
@@ -42,6 +42,7 @@ def PlotEvent(num, lines):
         'W'      : ['cross', 20, 'green'],
         'T3Top'  : ['square-cross', 20, 'purple'],
         'AK4Jet' : ['square', 15, 'cyan'],
+        'MET'    : ['square', 10, 'blue'],
     }
 
     # print (objdict['B'][1] +  objdict['Had'][3]).Pt()
@@ -64,7 +65,8 @@ def PlotEvent(num, lines):
             )
         )
 
-    for obj in objlist:
+    circlelist = ["AK4Jet", "HEPTop"]
+    for obj in circlelist:
         for v in objdict[obj]:
             shapedict = {
                 'type': 'circle',
@@ -83,12 +85,12 @@ def PlotEvent(num, lines):
                 shapedict['y0'] = v.Phi()-1.5
                 shapedict['x1'] = v.Eta()+1.5
                 shapedict['y1'] = v.Phi()+1.5
-            elif obj in ['B', 'Top', 'Had', 'W']:
-                shapedict['x0'] = v.Eta()-0.2
-                shapedict['y0'] = v.Phi()-0.2
-                shapedict['x1'] = v.Eta()+0.2
-                shapedict['y1'] = v.Phi()+0.2
-            else:
+            # elif obj in ['B', 'Top', 'Had', 'W']:
+                # shapedict['x0'] = v.Eta()-0.2
+                # shapedict['y0'] = v.Phi()-0.2
+                # shapedict['x1'] = v.Eta()+0.2
+                # shapedict['y1'] = v.Phi()+0.2
+            elif obj in ['AK4Jet']:
                 shapedict['x0'] = v.Eta()-0.4
                 shapedict['y0'] = v.Phi()-0.4
                 shapedict['x1'] = v.Eta()+0.4
@@ -96,6 +98,22 @@ def PlotEvent(num, lines):
             shapedict['line']['color'] = objmaker[obj][2]
             shapelist.append(shapedict)
 
+    for v in objdict['MET']:
+        shapedict2 = {
+            'type': 'line',
+            'xref': 'x',
+            'yref': 'y',
+            'x0': -5,
+            'y0': v.Phi(),
+            'x1': 5,
+            'y1': v.Phi(),
+            'line': {
+                'color': 'blue',
+                'width': 4,
+                'dash': 'dashdot',
+            },
+        }
+        shapelist.append(shapedict2)
 
     data = Data(datalist)
     # layout = Layout(
@@ -138,12 +156,37 @@ def PlotEvent(num, lines):
     plot_url = py.plot(fig, validate=False,filename=outname)
 
 
-def AnaEvent(num, objdict):
-    for hep in objdict['HEPTop']:
-        for t3 in objdict['T3Top']:
-            if hep.DeltaR(t3) > 0.5:
-                print hep.Pt(), hep.Eta()
+def AnaEvent(num, lines):
+    tlzv = []
+    for line in lines:
+        tlzv.append([line[0].strip(), ROOT.TLorentzVector(
+            ROOT.Double(line[1].strip()), ROOT.Double(line[2].strip()), ROOT.Double(line[3].strip()), ROOT.Double(line[4].strip()))])
 
+    objlist = ['B', 'AK4Jet', 'MET']
+    objdict = defaultdict(list)
+    for lv in tlzv:
+        if lv[0] in objlist:
+            objdict[lv[0]].append(lv[1])
+
+    fatjetlist = []
+    for v in objdict['AK4Jet']:
+        # sumV = ROOT.TLorentzVector(0, 0, 0, 0)
+        import copy
+        sumV = copy.deepcopy(v)
+        # print "++++" , v.Pt()
+        jcount = 0
+        for j in objdict['AK4Jet']:
+            if v.DeltaR(j) < 1.5 and v.DeltaR(j) != 0:
+                sumV += j
+                jcount+=1
+        # print "----" , jcount, sumV.Pt(), v.Pt(),  sumV.Pt()/v.Pt()
+        if sumV.Pt()/v.Pt() > 1.0:
+            fatjetlist.append(sumV)
+    # print fatjetlist
+
+    for t in fatjetlist:
+        out = ",".join(["1", "HEPTop", str(t.Px()), str(t.Py()), str(t.Pz()), str(t.E())])
+        print out
 
 if __name__ == "__main__":
     infile = open('out', 'r')
@@ -157,12 +200,12 @@ if __name__ == "__main__":
     for line in tsvfile:
         lines.append(line)
 
-    lines = lines[19:]
+    # lines = lines[19:]
     eventnumber = list(set([line[0] for line in lines]))
     eventdict = defaultdict(list)
     for i, event in enumerate(eventnumber):
         eventdict[event] = [line[1:] for line in lines if line[0] == event]
-        # AnaEvent(event, PlotEvent(event, eventdict[event]))
-        PlotEvent(event, eventdict[event])
+        AnaEvent(event, eventdict[event])
+        # PlotEvent(event, eventdict[event])
         if i == 10:
             break

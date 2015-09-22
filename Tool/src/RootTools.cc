@@ -95,7 +95,6 @@ bool PrintTLorentz(int event, std::string name, std::vector<TLorentzVector> obj)
     std::cout << event <<"," << name <<"," << temp.Px() <<"," << temp.Py() <<"," <<
       temp.Pz()<<"," << temp.E()<< std::endl;
   }
-
   return true;
 }       // -----  end of function PrintTLorentz  -----
 
@@ -108,7 +107,6 @@ double CalMT(TLorentzVector J1, TLorentzVector J2)
   return sqrt(2 * J1.Pt() * J2.Pt() * (1 - cos(J1.DeltaPhi(J2))));
 }       // -----  end of function CalMT  -----
 
-
 // ===  FUNCTION  ============================================================
 //         Name:  CalMCT
 //  Description:  /* cursor */
@@ -117,3 +115,64 @@ double CalMCT(TLorentzVector J1, TLorentzVector J2)
 {
   return sqrt(2 * J1.Pt() * J2.Pt() * (1 + cos(J1.DeltaPhi(J2))));
 }       // -----  end of function CalMCT  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  PrintEvent
+//  Description:  
+// ===========================================================================
+bool PrintEvent(NTupleReader *tr)
+{
+  int event = tr->getEvtNum();
+  //std::cout << " GenParticles : ";
+  //for (int i = 0; i < tr->getVec<int>("genDecayPdgIdVec").size(); ++i)
+  //{
+    //std::cout <<  tr->getVec<int>("genDecayPdgIdVec").at(i) <<" ";
+  //}
+  //std::cout << " " << std::endl;
+
+  std::vector<TLorentzVector> tempJet;
+
+  for(unsigned int i=0; i < tr->getVec<TLorentzVector>("jetsLVec").size(); ++i)
+  {
+    if (tr->getVec<TLorentzVector>("jetsLVec").at(i).Pt() > 30)
+    {
+      tempJet.push_back(tr->getVec<TLorentzVector>("jetsLVec").at(i));
+    }
+  } 
+  PrintTLorentz(event, "AK4Jet", tempJet);
+  //PrintTLorentz(event, "GEN4Jet", tr->getVec<TLorentzVector>("Gen4LVec"));
+
+  PrintTLorentz(event, "Top", GetGenParticles({6}, tr));
+  PrintTLorentz(event, "W", GetGenParticles({24}, tr));
+  PrintTLorentz(event, "Lep", GetGenParticles({11, 13, 15}, tr));
+  PrintTLorentz(event, "B", GetGenParticles({5}, tr));
+  PrintTLorentz(event, "Had", GetGenParticles({1, 2, 3, 4, 21}, tr));
+
+  TLorentzVector METLV(0, 0, 0, 0);
+  METLV.SetPtEtaPhiE(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
+  std::vector<TLorentzVector> tempMET;
+  tempMET.push_back(METLV);
+  PrintTLorentz(event, "MET", tempMET);
+
+  return true;
+}       // -----  end of function PrintEvent  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  GetGenParticles
+//  Description:  /* cursor */
+// ===========================================================================
+std::vector<TLorentzVector> GetGenParticles(const std::vector<int> pdgid, const NTupleReader *tr)
+{
+  std::vector<TLorentzVector> temp;
+  for (int i = 0; i < tr->getVec<int>("genDecayPdgIdVec").size(); ++i)
+  {
+    for (int j = 0; j < pdgid.size(); ++j)
+    {
+      if (abs(tr->getVec<int>("genDecayPdgIdVec").at(i)) == abs(pdgid.at(j)))
+      {
+        temp.push_back( tr->getVec<TLorentzVector> ("genDecayLVec").at(i));
+      }
+    }
+  }
+  return temp;
+}       // -----  end of function GetGenParticles  -----
