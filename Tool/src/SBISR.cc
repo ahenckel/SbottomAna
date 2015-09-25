@@ -95,6 +95,7 @@ bool SBISR::InitCutOrder(std::string ana)
   CutOrder.push_back("dPhiJMET");
   CutOrder.push_back("PTNonB");
   CutOrder.push_back("MCT");
+  CutOrder.push_back("TopVeto");
 
   //Set the cutbit of each cut
   CutMap["NoCut"]    = "00000000000000000";
@@ -110,6 +111,7 @@ bool SBISR::InitCutOrder(std::string ana)
   CutMap["dPhiJMET"] = "00000001111111111";
   CutMap["PTNonB"]   = "00000001111111111";
   CutMap["MCT"]      = "00000001111111111";
+  CutMap["TopVeto"]  = "00000011111111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -141,8 +143,10 @@ bool SBISR::CheckCut()
   bool Dijet70 = false;
   if (tr->getVec<TLorentzVector> ("jetsLVec").size() >=2)
   {
-    if (tr->getVec<TLorentzVector> ("jetsLVec").at(0).Pt() > 70 
-        && tr->getVec<TLorentzVector> ("jetsLVec").at(1).Pt() > 70) 
+    //if (tr->getVec<TLorentzVector> ("jetsLVec").at(0).Pt() > 70  // 8TeV
+        //&& tr->getVec<TLorentzVector> ("jetsLVec").at(1).Pt() > 70)  // 8TeV
+    if (tr->getVec<TLorentzVector> ("jetsLVec").at(0).Pt() > 40 
+        && tr->getVec<TLorentzVector> ("jetsLVec").at(1).Pt() > 40) 
       Dijet70 = true;
   }
   cutbit.set(1, Dijet70);
@@ -186,6 +190,7 @@ bool SBISR::CheckCut()
   }
   cutbit.set(10, nonbHT > 250);
 
+  cutbit.set(11, ComAna::GetType3TopTagger() == 0 );
 
   return true;
 }       // -----  end of function SBISR::CheckCut  -----

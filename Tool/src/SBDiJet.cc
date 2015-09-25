@@ -94,6 +94,7 @@ bool SBDiJet::InitCutOrder(std::string ana)
   CutOrder.push_back("MET175");
   CutOrder.push_back("dPhi25");
   CutOrder.push_back("MTJ2MET");
+  CutOrder.push_back("TopVeto");
 
   //Set the cutbit of each cut
   CutMap["NoCut"]    = "00000000000000000";
@@ -107,6 +108,7 @@ bool SBDiJet::InitCutOrder(std::string ana)
   CutMap["MET175"]   = "00000000011111111";
   CutMap["dPhi25"]   = "00000000111111111";
   CutMap["MTJ2MET"]  = "00000001111111111";
+  CutMap["TopVeto"]  = "00000011111111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -135,7 +137,7 @@ bool SBDiJet::CheckCut()
       jet70Idx.push_back(i);
     }
   }
-  cutbit.set(0, jet70count == 2);
+  cutbit.set(0, jet70count >= 2);
 
   // One or both leading jets tagged as a b-jet
   int bjet70count = 0;
@@ -151,7 +153,8 @@ bool SBDiJet::CheckCut()
   if (tr->getVec<TLorentzVector> ("jetsLVec").size() > 2)
   {
     TLorentzVector jet3 = tr->getVec<TLorentzVector> ("jetsLVec").at(2);
-    if (jet3.Pt() > 50 && fabs(jet3.Eta()) < 5)
+    //if (jet3.Pt() > 50 && fabs(jet3.Eta()) < 5) // 8TeV
+    if (jet3.Pt() > 70 && fabs(jet3.Eta()) < 5) // 13TeV
     {
       jet3Veto = true;
     }
@@ -188,8 +191,11 @@ bool SBDiJet::CheckCut()
   TLorentzVector METLV(0, 0, 0, 0);
   METLV.SetPtEtaPhiE(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
   MTJ2MET = CalMT(Jet2, METLV);
+  double MTJ1MET = CalMT(Jet1, METLV); // 13TeV
+  MTJ2MET = MTJ2MET < MTJ1MET ? MTJ2MET : MTJ1MET;
   cutbit.set(9, tr->getVec<TLorentzVector> ("jetsLVec").size() > 1 && MTJ2MET > 200);
 
+  cutbit.set(10, ComAna::GetType3TopTagger() == 0 );
   //----------------------------------------------------------------------------
   //  Always fill in the event cutbits information
   //----------------------------------------------------------------------------
