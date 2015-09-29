@@ -8,9 +8,9 @@ else
   CXX       = ~/.vim/bundle/ClangComplete/bin/cc_args.py g++
 endif
 
-CXXFLAGS  += -Iinc -std=c++0x  
+CXXFLAGS  += -Iinc -std=c++0x 
 ## Optimization flag
-#CXXFLAGS += -g #-O3
+#CXXFLAGS += -g -O3 -fstack-protector-all 
 ## Enable the maximun warning
 #CXXFLAGS += -Wall -Wextra -Weffc++ -g
 
@@ -69,7 +69,7 @@ testMain: $(TOOLS) $(ODIR)/testMain.o  $(ODIR)/NTupleReader.o  $(ODIR)/TopTagger
 	$(LD) $^ $(LIBS)  -o $@
 
 testBottom: $(TOOLS) $(ODIR)/testBottom.o  $(ODIR)/NTupleReader.o  $(ODIR)/ComAna.o $(ODIR)/SBDiJet.o \
-	$(ODIR)/SBISR.o $(ODIR)/PassCut.o  $(ODIR)/SBMulti.o
+	$(ODIR)/SBISR.o $(ODIR)/PassCut.o  $(ODIR)/SBMulti.o $(ODIR)/STISR.o
 	@echo "Linking $(PROGRAM) ..."
 	$(LD) $^ $(LIBS)  -o $@
 	@echo "done"

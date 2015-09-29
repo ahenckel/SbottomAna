@@ -83,6 +83,10 @@ bool ComAna::BookHistograms()
 
   // Ntops
   his->AddTH1C("NRecoTops"            , "NRecoTops"            , "No. of Reco Tops"        , "Events"        , 5 , 0  , 5);
+  
+
+  // RM from arXiv:1506.00653
+  his->AddTH1C("RM"            , "RM"            , "#frac{MET}{ISR Jet}"        , "Events"        , 100, 0, 1);
   return true;
 }       // -----  end of function ComAna::BookHistograms  -----
 
@@ -115,6 +119,11 @@ bool ComAna::FillCut(int NCut)
 
   // NTops
   his->FillTH1(NCut, "NRecoTops", int(vRecoTops.size()));
+
+  // RM
+  if( tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 ) 
+    his->FillTH1(NCut, "RM", tr->getVar<double>("met") / tr->getVec<TLorentzVector> ("jetsLVec").at(0).Pt());
+
   return true;
 }       // -----  end of function ComAna::FillCut  -----
 

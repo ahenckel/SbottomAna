@@ -82,33 +82,29 @@ bool STISR::InitCutOrder(std::string ana)
 
   //Add name and order of the cutflow
   CutOrder.push_back("NoCut");
-  CutOrder.push_back("TriJets");
-  CutOrder.push_back("DiJet70");
-  CutOrder.push_back("1JetNotB");
-  CutOrder.push_back("23JetB");
   CutOrder.push_back("EleVeto");
   CutOrder.push_back("MuonVeto");
   CutOrder.push_back("IskVeto");
-  CutOrder.push_back("HT250");
-  CutOrder.push_back("MET250");
-  CutOrder.push_back("dPhiJMET");
-  CutOrder.push_back("PTNonB");
-  CutOrder.push_back("MCT");
+  CutOrder.push_back("LJetPT700");
+  CutOrder.push_back("LJetMass");
+  CutOrder.push_back("SubJet60");
+  CutOrder.push_back("SubJetB");
+  CutOrder.push_back("dPhiLJMET");
+  CutOrder.push_back("dPhiSubJMET");
+  CutOrder.push_back("MET200");
 
   //Set the cutbit of each cut
-  CutMap["NoCut"]    = "00000000000000000";
-  CutMap["TriJets"]  = "00000000000000001";
-  CutMap["DiJet70"]  = "00000000000000011";
-  CutMap["1JetNotB"] = "00000000000000111";
-  CutMap["23JetB"]   = "00000000000001111";
-  CutMap["EleVeto"]  = "00000000000011111";
-  CutMap["MuonVeto"] = "00000000000111111";
-  CutMap["IskVeto"]  = "00000000001111111";
-  CutMap["HT250"]    = "00000000011111111";
-  CutMap["MET250"]   = "00000000111111111";
-  CutMap["dPhiJMET"] = "00000001111111111";
-  CutMap["PTNonB"]   = "00000001111111111";
-  CutMap["MCT"]      = "00000001111111111";
+  CutMap["NoCut"]       = "00000000000000000";
+  CutMap["EleVeto"]     = "00000000000000001";
+  CutMap["MuonVeto"]    = "00000000000000011";
+  CutMap["IskVeto"]     = "00000000000000111";
+  CutMap["LJetPT700"]   = "00000000000001111";
+  CutMap["LJetMass"]    = "00000000000011111";
+  CutMap["SubJet60"]    = "00000000000111111";
+  CutMap["SubJetB"]     = "00000000001111111";
+  CutMap["dPhiLJMET"]   = "00000000011111111";
+  CutMap["dPhiSubJMET"] = "00000000111111111";
+  CutMap["MET200"]      = "00000001111111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -124,66 +120,70 @@ bool STISR::CheckCut()
 {
   const double CVS = 0.814;
   cutbit.reset();
-  // Exactly 3 jet with pT > 30GeV and |eta| < 2.5
-  int jet30count = 0;
-  for (int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
+  if( tr->getVec<TLorentzVector> ("jetsLVec").size() == 0 ) 
   {
-    if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > 30) 
-    {
-      jet30count++;
-    }
+    cutbit.set();
+    cutbit.flip();
+    return false;
   }
-  cutbit.set(0, jet30count == 3);
-
-  // Two leading jets pT > 70 GeV
-  bool Dijet70 = false;
-  if (tr->getVec<TLorentzVector> ("jetsLVec").size() >=2)
-  {
-    if (tr->getVec<TLorentzVector> ("jetsLVec").at(0).Pt() > 70 
-        && tr->getVec<TLorentzVector> ("jetsLVec").at(1).Pt() > 70) 
-      Dijet70 = true;
-  }
-  cutbit.set(1, Dijet70);
-
-  // First Jet is not tagged as a b-jet
-  cutbit.set(2, tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 && tr->getVec<double>("recoJetsBtag_0").at(0) <  CVS );
-
-  // Second or third or both jets are b-jet
-  bool bjets23 = false;
-  if (tr->getVec<TLorentzVector> ("jetsLVec").size() >=3)
-  {
-    if ( tr->getVec<double>("recoJetsBtag_0").at(1)  > CVS || tr->getVec<double>("recoJetsBtag_0").at(2) >  CVS )
-      bjets23 = true;
-  }
-  cutbit.set(3, bjets23);
 
   // Eletron Veto
-  cutbit.set(4, tr->getVar<bool>("passEleVeto"));
+  cutbit.set(0, tr->getVar<bool>("passEleVeto"));
   
   // Muon Veto
-  cutbit.set(5, tr->getVar<bool>("passMuonVeto"));
+  cutbit.set(1, tr->getVar<bool>("passMuonVeto"));
 
   // IsoTrack Veto
-  cutbit.set(6, tr->getVar<bool>("passIsoTrkVeto"));
+  cutbit.set(2, tr->getVar<bool>("passIsoTrkVeto"));
 
-  // HT(scalar sum of jet pt) > 250GeV
-  cutbit.set(7, tr->getVar<double>("mht") > 250);
 
-  // MET > 250 GeV
-  cutbit.set(8, tr->getVar<double>("met") > 250);
-  
-  // dPhi 1, 2, 3 for QCD rejection
-  cutbit.set(9, tr->getVar<bool>("passdPhis"));
+  // Leading jet Pt > 700GeV!
+  TLorentzVector J1(0, 0, 0, 0);
+  if( tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 )
+    J1 = tr->getVec<TLorentzVector> ("jetsLVec").at(0);
 
-  // Pt (non-b jet) > 250GeV
-  double nonbHT = 0;
-  for (int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
+  cutbit.set(3, J1.Pt() > 700);
+
+  // Leading Jet mass > Mtop
+  cutbit.set(4, J1.M() > 172.5);
+
+  // Subjet counting
+  std::vector<int> SubJetIdx;
+  int SubJetcount=0;
+  int SubJetBcount=0;
+  for (int i = 1; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
   {
-    
-    if(tr->getVec<double>("recoJetsBtag_0").at(i) > CVS)
-      nonbHT += tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt();
+    if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > 60) 
+    {
+      SubJetcount ++;
+      SubJetIdx.push_back(i);
+      if (tr->getVec<double>("recoJetsBtag_0").at(i) > CVS)
+        SubJetBcount++;
+    }
   }
-  cutbit.set(10, nonbHT > 250);
+  // At least three sub-leading jets
+  cutbit.set(5, SubJetcount >= 3);
+
+  // At least one of the subjets is b-tagged
+  cutbit.set(6, SubJetBcount >= 1);
+
+  // delta Phi 
+  TLorentzVector METLV(0, 0, 0, 0);
+  METLV.SetPtEtaPhiE(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
+
+  // | phi_j0 - phi_MET - pi | < 0.15
+  cutbit.set(7, fabs(J1.DeltaPhi(METLV)) < 0.15);
+  
+  // | phi_sub - phi_MET | > 0.2
+  bool dPhiSub = true;
+  for (int i = 0; i < SubJetIdx.size(); ++i)
+  {
+    dPhiSub = dPhiSub &&  fabs(tr->getVec<TLorentzVector> ("jetsLVec").at(SubJetIdx.at(i)).DeltaPhi(METLV)) > 0.2;
+  }
+  cutbit.set(8, dPhiSub);
+  
+  // MET > 200 GeV
+  cutbit.set(9, tr->getVar<double>("met") > 200);
 
 
   return true;

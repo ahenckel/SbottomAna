@@ -35,6 +35,7 @@
 #include "ComAna.h"
 #include "SBDiJet.h"
 #include "SBISR.h"
+#include "STISR.h"
 #include "PassCut.h"
 #include "SBMulti.h"
 
@@ -101,6 +102,7 @@ int main(int argc, char* argv[])
   AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
   AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
   AnaMap["PassCut"] = new PassCut("LeftOver", &tr, OutFile);
+  AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
 
   std::cout<<"First loop begin: "<<std::endl;
   while(tr.getNextEvent())
@@ -111,6 +113,7 @@ int main(int argc, char* argv[])
 
     // CutFlow
     his->FillTH1("CutFlow", 0);
+    AnaMap["STISR"] -> FillCut();
     bool passcuts = false;
     bool passDJ =  AnaMap["SBDJ"]->FillCut();
     bool passISR = AnaMap["SBISR"]->FillCut();
