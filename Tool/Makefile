@@ -20,8 +20,10 @@ CXXFLAGS  += $(shell root-config --cflags)
 
 ifneq ($(shell echo $$CMSSW_BASE), )
   CXXFLAGS  += -I$(CMSSW_BASE)/src/
+  SUSYObj = $(CMSSW_BASE)/src/SusyAnaTools/Tools/obj/
 else
   CXXFLAGS  += -I../..
+  SUSYObj = ../../SusyAnaTools/Tools/obj/
 endif
 
 LD         = g++
@@ -41,6 +43,11 @@ endif
 ifneq ($(shell echo $$BOOSTROOT), )
   CXXFLAGS  += -isystem $(shell echo $(BOOSTROOT))
 endif
+
+SUSYTools = $(SUSYObj)/NTupleReader.o $(SUSYObj)/samples.o
+
+FILES = $(wildcard $(SDIR)/*.cc)
+OBJS  := $(FILES:$(SDIR)/%.cc=$(ODIR)/%.o)
 
 PROGRAMS = testBottom
 #PROGRAM = testMain
@@ -68,8 +75,7 @@ tupleTest: $(ODIR)/NTupleReader.o  $(ODIR)/tupleReadTest.o
 testMain: $(TOOLS) $(ODIR)/testMain.o  $(ODIR)/NTupleReader.o  $(ODIR)/TopTaggerAna.o $(ODIR)/Type3Bhad.o
 	$(LD) $^ $(LIBS)  -o $@
 
-testBottom: $(TOOLS) $(ODIR)/testBottom.o  $(ODIR)/NTupleReader.o  $(ODIR)/ComAna.o $(ODIR)/SBDiJet.o \
-	$(ODIR)/SBISR.o $(ODIR)/PassCut.o  $(ODIR)/SBMulti.o $(ODIR)/STISR.o
+testBottom: $(TOOLS)  $(SUSYTools)  $(OBJS)
 	@echo "Linking $(PROGRAM) ..."
 	$(LD) $^ $(LIBS)  -o $@
 	@echo "done"
