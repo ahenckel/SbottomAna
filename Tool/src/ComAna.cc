@@ -87,6 +87,14 @@ bool ComAna::BookHistograms()
 
   // RM from arXiv:1506.00653
   his->AddTH1C("RM"            , "RM"            , "#frac{MET}{ISR Jet}"        , "Events"        , 100, 0, 1);
+  //
+  his->AddTH1C("dPhiJ1MET", "dPhiJ1MET", "#phi(J1, MET)", "Events",  20, -5, 5);
+
+  // Search bins
+  his->AddTH1C("NBJets", "NBJets", 4, 0, 4);
+  his->AddTH1C("NTops", "NTops", 4, 0, 4);
+  his->AddTH1C("MT2", "MT2", 300, 0, 1500);
+  his->AddTH1C("MET", "MET", 300, 0, 1500);
   return true;
 }       // -----  end of function ComAna::BookHistograms  -----
 
@@ -118,11 +126,23 @@ bool ComAna::FillCut(int NCut)
   his->FillTH1(NCut, "METPhi", tr->getVar<double>("metphi") );
 
   // NTops
-  his->FillTH1(NCut, "NRecoTops", int(vRecoTops.size()));
+  his->FillTH1(NCut, "NRecoTops", tr->getVar<int>("nTopCandSortedCnt"));
+  //his->FillTH1(NCut, "NRecoTops", int(vRecoTops.size()));
 
   // RM
   if( tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 ) 
+  {
+
     his->FillTH1(NCut, "RM", tr->getVar<double>("met") / tr->getVec<TLorentzVector> ("jetsLVec").at(0).Pt());
+    TLorentzVector METLV(0, 0, 0, 0);
+    METLV.SetPtEtaPhiE(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
+    his->FillTH1(NCut, "dPhiJ1MET", tr->getVec<TLorentzVector> ("jetsLVec").at(0).DeltaPhi(METLV));
+  }
+
+  his->FillTH1(NCut, "NBJets", tr->getVar<int>("cntCSVS"));
+  his->FillTH1(NCut, "NTops", tr->getVar<int>("nTopCandSortedCnt"));
+  his->FillTH1(NCut, "MT2", tr->getVar<double>("best_had_brJet_MT2"));
+  his->FillTH1(NCut, "MET", tr->getVar<double>("met"));
 
   return true;
 }       // -----  end of function ComAna::FillCut  -----
@@ -179,7 +199,7 @@ bool ComAna::RunEvent()
 {
   j30count = CountJets(30);
   GetLeadingJets();
-  GetType3TopTagger();
+  //GetType3TopTagger();
 
   return true;
 }       // -----  end of function ComAna::RunEvent  -----
@@ -405,7 +425,7 @@ int ComAna::GetType3TopTagger()
   if(jetsforTT.size () <= 3) return vRecoTops.size();
 
   // Run the Top Tagger
-  type3Ptr->setdoTopVeto(true);
+  //type3Ptr->setdoTopVeto(true);
   type3Ptr->runOnlyTopTaggerPart(jetsforTT, bjsforTT);
 
   //Get Pt order jet list, passing the requirement
@@ -496,4 +516,15 @@ std::vector<int> ComAna::SortToptager( boost::bimap<int, double >  dm_bimap)
 
   return sortedtagger;
 }       // -----  end of function ComAna::SortToptager  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetEvtWeight
+//  Description:  
+// ===========================================================================
+bool ComAna::SetEvtWeight(double weight) const
+{
+   his->SetWeight(weight);
+  return true;
+}       // -----  end of function ComAna::SetEvtWeight  -----
 

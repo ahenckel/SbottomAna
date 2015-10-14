@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <ctime>
 #include <memory>
+#include <functional>
 
 // ROOT
 #include "TFile.h"
@@ -27,17 +28,25 @@
 #include "TChain.h"
 #include "TError.h"
 
+// Boost
+#include "boost/bind.hpp"
+
 // UserTools
 #include "RootTools.h"
-#include "baselineDef.h"
-#include "NTupleReader.h"
 #include "HistTool.hh"
 #include "ComAna.h"
+#include "VarPerEvent.h"
 #include "SBDiJet.h"
 #include "SBISR.h"
 #include "STISR.h"
 #include "PassCut.h"
 #include "SBMulti.h"
+#include "StopAna.h"
+
+// SusyAnaTools
+#include "SusyAnaTools/Tools/baselineDef.h"
+#include "SusyAnaTools/Tools/NTupleReader.h"
+
 
 int main(int argc, char* argv[])
 {
@@ -86,8 +95,8 @@ int main(int argc, char* argv[])
   std::shared_ptr<TFile> OutFile(new TFile(outFileName, "RECREATE"));
   HistTool* his = new HistTool(OutFile, "d");
   his->AddTPro("XS", "Cross Section", 2, 0, 2);
-  his->AddTH1("TestBit", "TestBit", 10, 0, 10);
   his->AddTH1("NEvent", "Number of Events", 2, 0, 2);
+  his->AddTH1("Weight", "Number of Events", 200, -1, 1);
   his->FillTPro("XS", 1, GetXS(inputFileList));
 
   //clock to monitor the run time
@@ -95,52 +104,64 @@ int main(int argc, char* argv[])
   NTupleReader tr(fChain);
   AnaFunctions::prepareTopTagger();
   tr.registerFunction(&passBaselineFunc);
+  tr.registerFunction(&RegisterVarPerEvent);
   //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
 
   std::map<std::string, ComAna*> AnaMap;
-  AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
-  AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
-  AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
-  AnaMap["PassCut"] = new PassCut("LeftOver", &tr, OutFile);
-  AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
+  AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
+  //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
+  //AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
+  //AnaMap["PassCut"] = new PassCut("LeftOver", &tr, OutFile);
+  //AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
 
   std::cout<<"First loop begin: "<<std::endl;
   while(tr.getNextEvent())
   {
-    his->FillTH1("NEvent", 1);
+
     if(tr.getEvtNum()%20000 == 0)
       std::cout << tr.getEvtNum() << "\t" << ((clock() - t0)/1000000.0) << std::endl;
 
-    // CutFlow
-    his->FillTH1("CutFlow", 0);
-    AnaMap["STISR"] -> FillCut();
-    bool passcuts = false;
-    bool passDJ =  AnaMap["SBDJ"]->FillCut();
-    bool passISR = AnaMap["SBISR"]->FillCut();
-    bool passMulti = AnaMap["SBMulti"]->FillCut();
-    his->FillTH1("TestBit", 0);
-    if (passDJ) his->FillTH1("TestBit", 1);
-    if (passISR) his->FillTH1("TestBit", 2);
-    if (passDJ && passISR) his->FillTH1("TestBit", 3);
-    if (passDJ || passISR) his->FillTH1("TestBit", 4);
-    if (passMulti) his->FillTH1("TestBit", 5);
-    //passcuts = AnaMap["SBDJ"]->FillCut() || passcuts ;
-    //passcuts = AnaMap["SBISR"]->FillCut() || passcuts;
-    if (! (passDJ || passISR))
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Set Event Weight ~~~~~
+    int evtWeight = tr.getVar<double>("stored_weight") > 0 ? 1 : -1;
+    //std::cout << tr.getVar<int>("test") << std::endl;
+    his->FillTH1("NEvent", 1, evtWeight);
+    his->FillTH1("Weight", tr.getVar<double>("stored_weight"));
+    for(std::map<std::string, ComAna*>::const_iterator it=AnaMap.begin();
+        it!=AnaMap.end(); ++it)
     {
-      AnaMap["PassCut"]->FillCut();
+      it->second->SetEvtWeight(evtWeight);
+      it->second->FillCut();
     }
-  }
 
-  for(std::map<std::string, ComAna*>::const_iterator it=AnaMap.begin();
-      it!=AnaMap.end(); ++it)
-  {
-    it->second->WriteHistogram();
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Fill Cuts ~~~~~
+    //AnaMap["STISR"] -> FillCut();
+    //bool passcuts = false;
+    //bool passDJ =  AnaMap["SBDJ"]->FillCut();
+    //bool passISR = AnaMap["SBISR"]->FillCut();
+    //bool passMulti = AnaMap["SBMulti"]->FillCut();
+    //his->FillTH1("TestBit", 0);
+    //if (passDJ) his->FillTH1("TestBit", 1);
+    //if (passISR) his->FillTH1("TestBit", 2);
+    //if (passDJ && passISR) his->FillTH1("TestBit", 3);
+    //if (passDJ || passISR) his->FillTH1("TestBit", 4);
+    //if (passMulti) his->FillTH1("TestBit", 5);
+    ////passcuts = AnaMap["SBDJ"]->FillCut() || passcuts ;
+    ////passcuts = AnaMap["SBISR"]->FillCut() || passcuts;
+    //if (! (passDJ || passISR))
+    //{
+      //AnaMap["PassCut"]->FillCut();
+    //}
   }
 
 //----------------------------------------------------------------------------
 //  Write the output
 //----------------------------------------------------------------------------
+  for(std::map<std::string, ComAna*>::const_iterator it=AnaMap.begin();
+      it!=AnaMap.end(); ++it)
+  {
+    it->second->WriteHistogram();
+  }
   his->WriteTPro();
   his->WriteTH1();
 

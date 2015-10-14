@@ -23,7 +23,8 @@
 // boost
 #include "boost/tokenizer.hpp"
 #include "boost/algorithm/string.hpp"
-#include "NTupleReader.h"
+#include "SusyAnaTools/Tools/samples.h"
+#include "SusyAnaTools/Tools/NTupleReader.h"
 
 // ROOT
 #include "TLorentzVector.h"

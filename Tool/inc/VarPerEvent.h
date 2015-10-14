@@ -1,61 +1,50 @@
 // ===========================================================================
 // 
-//       Filename:  SBDiJet.h
+//       Filename:  VarPerEvent.h
 // 
 //    Description:  
 // 
 //        Version:  1.0
-//        Created:  08/21/2015 17:42:24
+//        Created:  10/13/2015 16:22:25
 //       Revision:  none
 //       Compiler:  g++
 // 
-//         Author:  Zhenbin Wu (benwu), benwu@fnal.gov
-//        Company:  Baylor University, CDF@FNAL, CMS@LPC
+//         Author:  Zhenbin Wu (benwu), zhenbin.wu@gmail.com
+//        Company:  UIC, CMS@LPC, CDF@FNAL
 // 
 // ===========================================================================
 
+#ifndef  __VARPEREVENT_INC__
+#define  __VARPEREVENT_INC__
 
-#ifndef  __SBDIJET_INC__
-#define  __SBDIJET_INC__
-
-// stdlib
-#include <cassert>
-
-// ROOT
-
-// User class
-#include "ComAna.h"
-#include "HistTool.hh"
-#include "RootTools.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
+#include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
+
+void RegisterVarPerEvent(NTupleReader &tr);
 
 // ===========================================================================
-//        Class:  SBDiJet
-//  Description:  
+//        Class:  VarPerEvent
+//  Description:  A local class which will be called per event, to calculate
+//  local variables, following baselineDef structure
 // ===========================================================================
-class SBDiJet : public ComAna
+class VarPerEvent
 {
   public:
 
     // ====================  LIFECYCLE     ===============================
-    SBDiJet (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);
-    SBDiJet ( const SBDiJet &other );   // copy constructor
-    ~SBDiJet ();                            // destructor
+    VarPerEvent (NTupleReader *tr);             // constructor
+    VarPerEvent ( const VarPerEvent &other );   // copy constructor
+    ~VarPerEvent ();                            // destructor
 
     // ====================  ACCESSORS     ===============================
-
-    bool InitCutOrder(std::string ana);
-    bool CheckCut();
-    bool BookHistograms();
-    //bool WriteHistogram();
-    bool FillCut();
+    bool RunPerEvent() const;
 
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================
 
-    SBDiJet& operator = ( const SBDiJet &other ); // assignment operator
+    VarPerEvent& operator = ( const VarPerEvent &other ); // assignment operator
 
     // ====================  DATA MEMBERS  ===============================
 
@@ -66,15 +55,11 @@ class SBDiJet : public ComAna
 
   private:
     // ====================  METHODS       ===============================
-    bool FillCut(int NCut);
-    
+
     // ====================  DATA MEMBERS  ===============================
+    NTupleReader *tr;
 
-    
-    //  local variable
-    double MTJ2MET ;
-    
-}; // -----  end of class SBDiJet  -----
+}; // -----  end of class VarPerEvent  -----
 
 
-#endif   // ----- #ifndef __SBDIJET_INC__  -----
+#endif   // ----- #ifndef __VARPEREVENT_INC__  -----

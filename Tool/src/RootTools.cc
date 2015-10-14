@@ -16,7 +16,6 @@
 
 
 #include "RootTools.h"
-#include "samples2.h"
 
 // ===  FUNCTION  ============================================================
 //         Name:  GetXS
@@ -24,14 +23,13 @@
 // ===========================================================================
 double GetXS(std::string name)
 {
-
+  AnaSamples::SampleSet        allSamples;
   typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
   boost::char_separator<char> sep("/.");
   tokenizer tokens(name, sep);
 
-  int totalsize = sizeof(mcStr) /sizeof(mcStr[0]);
-  int foundidx = -1;
-  int idx = 0;
+  //double scaleMC = allSamples[keyString].getWeight();
+  std::string keyString("");
 
   std::cout << " input " << name << std::endl;
   for (tokenizer::iterator tok_iter = tokens.begin();
@@ -39,28 +37,21 @@ double GetXS(std::string name)
   {
     std::cout << "<" << *tok_iter << "> ";
 
-    idx = 0;
-    while (idx < totalsize)
+    if (allSamples[*tok_iter] != allSamples.null())
     {
-      if (*tok_iter == std::string(mcStr[idx]))
-      {
-        foundidx = idx;
-        break;
-      }
-      idx++;
+      keyString = *tok_iter;
+      break;
     }
   }
   std::cout << "\n";
 
-  if (foundidx != -1)
-  {
-    std::cout << " Found " << mcStr[foundidx] << " with XS " <<  xSecArr[foundidx]<< std::endl;
-  }
+  if (keyString != "")
+    std::cout << " Found " << keyString << " with XS " <<  allSamples[keyString].xsec  << " with kFactor" 
+      << allSamples[keyString].kfactor << std::endl;
   else
     return -1;
 
-
-  return xSecArr[foundidx];
+  return  allSamples[keyString].xsec * allSamples[keyString].kfactor;
 }       // -----  end of function GetXS  -----
 
 // ===  FUNCTION  ============================================================

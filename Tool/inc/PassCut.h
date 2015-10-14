@@ -25,9 +25,9 @@
 // User class
 #include "ComAna.h"
 #include "HistTool.hh"
-#include "NTupleReader.h"
 #include "RootTools.h"
 
+#include "SusyAnaTools/Tools/NTupleReader.h"
 // ===========================================================================
 //        Class:  PassCut
 //  Description:  S

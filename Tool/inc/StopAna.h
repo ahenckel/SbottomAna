@@ -1,22 +1,21 @@
 // ===========================================================================
 // 
-//       Filename:  SBDiJet.h
+//       Filename:  StopAna.h
 // 
 //    Description:  
 // 
 //        Version:  1.0
-//        Created:  08/21/2015 17:42:24
+//        Created:  10/13/2015 16:05:55
 //       Revision:  none
 //       Compiler:  g++
 // 
-//         Author:  Zhenbin Wu (benwu), benwu@fnal.gov
-//        Company:  Baylor University, CDF@FNAL, CMS@LPC
+//         Author:  Zhenbin Wu (benwu), zhenbin.wu@gmail.com
+//        Company:  UIC, CMS@LPC, CDF@FNAL
 // 
 // ===========================================================================
 
-
-#ifndef  __SBDIJET_INC__
-#define  __SBDIJET_INC__
+#ifndef  __STOPANA_INC__
+#define  __STOPANA_INC__
 
 // stdlib
 #include <cassert>
@@ -31,31 +30,29 @@
 #include "SusyAnaTools/Tools/NTupleReader.h"
 
 // ===========================================================================
-//        Class:  SBDiJet
+//        Class:  StopAna
 //  Description:  
 // ===========================================================================
-class SBDiJet : public ComAna
+class StopAna : public ComAna
 {
   public:
 
     // ====================  LIFECYCLE     ===============================
-    SBDiJet (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);
-    SBDiJet ( const SBDiJet &other );   // copy constructor
-    ~SBDiJet ();                            // destructor
+    StopAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);                             // constructor
+    StopAna ( const StopAna &other );   // copy constructor
+    ~StopAna ();                            // destructor
 
     // ====================  ACCESSORS     ===============================
-
     bool InitCutOrder(std::string ana);
     bool CheckCut();
     bool BookHistograms();
-    //bool WriteHistogram();
     bool FillCut();
 
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================
 
-    SBDiJet& operator = ( const SBDiJet &other ); // assignment operator
+    StopAna& operator = ( const StopAna &other ); // assignment operator
 
     // ====================  DATA MEMBERS  ===============================
 
@@ -66,15 +63,11 @@ class SBDiJet : public ComAna
 
   private:
     // ====================  METHODS       ===============================
-    bool FillCut(int NCut);
-    
+    bool FillSearchBins(int NCut);
+
     // ====================  DATA MEMBERS  ===============================
 
-    
-    //  local variable
-    double MTJ2MET ;
-    
-}; // -----  end of class SBDiJet  -----
+}; // -----  end of class StopAna  -----
 
 
-#endif   // ----- #ifndef __SBDIJET_INC__  -----
+#endif   // ----- #ifndef __STOPANA_INC__  -----

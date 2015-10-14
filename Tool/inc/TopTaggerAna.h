@@ -20,14 +20,14 @@
 #define  __TOPTAGGERANA_INC__
 
 #include <cassert>
+#include "TLorentzVector.h"
+#include "boost/bimap.hpp"
 
 #include "HistTool.hh"
-#include "NTupleReader.h"
 #include "Type3Bhad.h"
 
-#include "TLorentzVector.h"
 #include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
-#include "boost/bimap.hpp"
+#include "SusyAnaTools/Tools/NTupleReader.h"
 
 struct TopDecay 
 {

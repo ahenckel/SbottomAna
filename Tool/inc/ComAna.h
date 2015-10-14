@@ -23,12 +23,14 @@
 #include <memory>
 #include "boost/bimap.hpp"
 
-#include "NTupleReader.h"
 #include "HistTool.hh"
 #include "RootTools.h"
+
+#include "SusyAnaTools/Tools/NTupleReader.h"
 #include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
 
 #define NBITS 20
+
 // ===========================================================================
 //        Class:  ComAna
 //  Description:  
@@ -43,6 +45,7 @@ class ComAna
     ~ComAna ();                            // destructor
 
     // ====================  ACCESSORS     ===============================
+    bool SetEvtWeight(double weight) const;
     virtual bool BookHistograms();
     virtual bool InitCutOrder(std::string ana) const;
     virtual bool FillCut();
@@ -68,6 +71,9 @@ class ComAna
     int GetType3TopTagger();
 
     // ====================  DATA MEMBERS  ===============================
+    std::vector<std::string> CutOrder;
+    std::bitset<NBITS> cutbit;
+    std::map<std::string, std::string>  CutMap;
     HistTool *his;
     NTupleReader *tr;
 
@@ -87,9 +93,6 @@ class ComAna
         std::vector<double>& recoJetsBtagCSVS, int ic) const;
     std::vector<int> SortToptager( boost::bimap<int, double > dm_bimap);
     // ====================  DATA MEMBERS  ===============================
-    std::bitset<NBITS> cutbit;
-    std::vector<std::string> CutOrder;
-    std::map<std::string, std::string>  CutMap;
 
     topTagger::type3TopTagger * type3Ptr;
     std::vector<TLorentzVector> vRecoTops;
@@ -103,5 +106,4 @@ class ComAna
 
 
 }; // -----  end of class ComAna  -----
-
 #endif   // ----- #ifndef __COMANA_INC__  -----

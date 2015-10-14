@@ -25,9 +25,9 @@
 // User class
 #include "ComAna.h"
 #include "HistTool.hh"
-#include "NTupleReader.h"
 #include "RootTools.h"
 
+#include "SusyAnaTools/Tools/NTupleReader.h"
 // ===========================================================================
 //        Class:  SBMulti
 //  Description:  S
@@ -60,14 +60,11 @@ class SBMulti : public ComAna
     // ====================  METHODS       ===============================
 
     // ====================  DATA MEMBERS  ===============================
-    std::bitset<NBITS> cutbit;
 
   private:
     // ====================  METHODS       ===============================
 
     // ====================  DATA MEMBERS  ===============================
-    std::vector<std::string> CutOrder;
-    std::map<std::string, std::string>  CutMap;
 
 }; // -----  end of class SBMulti  -----
 
