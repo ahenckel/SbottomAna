@@ -204,7 +204,7 @@ def GetLPClist():
         filename = NtupleDir +"/" + value
         if not os.path.isfile(filename):
             continue
-        print filename
+        print(filename)
         shutil.copyfile(filename, key+".txt")
 
 
