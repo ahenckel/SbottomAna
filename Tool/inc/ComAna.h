@@ -77,16 +77,22 @@ class ComAna
     HistTool *his;
     NTupleReader *tr;
 
-  private:
-    // ====================  METHODS       ===============================
-    virtual bool CheckCut();
-    int CountJets(double jetPt) const;
-    bool GetLeadingJets();
     bool BookTLVHistos(std::string name);
     bool FillTLVHistos(int NCut, std::string name, TLorentzVector TLV);
 
     bool Book2TLVHistos(std::string name);
     bool Fill2TLVHistos(int NCut, std::string name, TLorentzVector LV1, TLorentzVector LV2);
+
+    TLorentzVector Jet1;
+    TLorentzVector Jet2;
+    TLorentzVector Jet3;
+    TLorentzVector Jet4;
+
+  private:
+    // ====================  METHODS       ===============================
+    virtual bool CheckCut();
+    int CountJets(double jetPt) const;
+    bool GetLeadingJets();
 
 
     bool PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std::vector<TLorentzVector>& oriJetsVec, 
@@ -99,10 +105,6 @@ class ComAna
 
     // Event variables
     int j30count;
-    TLorentzVector Jet1;
-    TLorentzVector Jet2;
-    TLorentzVector Jet3;
-    TLorentzVector Jet4;
 
 
 }; // -----  end of class ComAna  -----

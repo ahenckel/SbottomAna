@@ -77,6 +77,10 @@ class HistTool
         const std::string& xlabel, const std::string& ylabel, 
         const Int_t& nxbins, const Axis_t& xmin, const Axis_t& xmax, 
         const Int_t& logx=0, const Int_t& logy=0);
+    int AddTH1C(const std::string& name, const std::string& title, 
+        std::vector<std::string>& BinLabels);
+    TH1F* AddTH1(const std::string& name, const std::string& title, 
+        std::vector<std::string>& BinLabels);
 
     // Filling the his TH1
     int FillTH1(int Ncut, std::string HisName, int value, double weight=-999.);

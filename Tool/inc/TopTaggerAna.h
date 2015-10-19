@@ -74,6 +74,7 @@ class TopTaggerAna
     bool SetType3BHad(bool run);
     bool SetType3BhadWindow(int low, int high) const;
 
+    int GetGenTop();
     // ====================  DATA MEMBERS  ===============================
     bool goodreco; 
 
@@ -103,7 +104,6 @@ class TopTaggerAna
     std::vector<TLorentzVector> jetsforTT;
     std::vector<double> bjsforTT;
 
-    int GetGenTop();
     int GetChild(int parent, std::vector<int> pdgs) const;
     std::vector<int> GetChilds(int parent, std::vector<int> pdgs) const;
     bool FillGenTop();

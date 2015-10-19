@@ -19,12 +19,14 @@
 
 // stdlib
 #include <cassert>
+#include <functional>   // std::bind
 
 // ROOT
 
 // User class
 #include "ComAna.h"
 #include "HistTool.hh"
+#include "TopTaggerAna.h"
 #include "RootTools.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
@@ -46,8 +48,10 @@ class STISR : public ComAna
     bool InitCutOrder(std::string ana);
     bool CheckCut();
     bool BookHistograms();
+    bool WriteHistogram();
     bool FillCut();
 
+    std::map<std::string, bool> JetOrgAna(int NCut, std::string name, TLorentzVector &Jet);
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================
@@ -65,7 +69,11 @@ class STISR : public ComAna
     // ====================  METHODS       ===============================
 
     // ====================  DATA MEMBERS  ===============================
+    std::vector<std::string> JetType;
+    TopTaggerAna *topAna;
 
+    std::vector<TLorentzVector> jetsforTT;
+    std::vector<TLorentzVector> jetsforTTplt;
 }; // -----  end of class STISR  -----
 
 #endif   // ----- #ifndef __STISR_INC__  -----

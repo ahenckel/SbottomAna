@@ -83,15 +83,6 @@ TopTaggerAna::operator = ( const TopTaggerAna &other )
 bool TopTaggerAna::RunTagger()
 {
   his->FillTH1("NBase", 1);
-  genDecayLVec.clear();
-  genDecayIdxVec.clear();    
-  genDecayPdgIdVec.clear();  
-  genDecayMomIdxVec.clear(); 
-  
-  genDecayLVec      = tr->getVec<TLorentzVector> ("genDecayLVec");
-  genDecayIdxVec    = tr->getVec<int>            ("genDecayIdxVec");
-  genDecayPdgIdVec  = tr->getVec<int>            ("genDecayPdgIdVec");
-  genDecayMomIdxVec = tr->getVec<int>            ("genDecayMomIdxVec");
   
   int ditop = GetGenTop();
   FillGenTop();
@@ -310,6 +301,15 @@ bool TopTaggerAna::BookHistograms()
 // ===========================================================================
 int TopTaggerAna::GetGenTop() 
 {
+  genDecayLVec.clear();
+  genDecayIdxVec.clear();    
+  genDecayPdgIdVec.clear();  
+  genDecayMomIdxVec.clear(); 
+  
+  genDecayLVec      = tr->getVec<TLorentzVector> ("genDecayLVec");
+  genDecayIdxVec    = tr->getVec<int>            ("genDecayIdxVec");
+  genDecayPdgIdVec  = tr->getVec<int>            ("genDecayPdgIdVec");
+  genDecayMomIdxVec = tr->getVec<int>            ("genDecayMomIdxVec");
   vTops.clear();
   int Nhad = 0;
   for (int i = 0; i < genDecayMomIdxVec.size(); ++i)

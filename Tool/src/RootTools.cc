@@ -28,6 +28,7 @@ double GetXS(std::string name)
   boost::char_separator<char> sep("/.");
   tokenizer tokens(name, sep);
 
+
   //double scaleMC = allSamples[keyString].getWeight();
   std::string keyString("");
 
@@ -73,21 +74,6 @@ int GetCutBin( std::vector<std::string> &CutOrder , std::string name)
   return -1;
 }       // -----  end of function GetCutBin  -----
 
-// ===  FUNCTION  ============================================================
-//         Name:  PrintTLorentz
-//  Description:  /* cursor */
-// ===========================================================================
-bool PrintTLorentz(int event, std::string name, std::vector<TLorentzVector> obj) 
-{
-  for (int i = 0; i < obj.size(); ++i)
-  {
-    TLorentzVector temp = obj.at(i);
-    if (temp.Pt()<3) continue;
-    std::cout << event <<"," << name <<"," << temp.Px() <<"," << temp.Py() <<"," <<
-      temp.Pz()<<"," << temp.E()<< std::endl;
-  }
-  return true;
-}       // -----  end of function PrintTLorentz  -----
 
 // ===  FUNCTION  ============================================================
 //         Name:  CalMT
@@ -167,3 +153,132 @@ std::vector<TLorentzVector> GetGenParticles(const std::vector<int> pdgid, const 
   }
   return temp;
 }       // -----  end of function GetGenParticles  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  PrintTLorentz
+//  Description:  /* cursor */
+// ===========================================================================
+bool PrintTLorentz(int event, std::string name, std::vector<TLorentzVector> obj) 
+{
+  for (int i = 0; i < obj.size(); ++i)
+  {
+    TLorentzVector temp = obj.at(i);
+    if (temp.Pt()<3) continue;
+    std::cout << event <<"," << name <<"," << temp.Px() <<"," << temp.Py() <<"," <<
+      temp.Pz()<<"," << temp.E()<< std::endl;
+  }
+
+  return true;
+}       // -----  end of function PrintTLorentz  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  PrintTopEvent
+//  Description:  /* cursor */
+// ===========================================================================
+bool PrintTopEvent( NTupleReader &tr, std::vector<TopDecay> &vTops) 
+{
+  int event = tr.getEvtNum();
+  //PrintTLorentz(event, "HEPTop", TopMap["HEPTop"]->RecoTops);
+  //PrintTLorentz(event, "T3Top", TopMap["T3Top"]->RecoTops);
+  PrintTLorentz(event, "AK4Jet", tr.getVec<TLorentzVector>("jetsLVec"));
+  PrintTLorentz(event, "GEN4Jet", tr.getVec<TLorentzVector>("Gen4LVec"));
+
+
+  std::vector<TLorentzVector> genDecayLVec     = tr.getVec<TLorentzVector> ("genDecayLVec");
+
+  std::vector<TLorentzVector> tempTop;
+  std::vector<TLorentzVector> tempW;
+  std::vector<TLorentzVector> tempb;
+  std::vector<TLorentzVector> tempLep;
+  std::vector<TLorentzVector> temphad;
+  for(unsigned int i=0; i < vTops.size(); ++i)
+  {
+    TopDecay gentop = vTops.at(i);
+    if (gentop.topidx_ != -1) tempTop.push_back(genDecayLVec[gentop.topidx_]);
+    if (gentop.Widx_ != -1) tempW.push_back(genDecayLVec[gentop.Widx_]);
+    if (gentop.bidx_ != -1) tempb.push_back(genDecayLVec[gentop.bidx_]);
+    if (gentop.Lepidx_ != -1) tempLep.push_back(genDecayLVec[gentop.Lepidx_]);
+    if (gentop.had1idx_ != -1 && gentop.had1idx_ <= genDecayLVec.size())
+    {
+      temphad.push_back(genDecayLVec[gentop.had1idx_]);
+    }
+    if (gentop.had2idx_ != -1 && gentop.had2idx_ <= genDecayLVec.size())
+    {
+      temphad.push_back(genDecayLVec[gentop.had2idx_]);
+    }
+  }
+  PrintTLorentz(event, "Top", tempTop);
+  PrintTLorentz(event, "W", tempW);
+  PrintTLorentz(event, "Lep", tempLep);
+  PrintTLorentz(event, "B", tempb);
+  PrintTLorentz(event, "Had", temphad);
+
+  // Type3 Jets
+  std::vector<TLorentzVector> jetsforTT;
+
+  for(unsigned int i=0; i < tr.getVec<TLorentzVector>("jetsLVec").size(); ++i)
+  {
+    if (tr.getVec<TLorentzVector>("jetsLVec").at(i).Pt() > 30) 
+      jetsforTT.push_back(tr.getVec<TLorentzVector>("jetsLVec").at(i));
+  }
+
+  //std::vector<TLorentzVector> jetsforTTplt;
+  //for(unsigned int i=0; i < TopMap["T3Top"]->Type3Jets.size(); ++i)
+  //{
+    //jetsforTTplt.push_back(jetsforTT.at(TopMap["T3Top"]->Type3Jets.at(i)));
+  //}
+  //PrintTLorentz(event, "T3Jet", jetsforTTplt);
+
+  return true;
+}       // -----  end of function PrintTopEvent  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  LTVMatch
+//  Description:  
+// ===========================================================================
+bool LTVMatch(TLorentzVector &V1, TLorentzVector V2, double dR) 
+{
+  return V1.DeltaR(V2) <= dR;
+}       // -----  end of function LTVMatch  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  FindVectorIdX
+//  Description:  
+// ===========================================================================
+  //template<typename T, typename V> 
+//int FindVectorIdX(const T &TeV, const V &t)
+//{
+   //auto it = find(TeV.begin(), TeV.end(), t);
+   //if (it == TeV.end()) return -1;
+   //else return it-TeV.begin();
+//}       // -----  end of function FindVectorIdX  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  FindVectorIdX
+//  Description:  
+// ===========================================================================
+int FindVectorIdX(std::vector<std::string> &TeV, std::string t)
+{
+  auto it = find(TeV.begin(), TeV.end(), t);
+  if (it == TeV.end()) return -1;
+  else return it-TeV.begin();
+}       // -----  end of function FindVectorIdX  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  HasTLV
+//  Description:  /* cursor */
+// ===========================================================================
+int HasTLV(TLorentzVector &obj, std::vector<TLorentzVector> &TLVs)
+{
+  for(std::vector<TLorentzVector>::const_iterator it=TLVs.begin();
+    it!=TLVs.end(); ++it)
+  {
+    if (LTVMatch(obj, *it))
+    {
+      return it-TLVs.begin();
+    }
+  }
+  return -1;
+}       // -----  end of function HasTLV  -----

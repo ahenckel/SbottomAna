@@ -53,7 +53,7 @@ PROGRAM = testMain
 
 TOOLS =  $(ODIR)/HistTool.o    $(ODIR)/RootTools.o   
 
-all: $(PROGRAMS)
+all: $(PROGRAM)
 
 $(ODIR)/%.o : $(SDIR)/%.C
 	$(CXX) $(CXXFLAGS) $(CXXDEPFLAGS) -o $@ -c $<
@@ -71,10 +71,7 @@ tupleTest: $(ODIR)/NTupleReader.o  $(ODIR)/tupleReadTest.o
 	$(LD) $^ $(LIBS)  -o $@
 
 
-testMain: $(TOOLS) $(ODIR)/testMain.o  $(ODIR)/NTupleReader.o  $(ODIR)/TopTaggerAna.o $(ODIR)/Type3Bhad.o
-	$(LD) $^ $(LIBS)  -o $@
-
-testBottom: $(TOOLS)  $(SUSYTools)  $(OBJS)
+testMain: $(TOOLS)  $(SUSYTools)  $(OBJS)
 	@echo "Linking $(PROGRAM) ..."
 	$(LD) $^ $(LIBS)  -o $@
 	@echo "done"

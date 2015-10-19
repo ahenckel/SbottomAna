@@ -116,6 +116,35 @@ int HistTool::Cutorder(std::string ana, std::vector<std::string>& CutOrder, unsi
 }       // -----  end of function HistTool::Cutorder  -----
 
 // ===  FUNCTION  ============================================================
+//         Name:  HistTool::AddTH1
+//  Description:  
+// ===========================================================================
+TH1F* HistTool::AddTH1(const std::string& name, const std::string& title, std::vector<std::string>& BinLabels)
+{
+  TH1F *temp = AddTH1(name, title, BinLabels.size(), 0, BinLabels.size());
+  for (int i = 0; i < BinLabels.size(); ++i)
+    temp->GetXaxis()->SetBinLabel(i+1, BinLabels.at(i).c_str());
+  return temp;
+}       // -----  end of function HistTool::AddTH1  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  HistTool::AddTH1C
+//  Description:  /* cursor */
+// ===========================================================================
+int HistTool::AddTH1C(const std::string& name, const std::string& title, std::vector<std::string>& BinLabels) 
+{
+
+  for (Long_t i = 0; i < CutSize; ++i)
+  {
+    TString mapname = name+"_"+i;
+    TString maptitle = title+" ("+order.at(i)+")";
+    AddTH1(mapname.Data(), maptitle.Data(), BinLabels);
+  }
+  AddTH1(name.c_str(), title.c_str(), BinLabels);
+  return 1;
+}       // -----  end of function HistTool::AddTH1C  -----
+
+// ===  FUNCTION  ============================================================
 //         Name:  HistTool::AddTH1C
 //  Description:  
 // ===========================================================================

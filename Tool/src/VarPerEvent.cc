@@ -20,9 +20,9 @@
 //         Name:  RegisterVarPerEvent
 //  Description:  
 // ===========================================================================
-void RegisterVarPerEvent(NTupleReader &tr)
+void RegisterVarPerEvent(NTupleReader &tr, topTagger::type3TopTagger * type3Ptr)
 {
-  VarPerEvent var(&tr);
+  VarPerEvent var(&tr, type3Ptr);
 }       // -----  end of function RegisterVarPerEvent  -----
 
 //----------------------------------------------------------------------------
@@ -30,7 +30,8 @@ void RegisterVarPerEvent(NTupleReader &tr)
 //      Method:  VarPerEvent
 // Description:  constructor
 //----------------------------------------------------------------------------
-VarPerEvent::VarPerEvent (NTupleReader *tr_):tr(tr_)
+VarPerEvent::VarPerEvent (NTupleReader *tr_, topTagger::type3TopTagger * type3Ptr_)
+:tr(tr_),type3Ptr(type3Ptr_)
 {
 }  // -----  end of method VarPerEvent::VarPerEvent  (constructor)  -----
 
@@ -71,6 +72,8 @@ VarPerEvent::operator = ( const VarPerEvent &other )
 // ===========================================================================
 bool VarPerEvent::RunPerEvent() const
 {
+  std::cout << "Ntops " << type3Ptr->nTopCandSortedCnt<< std::endl;
   return true;
 }       // -----  end of function VarPerEvent::RunPerEvent  -----
+
 
