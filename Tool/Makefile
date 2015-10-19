@@ -49,8 +49,7 @@ SUSYTools = $(SUSYObj)/NTupleReader.o $(SUSYObj)/samples.o
 FILES = $(wildcard $(SDIR)/*.cc)
 OBJS  := $(FILES:$(SDIR)/%.cc=$(ODIR)/%.o)
 
-PROGRAMS = testBottom
-#PROGRAM = testMain
+PROGRAM = testMain
 
 TOOLS =  $(ODIR)/HistTool.o    $(ODIR)/RootTools.o   
 
