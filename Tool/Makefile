@@ -19,10 +19,10 @@ CXXFLAGS  += $(shell root-config --cflags)
 #CXXDEPFLAGS = -MMD -MP
 
 ifneq ($(shell echo $$CMSSW_BASE), )
-  CXXFLAGS  += -I$(CMSSW_BASE)/src/
+  CXXFLAGS  += -isystem $(CMSSW_BASE)/src/
   SUSYObj = $(CMSSW_BASE)/src/SusyAnaTools/Tools/obj/
 else
-  CXXFLAGS  += -I../..
+  CXXFLAGS  += -isystem ../..
   SUSYObj = ../../SusyAnaTools/Tools/obj/
 endif
 
