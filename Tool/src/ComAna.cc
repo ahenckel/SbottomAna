@@ -32,14 +32,6 @@ ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &Out
   //BookHistograms();
 }  // -----  end of method ComAna::ComAna  (constructor)  -----
 
-//----------------------------------------------------------------------------
-//       Class:  ComAna
-//      Method:  ComAna
-// Description:  copy constructor
-//----------------------------------------------------------------------------
-ComAna::ComAna ( const ComAna &other )
-{
-}  // -----  end of method ComAna::ComAna  (copy constructor)  -----
 
 //----------------------------------------------------------------------------
 //       Class:  ComAna
@@ -104,6 +96,7 @@ bool ComAna::BookHistograms()
 // ===========================================================================
 bool ComAna::InitCutOrder(std::string ana) const
 {
+  (void)ana;
   return true;
 }       // -----  end of function ComAna::InitCutOrder  -----
 
@@ -211,7 +204,7 @@ bool ComAna::RunEvent()
 int ComAna::CountJets(double jetPt) const
 {
   int jcount = 0;
-  for (int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
+  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
   {
     if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > jetPt) 
       jcount++;

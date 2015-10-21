@@ -43,8 +43,6 @@
 #include "SBMulti.h"
 #include "StopAna.h"
 
-#include "boost/bind.hpp"
-
 // SusyAnaTools
 #include "SusyAnaTools/Tools/baselineDef.h"
 #include "SusyAnaTools/Tools/NTupleReader.h"
@@ -120,7 +118,9 @@ int main(int argc, char* argv[])
   std::cout<<"First loop begin: "<<std::endl;
   while(tr.getNextEvent())
   {
-    //if(tr.getEvtNum()>20000 ) break;
+    std::cout << "1 jet size? " <<  (tr.getVec<TLorentzVector>("jetsLVec_forTagger")).size() << std::endl;
+    std::cout << " =========  event number " << tr.getEvtNum() << std::endl;
+    if(tr.getEvtNum()>2000 ) break;
     if(tr.getEvtNum()%20000 == 0)
       std::cout << tr.getEvtNum() << "\t" << ((clock() - t0)/1000000.0) << std::endl;
 
@@ -135,6 +135,12 @@ int main(int argc, char* argv[])
       it->second->SetEvtWeight(evtWeight);
       it->second->FillCut();
     }
+
+    //std::cout << " ntop s" << tr.getVec<TLorentzVector>("vTops").size() << " ntops " << tr.getVar<int>("nTopCandSortedCnt") << std::endl;
+    //for(unsigned int i=0; i < tr.getVec<TLorentzVector>("vTops").size(); ++i)
+    //{
+        //std::cout << i <<"  " <<tr.getVec<TLorentzVector>("vTops").at(i).Pt() << std::endl;
+    //}
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Fill Cuts ~~~~~
     //AnaMap["STISR"] -> FillCut();

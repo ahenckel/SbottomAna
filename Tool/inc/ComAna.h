@@ -41,13 +41,12 @@ class ComAna
 
     // ====================  LIFECYCLE     ===============================
     ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);
-    ComAna ( const ComAna &other );   // copy constructor
     ~ComAna ();                            // destructor
 
     // ====================  ACCESSORS     ===============================
     bool SetEvtWeight(double weight) const;
     virtual bool BookHistograms();
-    virtual bool InitCutOrder(std::string ana) const;
+    virtual bool InitCutOrder(std::string ana);
     virtual bool FillCut();
     virtual bool FillCut(int NCut);
     bool WriteHistogram();

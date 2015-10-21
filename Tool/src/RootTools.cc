@@ -141,9 +141,9 @@ bool PrintEvent(NTupleReader *tr)
 std::vector<TLorentzVector> GetGenParticles(const std::vector<int> pdgid, const NTupleReader *tr)
 {
   std::vector<TLorentzVector> temp;
-  for (int i = 0; i < tr->getVec<int>("genDecayPdgIdVec").size(); ++i)
+  for (unsigned int i = 0; i < tr->getVec<int>("genDecayPdgIdVec").size(); ++i)
   {
-    for (int j = 0; j < pdgid.size(); ++j)
+    for (unsigned int j = 0; j < pdgid.size(); ++j)
     {
       if (abs(tr->getVec<int>("genDecayPdgIdVec").at(i)) == abs(pdgid.at(j)))
       {
@@ -161,7 +161,7 @@ std::vector<TLorentzVector> GetGenParticles(const std::vector<int> pdgid, const 
 // ===========================================================================
 bool PrintTLorentz(int event, std::string name, std::vector<TLorentzVector> obj) 
 {
-  for (int i = 0; i < obj.size(); ++i)
+  for (unsigned int i = 0; i < obj.size(); ++i)
   {
     TLorentzVector temp = obj.at(i);
     if (temp.Pt()<3) continue;
@@ -199,11 +199,11 @@ bool PrintTopEvent( NTupleReader &tr, std::vector<TopDecay> &vTops)
     if (gentop.Widx_ != -1) tempW.push_back(genDecayLVec[gentop.Widx_]);
     if (gentop.bidx_ != -1) tempb.push_back(genDecayLVec[gentop.bidx_]);
     if (gentop.Lepidx_ != -1) tempLep.push_back(genDecayLVec[gentop.Lepidx_]);
-    if (gentop.had1idx_ != -1 && gentop.had1idx_ <= genDecayLVec.size())
+    if (gentop.had1idx_ != -1 && static_cast<unsigned int>(gentop.had1idx_) <= genDecayLVec.size())
     {
       temphad.push_back(genDecayLVec[gentop.had1idx_]);
     }
-    if (gentop.had2idx_ != -1 && gentop.had2idx_ <= genDecayLVec.size())
+    if (gentop.had2idx_ != -1 && static_cast<unsigned int>(gentop.had2idx_) <= genDecayLVec.size())
     {
       temphad.push_back(genDecayLVec[gentop.had2idx_]);
     }

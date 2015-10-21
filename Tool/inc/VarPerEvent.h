@@ -49,6 +49,7 @@ class VarPerEvent
 
   protected:
     // ====================  METHODS       ===============================
+    bool GetnTops() const;
 
     // ====================  DATA MEMBERS  ===============================
 

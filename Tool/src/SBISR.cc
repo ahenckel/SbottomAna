@@ -129,7 +129,7 @@ bool SBISR::CheckCut()
   cutbit.reset();
   // Exactly 3 jet with pT > 30GeV and |eta| < 2.5
   int jet30count = 0;
-  for (int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
+  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
   {
     if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > 30 &&
         fabs(tr->getVec<TLorentzVector> ("jetsLVec").at(i).Eta()) < 2.4)

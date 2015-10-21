@@ -38,15 +38,6 @@ HistTool::HistTool (std::shared_ptr<TFile> OutFile_, std::string name, std::stri
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //       Class:  HistTool
-//      Method:  HistTool
-// Description:  copy constructor
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-HistTool::HistTool ( const HistTool &other )
-{
-}  // ~~~~~  end of method HistTool::HistTool  (copy constructor)  ~~~~~
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//       Class:  HistTool
 //      Method:  ~HistTool
 // Description:  destructor
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,6 +65,7 @@ HistTool::operator = ( const HistTool &other )
 // ===========================================================================
 int HistTool::CreateFile(std::string filname)
 {
+  (void)filname;
   //OutFile = new TFile(filname.c_str(), "RECREATE");
   return 1;
 }       // -----  end of function HistTool::CreateFile  -----
@@ -108,7 +100,7 @@ int HistTool::Cutorder(std::string ana, std::vector<std::string>& CutOrder, unsi
   TString title = ana == "DM" ? "SUSY VBF DM" : ana;
 
   TH1 *temp = AddTH1("CutFlow", title.Data(), CutOrder.size(), 0 , CutOrder.size());
-  for (int i = 0; i < CutOrder.size(); ++i)
+  for (unsigned int i = 0; i < CutOrder.size(); ++i)
     temp->GetXaxis()->SetBinLabel(i+1, CutOrder.at(i).c_str());
 
   BookCutBits(Nbits);
@@ -122,7 +114,7 @@ int HistTool::Cutorder(std::string ana, std::vector<std::string>& CutOrder, unsi
 TH1F* HistTool::AddTH1(const std::string& name, const std::string& title, std::vector<std::string>& BinLabels)
 {
   TH1F *temp = AddTH1(name, title, BinLabels.size(), 0, BinLabels.size());
-  for (int i = 0; i < BinLabels.size(); ++i)
+  for (unsigned int i = 0; i < BinLabels.size(); ++i)
     temp->GetXaxis()->SetBinLabel(i+1, BinLabels.at(i).c_str());
   return temp;
 }       // -----  end of function HistTool::AddTH1  -----

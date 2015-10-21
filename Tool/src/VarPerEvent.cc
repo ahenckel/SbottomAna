@@ -23,6 +23,7 @@
 void RegisterVarPerEvent(NTupleReader &tr, topTagger::type3TopTagger * type3Ptr)
 {
   VarPerEvent var(&tr, type3Ptr);
+  var.RunPerEvent();
 }       // -----  end of function RegisterVarPerEvent  -----
 
 //----------------------------------------------------------------------------
@@ -72,8 +73,38 @@ VarPerEvent::operator = ( const VarPerEvent &other )
 // ===========================================================================
 bool VarPerEvent::RunPerEvent() const
 {
-  std::cout << "Ntops " << type3Ptr->nTopCandSortedCnt<< std::endl;
+  GetnTops();
+
   return true;
 }       // -----  end of function VarPerEvent::RunPerEvent  -----
 
+// ===  FUNCTION  ============================================================
+//         Name:  VarPerEvent::GetnTops
+//  Description:  
+// ===========================================================================
+bool VarPerEvent::GetnTops() const
+{
+  int nTops = tr->getVar<int>("nTopCandSortedCnt");
+  std::vector<TLorentzVector> *vTops = new std::vector<TLorentzVector>();
+  std::map<int, std::vector<TLorentzVector> > *vTopJets = new std::map<int, std::vector<TLorentzVector> >();
 
+  for(int it=0; it<nTops; it++)
+  {
+    TLorentzVector topLVec = type3Ptr->buildLVec(tr->getVec<TLorentzVector>("jetsLVec_forTagger"), 
+        type3Ptr->finalCombfatJets[type3Ptr->ori_pickedTopCandSortedVec[it]]);
+    vTops->push_back(topLVec);
+
+    std::vector<TLorentzVector> temp;
+    std::vector<int> indexCombVec = type3Ptr->finalCombfatJets[type3Ptr->ori_pickedTopCandSortedVec[it]];
+    for (size_t k = 0; k < indexCombVec.size(); ++k)
+    {
+      temp.push_back( (tr->getVec<TLorentzVector>("jetsLVec_forTagger")).at(indexCombVec.at(k)));
+    }
+    vTopJets->insert(std::make_pair(it, temp));
+  }
+
+  tr->registerDerivedVec("vTops", vTops);
+  tr->registerDerivedVec("mTopJets", vTopJets);
+
+  return true;
+}       // -----  end of function VarPerEvent::GetnTops  -----

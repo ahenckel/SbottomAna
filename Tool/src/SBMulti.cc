@@ -129,7 +129,7 @@ bool SBMulti::InitCutOrder(std::string ana)
 // ===========================================================================
 bool SBMulti::CheckCut()
 {
-  const double CVS = 0.814;
+  //const double CVS = 0.814;
   cutbit.reset();
 
   // Eletron Veto

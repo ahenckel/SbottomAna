@@ -42,7 +42,6 @@ class HistTool
     // ====================  LIFECYCLE     ===============================
     HistTool (std::string name);
     HistTool (std::shared_ptr<TFile> OutFile_, std::string name, std::string cut_ = "");
-    HistTool ( const HistTool &other );   // copy constructor
     ~HistTool ();                            // destructor
 
     // ====================  ACCESSORS     ===============================

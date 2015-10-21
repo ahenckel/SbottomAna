@@ -128,7 +128,7 @@ bool SBDiJet::CheckCut()
   double diJetHT = 0;
   std::vector<int> jet70Idx;
   
-  for (int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
+  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
   {
     if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > 70 && fabs(tr->getVec<TLorentzVector> ("jetsLVec").at(i).Eta()) < 2.4)
     {
@@ -141,7 +141,7 @@ bool SBDiJet::CheckCut()
 
   // One or both leading jets tagged as a b-jet
   int bjet70count = 0;
-  for (int i = 0; i < jet70Idx.size(); ++i)
+  for (unsigned int i = 0; i < jet70Idx.size(); ++i)
   {
     if (tr->getVec<double>("recoJetsBtag_0").at(jet70Idx.at(i)) > 0.814)
       bjet70count++;
