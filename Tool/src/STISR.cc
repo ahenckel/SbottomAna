@@ -105,6 +105,9 @@ bool STISR::BookHistograms()
   Book2TLVHistos("J2NGT2");
   Book2TLVHistos("J2NTT2");
 
+  his->AddTH1C("LeadingJetPTIso15", "LeadingJetPTIso15", 100, 0, 1);
+  his->AddTH1C("LeadingJetPTIso8", "LeadingJetPTIso8", 100, 0, 1);
+  his->AddTH1C("LeadingJetPTIso4", "LeadingJetPTIso4", 100, 0, 1);
 
   return true;
 }       // -----  end of function STISR::BookHistograms  -----
@@ -121,10 +124,20 @@ bool STISR::InitCutOrder(std::string ana)
 
   //Add name and order of the cutflow
   CutOrder.push_back("NoCut");
+  // Base requirement
   CutOrder.push_back("EleVeto");
   CutOrder.push_back("MuonVeto");
   CutOrder.push_back("IskVeto");
+  // From Trigger
   CutOrder.push_back("MET200");
+  CutOrder.push_back("nJets");
+  // Basic signiturae
+  CutOrder.push_back("nTops");
+  CutOrder.push_back("dPhiLJMET");
+  CutOrder.push_back("dPhiLJTop");
+  // Finding ISR Jets
+  CutOrder.push_back("LJNonB");
+  CutOrder.push_back("LJinTops");
   //CutOrder.push_back("LJetPT700");
   //CutOrder.push_back("LJetMass");
   //CutOrder.push_back("SubJet60");
@@ -135,11 +148,18 @@ bool STISR::InitCutOrder(std::string ana)
   //CutOrder.push_back("LJetMass");
 
   //Set the cutbit of each cut
-  CutMap["NoCut"]       = "00000000000000000";
-  CutMap["EleVeto"]     = "00000000000000001";
-  CutMap["MuonVeto"]    = "00000000000000011";
-  CutMap["IskVeto"]     = "00000000000000111";
-  CutMap["MET200"]      = "00000001000000111";
+  CutMap["NoCut"]     = "00000000000000000";
+  CutMap["EleVeto"]   = "00000000000000001";
+  CutMap["MuonVeto"]  = "00000000000000011";
+  CutMap["IskVeto"]   = "00000000000000111";
+  CutMap["MET200"]    = "00000000000001111";
+  CutMap["nJets"]     = "00000000000011111";
+  CutMap["nTops"]     = "00000000000111111";
+  CutMap["dPhiLJMET"] = "00000000001111111";
+  CutMap["dPhiLJTop"] = "00000000011111111";
+  CutMap["LJNonB"]    = "00000000111111111";
+  CutMap["LJinTops"]  = "00000001111111111";
+
   //CutMap["SubJet60"]    = "00000000000111111";
   //CutMap["SubJetB"]     = "00000000001111111";
   //CutMap["dPhiLJMET"]   = "00000000011111111";
@@ -188,57 +208,89 @@ bool STISR::CheckCut()
   // IsoTrack Veto
   cutbit.set(2, tr->getVar<bool>("passIsoTrkVeto"));
 
+  // MET > 200 GeV
+  cutbit.set(3, tr->getVar<double>("met") > 200);
 
-  // Leading jet Pt > 700GeV!
+  cutbit.set(4 , tr->getVar<bool>("passnJets"));
+
+  // At least one top tag
+  cutbit.set(5 , tr->getVar<int>("nTopCandSortedCnt") >= 1);
+
   TLorentzVector J1(0, 0, 0, 0);
   if( tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 )
     J1 = tr->getVec<TLorentzVector> ("jetsLVec").at(0);
 
-  cutbit.set(3, J1.Pt() > 700);
+  // | phi_j0 - phi_MET - pi | < 0.5
+  cutbit.set(6, fabs(fabs(J1.Phi() - tr->getVar<double>("metphi"))- 3.14) < 0.5);
 
-  // Leading Jet mass > Mtop
-  cutbit.set(4, J1.M() > 172.5);
+  // | phi_j0 - phi_Top - pi | < 0.5
+  //std::vector<TLorentzVector> vTops;
+  //vTops = tr->getVec<TLorentzVector>("vTops");
+  //if (vTops.size() > 0)
+    //cutbit.set(7, fabs(fabs(J1.Phi() - vTops.at(0).Phi()) - 3.14) < 0.5);
+  //else
+    //cutbit.set(7, false);
+  cutbit.set(7, true);
 
-  // Subjet counting
-  std::vector<int> SubJetIdx;
-  int SubJetcount=0;
-  int SubJetBcount=0;
-  for (int i = 1; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
-  {
-    if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > 60) 
-    {
-      SubJetcount ++;
-      SubJetIdx.push_back(i);
-      if (tr->getVec<double>("recoJetsBtag_0").at(i) > CVS)
-        SubJetBcount++;
-    }
-  }
-  // At least three sub-leading jets
-  cutbit.set(5, SubJetcount >= 3);
+  if( tr->getVec<TLorentzVector> ("recoJetsBtag_0").size() > 0 )
+    cutbit.set(8,  tr->getVec<double> ("recoJetsBtag_0").at(0)  < 0.814 );
+  else
+    cutbit.set(8,  true);
 
-  // At least one of the subjets is b-tagged
-  cutbit.set(6, SubJetBcount >= 1);
+  cutbit.set(9,  !LJinTops());
 
-  // delta Phi 
-  TLorentzVector METLV(0, 0, 0, 0);
-  METLV.SetPtEtaPhiE(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
-
-  // | phi_j0 - phi_MET - pi | < 0.15
-  //cutbit.set(7, fabs(J1.Phi() - tr->getVar<double>("metphi") - 3.14) < 0.15);
-  cutbit.set(7, fabs(fabs(J1.DeltaPhi(METLV)) - 3.14 ) < 0.15);
-  
-  // | phi_sub - phi_MET | > 0.2
-  bool dPhiSub = true;
-  for (int i = 0; i < SubJetIdx.size(); ++i)
-  {
-    dPhiSub = dPhiSub &&  fabs(tr->getVec<TLorentzVector> ("jetsLVec").at(SubJetIdx.at(i)).DeltaPhi(METLV)) > 0.2;
-  }
-  cutbit.set(8, dPhiSub);
-  
-  // MET > 200 GeV
-  cutbit.set(9, tr->getVar<double>("met") > 200);
-
-
+/*
+ *
+ *
+ *  // Leading jet Pt > 700GeV!
+ *  TLorentzVector J1(0, 0, 0, 0);
+ *  if( tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 )
+ *    J1 = tr->getVec<TLorentzVector> ("jetsLVec").at(0);
+ *
+ *  cutbit.set(3, J1.Pt() > 700);
+ *
+ *  // Leading Jet mass > Mtop
+ *  cutbit.set(4, J1.M() > 172.5);
+ *
+ *  // Subjet counting
+ *  std::vector<int> SubJetIdx;
+ *  int SubJetcount=0;
+ *  int SubJetBcount=0;
+ *  for (int i = 1; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
+ *  {
+ *    if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > 60) 
+ *    {
+ *      SubJetcount ++;
+ *      SubJetIdx.push_back(i);
+ *      if (tr->getVec<double>("recoJetsBtag_0").at(i) > CVS)
+ *        SubJetBcount++;
+ *    }
+ *  }
+ *  // At least three sub-leading jets
+ *  cutbit.set(5, SubJetcount >= 3);
+ *
+ *  // At least one of the subjets is b-tagged
+ *  cutbit.set(6, SubJetBcount >= 1);
+ *
+ *  // delta Phi 
+ *  TLorentzVector METLV(0, 0, 0, 0);
+ *  METLV.SetPtEtaPhiE(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
+ *
+ *  // | phi_j0 - phi_MET - pi | < 0.15
+ *  //cutbit.set(7, fabs(J1.Phi() - tr->getVar<double>("metphi") - 3.14) < 0.15);
+ *  cutbit.set(7, fabs(fabs(J1.DeltaPhi(METLV)) - 3.14 ) < 0.15);
+ *  
+ *  // | phi_sub - phi_MET | > 0.2
+ *  bool dPhiSub = true;
+ *  for (int i = 0; i < SubJetIdx.size(); ++i)
+ *  {
+ *    dPhiSub = dPhiSub &&  fabs(tr->getVec<TLorentzVector> ("jetsLVec").at(SubJetIdx.at(i)).DeltaPhi(METLV)) > 0.2;
+ *  }
+ *  cutbit.set(8, dPhiSub);
+ *  
+ *  // MET > 200 GeV
+ *  cutbit.set(9, tr->getVar<double>("met") > 200);
+ */
   return true;
 }       // -----  end of function STISR::CheckCut  -----
 
@@ -328,10 +380,10 @@ bool STISR::FillCut()
       if (topAna->RecoTops.size() > 1)
         Fill2TLVHistos(i, "J2NTT1", Jet2, topAna->RecoTops.at(1));
     }
-    // Filling by functions
-    //FillJets(i);
-    //FillBJet(i);
-    //FillMet(i);
+
+    his->FillTH1(i, "LeadingJetPTIso15", LJPTIso(1.5));
+    his->FillTH1(i, "LeadingJetPTIso8", LJPTIso(0.8));
+    his->FillTH1(i, "LeadingJetPTIso4", LJPTIso(0.4));
   }
 
   return true;
@@ -448,3 +500,60 @@ bool STISR::WriteHistogram()
   return true;
 }       // -----  end of function STISR::WriteHistogram  -----
 
+
+// ===  FUNCTION  ============================================================
+//         Name:  STISR::LJinTops
+//  Description:  
+// ===========================================================================
+bool STISR::LJinTops() const
+{
+  TLorentzVector Jet1(0, 0, 0, 0);
+  if( tr->getVec<TLorentzVector> ("jetsLVec").size() == 0 ) 
+    return false;
+
+  Jet1 =  tr->getVec<TLorentzVector> ("jetsLVec").at(0);
+
+  std::map<int, std::vector<TLorentzVector> > vTopJets = tr->getMap<int, std::vector<TLorentzVector> >("mTopJets");
+  
+  for(std::map<int, std::vector<TLorentzVector> >::const_iterator it=vTopJets.begin();
+    it!=vTopJets.end(); ++it)
+  {
+    for(unsigned int i=0; i < it->second.size(); ++i)
+    {
+      if (Jet1.DeltaR(it->second.at(i))< 0.2)
+      {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}       // -----  end of function STISR::LJinTops  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  STISR::LJPTIso
+//  Description:  ISR jet should be isolated from the rest system, idea from
+//  Rick
+// ===========================================================================
+double STISR::LJPTIso(double coneSize) const
+{
+  const std::vector<TLorentzVector> vJets = tr->getVec<TLorentzVector> ("jetsLVec");
+  if( vJets.size() == 0 ) 
+    return 1;
+
+  const TLorentzVector Jet1 = vJets.at(0);
+  double SumPT = 0.0;
+
+  for(unsigned int i=1; i < vJets.size(); ++i)
+  {
+    if (Jet1.DeltaR(vJets.at(i)) < coneSize)
+    {
+      SumPT += vJets.at(i).Pt();
+    }
+  }
+
+  if (SumPT == 0.0)
+    return 1;
+  else
+    return Jet1.Pt()/ SumPT;
+}       // -----  end of function STISR::LJPTIso  -----

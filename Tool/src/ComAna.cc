@@ -94,7 +94,7 @@ bool ComAna::BookHistograms()
 //         Name:  ComAna::InitCutOrder
 //  Description:  
 // ===========================================================================
-bool ComAna::InitCutOrder(std::string ana) const
+bool ComAna::InitCutOrder(std::string ana)
 {
   (void)ana;
   return true;

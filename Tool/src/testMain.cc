@@ -109,26 +109,28 @@ int main(int argc, char* argv[])
 
   std::map<std::string, ComAna*> AnaMap;
   //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
   //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
   //AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
   //AnaMap["PassCut"] = new PassCut("LeftOver", &tr, OutFile);
-  AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
 
   std::cout<<"First loop begin: "<<std::endl;
   while(tr.getNextEvent())
   {
-    std::cout << "1 jet size? " <<  (tr.getVec<TLorentzVector>("jetsLVec_forTagger")).size() << std::endl;
-    std::cout << " =========  event number " << tr.getEvtNum() << std::endl;
-    if(tr.getEvtNum()>2000 ) break;
+    //if(tr.getEvtNum()>2000 ) break;
     if(tr.getEvtNum()%20000 == 0)
       std::cout << tr.getEvtNum() << "\t" << ((clock() - t0)/1000000.0) << std::endl;
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Set Event Weight ~~~~~
-    int evtWeight = tr.getVar<double>("stored_weight") >= 0 ? 1 : -1;
-    //std::cout << tr.getVar<int>("test") << std::endl;
+    double stored_weight = -999;
+    try {
+      stored_weight = tr.getVar<double>("stored_weight");
+    } catch (std::string var) { }
+    if (stored_weight == -999) stored_weight = 0;
+    int evtWeight = stored_weight >= 0 ? 1 : -1;
     his->FillTH1("NEvent", 1, evtWeight);
-    his->FillTH1("Weight", tr.getVar<double>("stored_weight"));
+    his->FillTH1("Weight", stored_weight);
     for(std::map<std::string, ComAna*>::const_iterator it=AnaMap.begin();
         it!=AnaMap.end(); ++it)
     {
