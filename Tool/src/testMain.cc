@@ -42,6 +42,7 @@
 #include "PassCut.h"
 #include "SBMulti.h"
 #include "StopAna.h"
+#include "TTZDiLep.h"
 
 // SusyAnaTools
 #include "SusyAnaTools/Tools/baselineDef.h"
@@ -107,44 +108,51 @@ int main(int argc, char* argv[])
   tr.registerFunction(boost::bind(&RegisterVarPerEvent, _1, type3Ptr));
   //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
 
+  //**************************************************************************//
+  //                           Prepare the analysis                           //
+  //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
   //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
   AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
+  AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile);
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
   //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
   //AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
   //AnaMap["PassCut"] = new PassCut("LeftOver", &tr, OutFile);
+  for( auto &it : AnaMap )
+  {
+    it.second->SaveCutHist(false);
+    it.second->BookHistograms();
+  }
 
-  std::cout<<"First loop begin: "<<std::endl;
+  //**************************************************************************//
+  //                            Start Event Looping                           //
+  //**************************************************************************//
+  std::cout << "First loop begin: " << std::endl;
   while(tr.getNextEvent())
   {
-    //if(tr.getEvtNum()>2000 ) break;
-    if(tr.getEvtNum()%20000 == 0)
-      std::cout << tr.getEvtNum() << "\t" << ((clock() - t0)/1000000.0) << std::endl;
+    //if(tr.getEvtNum()>12000 ) break;
+    if (tr.getEvtNum() % 20000 == 0)
+      std::cout << tr.getEvtNum() << "\t" << ((clock() - t0) / 1000000.0) << std::endl;
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Set Event Weight ~~~~~
     double stored_weight = -999;
     try {
       stored_weight = tr.getVar<double>("stored_weight");
-    } catch (std::string var) { }
+    } catch (std::string var) {
+    }
     if (stored_weight == -999) stored_weight = 0;
     int evtWeight = stored_weight >= 0 ? 1 : -1;
     his->FillTH1("NEvent", 1, evtWeight);
     his->FillTH1("Weight", stored_weight);
-    for(std::map<std::string, ComAna*>::const_iterator it=AnaMap.begin();
-        it!=AnaMap.end(); ++it)
-    {
-      it->second->SetEvtWeight(evtWeight);
-      it->second->FillCut();
-    }
-
-    //std::cout << " ntop s" << tr.getVec<TLorentzVector>("vTops").size() << " ntops " << tr.getVar<int>("nTopCandSortedCnt") << std::endl;
-    //for(unsigned int i=0; i < tr.getVec<TLorentzVector>("vTops").size(); ++i)
-    //{
-        //std::cout << i <<"  " <<tr.getVec<TLorentzVector>("vTops").at(i).Pt() << std::endl;
-    //}
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Fill Cuts ~~~~~
+    for( auto &it : AnaMap )
+    {
+      it.second->SetEvtWeight(evtWeight);
+      it.second->FillCut();
+    }
+
     //AnaMap["STISR"] -> FillCut();
     //bool passcuts = false;
     //bool passDJ =  AnaMap["SBDJ"]->FillCut();

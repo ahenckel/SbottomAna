@@ -26,7 +26,6 @@ SBMulti::SBMulti (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
 : ComAna(name, tr_, OutFile)
 {
   InitCutOrder(name);
-  BookHistograms();
   his->AddTH1("NBase", "Number of Events passed baseline", 2, 0, 2);
 }  // -----  end of method SBMulti::SBMulti  (constructor)  -----
 

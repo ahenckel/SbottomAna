@@ -45,6 +45,7 @@ class ComAna
 
     // ====================  ACCESSORS     ===============================
     bool SetEvtWeight(double weight) const;
+    bool SaveCutHist(bool choice) const;
     virtual bool BookHistograms();
     virtual bool InitCutOrder(std::string ana);
     virtual bool FillCut();
@@ -53,11 +54,6 @@ class ComAna
     bool DrawHistogram();
     bool RunEvent();
     // ====================  MUTATORS      ===============================
-    // Move HistTool to public so that the CMSSW can book and fill some
-    // histogram apart from the DelCut.
-    // Warning: This is not healthy for the code! But we need to scarify for
-    // the analysis
-    HistTool *His; 
 
     // ====================  OPERATORS     ===============================
 
@@ -98,7 +94,6 @@ class ComAna
         std::vector<double>& recoJetsBtagCSVS, int ic) const;
     std::vector<int> SortToptager( boost::bimap<int, double > dm_bimap);
     // ====================  DATA MEMBERS  ===============================
-
     topTagger::type3TopTagger * type3Ptr;
     std::vector<TLorentzVector> vRecoTops;
 

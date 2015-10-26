@@ -18,6 +18,7 @@
 
 // Have to include searchBins.h here, to avoid duplicate definition in main...
 #include "SusyAnaTools/Tools/searchBins.h"
+
 //----------------------------------------------------------------------------
 //       Class:  StopAna
 //      Method:  StopAna
@@ -27,7 +28,6 @@ StopAna::StopAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
 : ComAna(name, tr_, OutFile)
 {
   InitCutOrder(name);
-  BookHistograms();
   his->AddTH1("NBase", "Number of Events passed baseline", 2, 0, 2);
 }  // -----  end of method StopAna::StopAna  (constructor)  -----
 

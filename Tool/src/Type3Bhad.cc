@@ -29,15 +29,6 @@ Type3Bhad::Type3Bhad ()
 
 //----------------------------------------------------------------------------
 //       Class:  Type3Bhad
-//      Method:  Type3Bhad
-// Description:  copy constructor
-//----------------------------------------------------------------------------
-Type3Bhad::Type3Bhad ( const Type3Bhad &other )
-{
-}  // -----  end of method Type3Bhad::Type3Bhad  (copy constructor)  -----
-
-//----------------------------------------------------------------------------
-//       Class:  Type3Bhad
 //      Method:  ~Type3Bhad
 // Description:  destructor
 //----------------------------------------------------------------------------
@@ -89,7 +80,7 @@ int Type3Bhad::RunTagger(std::vector<TLorentzVector>  & jets, std::vector<double
     {
       TLorentzVector jet = jets.at(j);
       if (bhad.DeltaR(jet) > 1.5) continue;
-      if (bhadIdx.at(i) == j) continue;
+      if (bhadIdx.at(i) == int(j)) continue;
       if (bhad.M() < jet.M() ) continue;
       if (bjets.at(j) > 0.814) continue;
 

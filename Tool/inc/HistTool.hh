@@ -56,6 +56,7 @@ class HistTool
     std::vector<std::string> Cutorder();
     int CreateFile(std::string filname);
     bool SetWeight(double weight);
+    bool SaveCutHists(bool choice);
 
     bool BookCutBits(const unsigned int& Nbits);
     bool FillCutBits(const std::vector<bool> bits);
@@ -153,6 +154,7 @@ class HistTool
 
   private:
     // ====================  DATA MEMBERS  ===============================
+    bool SaveCutHists_;
     int CutSize; // The size of the cutbit
     double HWeight; // The weight of current event
     std::shared_ptr<TFile> OutFile;
@@ -167,3 +169,4 @@ class HistTool
 }; // -----  end of class HistTool  -----
 
 #endif   // ----- #ifndef __HISTTOOL__  -----
+

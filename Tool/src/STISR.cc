@@ -190,7 +190,7 @@ bool STISR::InitCutOrder(std::string ana)
 // ===========================================================================
 bool STISR::CheckCut()
 {
-  const double CVS = 0.814;
+  //const double CVS = 0.814;
   cutbit.reset();
   if( tr->getVec<TLorentzVector> ("jetsLVec").size() == 0 ) 
   {
@@ -424,11 +424,11 @@ std::map<std::string, bool> STISR::JetOrgAna(int NCut, std::string name, TLorent
     if (gentop.Widx_ != -1) tempW.push_back(genDecayLVec[gentop.Widx_]);
     if (gentop.bidx_ != -1) tempb.push_back(genDecayLVec[gentop.bidx_]);
     if (gentop.Lepidx_ != -1) tempLep.push_back(genDecayLVec[gentop.Lepidx_]);
-    if (gentop.had1idx_ != -1 && gentop.had1idx_ <= genDecayLVec.size())
+    if (gentop.had1idx_ != -1 && static_cast<unsigned int>(gentop.had1idx_) <= genDecayLVec.size())
     {
       temphad.push_back(genDecayLVec[gentop.had1idx_]);
     }
-    if (gentop.had2idx_ != -1 && gentop.had2idx_ <= genDecayLVec.size())
+    if (gentop.had2idx_ != -1 && static_cast<unsigned int>(gentop.had2idx_) <= genDecayLVec.size())
     {
       temphad.push_back(genDecayLVec[gentop.had2idx_]);
     }

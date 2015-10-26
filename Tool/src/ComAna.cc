@@ -29,7 +29,6 @@ ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &Out
   his = new HistTool(OutFile, "Cut", name);
   type3Ptr = new topTagger::type3TopTagger();
   type3Ptr->setnJetsSel(4); // same as  AnaConsts::nJetsSel
-  //BookHistograms();
 }  // -----  end of method ComAna::ComAna  (constructor)  -----
 
 
@@ -521,3 +520,13 @@ bool ComAna::SetEvtWeight(double weight) const
   return true;
 }       // -----  end of function ComAna::SetEvtWeight  -----
 
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SaveCutHist
+//  Description:  
+// ===========================================================================
+bool ComAna::SaveCutHist(bool choice) const
+{
+  assert(choice == his->SaveCutHists(choice));
+  return choice;
+}       // -----  end of function ComAna::SaveCutHist  -----

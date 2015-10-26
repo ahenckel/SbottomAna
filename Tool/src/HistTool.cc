@@ -34,6 +34,7 @@ HistTool::HistTool (std::shared_ptr<TFile> OutFile_, std::string name, std::stri
   }
   HWeight = -999.;
   CutSize = 0;
+  SaveCutHists_=true;
 }  // ~~~~~  end of method HistTool::HistTool  (constructor)  ~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,12 +126,14 @@ TH1F* HistTool::AddTH1(const std::string& name, const std::string& title, std::v
 // ===========================================================================
 int HistTool::AddTH1C(const std::string& name, const std::string& title, std::vector<std::string>& BinLabels) 
 {
-
-  for (Long_t i = 0; i < CutSize; ++i)
+  if (SaveCutHists_)
   {
-    TString mapname = name+"_"+i;
-    TString maptitle = title+" ("+order.at(i)+")";
-    AddTH1(mapname.Data(), maptitle.Data(), BinLabels);
+    for (Long_t i = 0; i < CutSize; ++i)
+    {
+      TString mapname = name+"_"+i;
+      TString maptitle = title+" ("+order.at(i)+")";
+      AddTH1(mapname.Data(), maptitle.Data(), BinLabels);
+    }
   }
   AddTH1(name.c_str(), title.c_str(), BinLabels);
   return 1;
@@ -145,11 +148,14 @@ int HistTool::AddTH1C (const std::string& name, const std::string& title,
     const Int_t& nxbins, const Axis_t& xmin, const Axis_t& xmax,
     const Int_t& logx, const Int_t& logy)
 {
-  for (Long_t i = 0; i < CutSize; ++i)
+  if (SaveCutHists_)
   {
-    TString mapname = name+"_"+i;
-    TString maptitle = title+" ("+order.at(i)+")";
-    AddTH1(mapname.Data(), maptitle.Data(), xlabel, ylabel, nxbins, xmin, xmax, logx, logy);
+    for (Long_t i = 0; i < CutSize; ++i)
+    {
+      TString mapname = name+"_"+i;
+      TString maptitle = title+" ("+order.at(i)+")";
+      AddTH1(mapname.Data(), maptitle.Data(), xlabel, ylabel, nxbins, xmin, xmax, logx, logy);
+    }
   }
   AddTH1(name.c_str(), title.c_str(), xlabel, ylabel, nxbins, xmin, xmax, logx, logy);
 
@@ -163,11 +169,14 @@ int HistTool::AddTH1C (const std::string& name, const std::string& title,
 int HistTool::AddTH1C (const std::string& name, const std::string& title,
     const Int_t& nxbins, const Axis_t& xmin, const Axis_t& xmax)
 {
-  for (Long_t i = 0; i < CutSize; ++i)
+  if (SaveCutHists_)
   {
-    TString mapname = name+"_"+i;
-    TString maptitle = title+" ("+order.at(i)+")";
-    AddTH1(mapname.Data(), maptitle.Data(), nxbins, xmin, xmax);
+    for (Long_t i = 0; i < CutSize; ++i)
+    {
+      TString mapname = name+"_"+i;
+      TString maptitle = title+" ("+order.at(i)+")";
+      AddTH1(mapname.Data(), maptitle.Data(), nxbins, xmin, xmax);
+    }
   }
   AddTH1(name.c_str(), title.c_str(), nxbins, xmin, xmax);
   return 1;
@@ -499,18 +508,22 @@ int HistTool::AddTH2C (const std::string name, const std::string title,
     Int_t nybins, Axis_t ymin, Axis_t ymax,
     Int_t logx, Int_t logy)
 {
-  for (Long_t i = 0; i < CutSize; ++i)
+  if (SaveCutHists_)
   {
-    TString mapname = name+"_"+i;
-    TString xlb, ylb;
-    if (logx) xlb = "log_"+xlabel;
-    else xlb = xlabel;
-    if (logy) ylb = "log_"+ylabel;
-    else ylb = ylabel;
-    TString maptitle = title+" ("+order.at(i)+")" + ";" + xlb + ";" + ylb;
-    HisMap2D[mapname.Data()] = std::unique_ptr<TH2D>(new TH2D(mapname.Data(), maptitle.Data(), nxbins,
-        xmin, xmax, nybins, ymin, ymax));
+    for (Long_t i = 0; i < CutSize; ++i)
+    {
+      TString mapname = name+"_"+i;
+      TString xlb, ylb;
+      if (logx) xlb = "log_"+xlabel;
+      else xlb = xlabel;
+      if (logy) ylb = "log_"+ylabel;
+      else ylb = ylabel;
+      TString maptitle = title+" ("+order.at(i)+")" + ";" + xlb + ";" + ylb;
+      HisMap2D[mapname.Data()] = std::unique_ptr<TH2D>(new TH2D(mapname.Data(), maptitle.Data(), nxbins,
+            xmin, xmax, nybins, ymin, ymax));
+    }
   }
+  AddTH2(name, title, xlabel, ylabel, nxbins, xmin, xmax, nybins, ymin, ymax, logx, logy);
 
   return 1;
 }       // -----  end of function HistTool::AddTH2C  -----
@@ -522,16 +535,18 @@ int HistTool::AddTH2C (const std::string name, const std::string title,
 int HistTool::AddTH2C (const std::string name, const std::string title,
     Int_t nxbins, Axis_t xmin, Axis_t xmax, Int_t nybins, Axis_t ymin, Axis_t ymax)
 {
-  for (Long_t i = 0; i < CutSize; ++i)
+  if (SaveCutHists_)
   {
-    TString mapname = name+"_"+i;
-    TString maptitle = title+" ("+order.at(i)+")";
+    for (Long_t i = 0; i < CutSize; ++i)
+    {
+      TString mapname = name+"_"+i;
+      TString maptitle = title+" ("+order.at(i)+")";
 
-    HisMap2D[mapname.Data()] = std::unique_ptr<TH2D>(new TH2D(mapname.Data(), maptitle.Data(), 
-        nxbins, xmin, xmax, nybins, ymin, ymax));
-    //HisMap2D[mapname.Data()] = result.AddHist1D(mapname.Data(), 
-        //maptitle.Data(), xlabel.c_str(), ylabel.c_str(), nxbins, xmin, xmax);
+      HisMap2D[mapname.Data()] = std::unique_ptr<TH2D>(new TH2D(mapname.Data(), maptitle.Data(), 
+            nxbins, xmin, xmax, nybins, ymin, ymax));
+    }
   }
+  AddTH2(name, title, nxbins, xmin, xmax, nybins, ymin, ymax);
 
   return 1;
 }       // -----  end of function HistTool::AddTH2C  -----
@@ -715,3 +730,13 @@ bool HistTool::CalEfficiency(std::string output, std::string Numerator, std::str
   HisMap[output]->Divide(HisMap[Numerator].get(), HisMap[DeNumerator].get());
   return true;
 }       // -----  end of function HistTool::CalEfficiency  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  HistTool::SaveCutHists
+//  Description:  
+// ===========================================================================
+bool HistTool::SaveCutHists(bool choice) 
+{
+  SaveCutHists_ = choice;
+  return SaveCutHists_;
+}       // -----  end of function HistTool::SaveCutHists  -----

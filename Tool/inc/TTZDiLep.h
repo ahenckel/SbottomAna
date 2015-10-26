@@ -1,11 +1,11 @@
 // ===========================================================================
 // 
-//       Filename:  VarPerEvent.h
+//       Filename:  TTZDiLep.h
 // 
 //    Description:  
 // 
 //        Version:  1.0
-//        Created:  10/13/2015 16:22:25
+//        Created:  10/07/2015 11:05:16
 //       Revision:  none
 //       Compiler:  g++
 // 
@@ -14,45 +14,51 @@
 // 
 // ===========================================================================
 
-#ifndef  __VARPEREVENT_INC__
-#define  __VARPEREVENT_INC__
+#ifndef  __TTZDiLep_INC__
+#define  __TTZDiLep_INC__
 
-#include "TRandom3.h"
-#include "TMath.h"
+// stdlib
+#include <cassert>
+
+// ROOT
+
+// User class
+#include "ComAna.h"
+#include "HistTool.hh"
+#include "RootTools.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
-#include "SusyAnaTools/Tools/customize.h"
-#include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
 
-void RegisterVarPerEvent(NTupleReader &tr, topTagger::type3TopTagger * type3Ptr);
 // ===========================================================================
-//        Class:  VarPerEvent
-//  Description:  A local class which will be called per event, to calculate
-//  local variables, following baselineDef structure
+//        Class:  TTZDiLep
+//  Description:  S
 // ===========================================================================
-class VarPerEvent
+class TTZDiLep : public ComAna
 {
   public:
 
     // ====================  LIFECYCLE     ===============================
-    VarPerEvent (NTupleReader *tr_, topTagger::type3TopTagger * type3Ptr_);
-    ~VarPerEvent ();                            // destructor
+    TTZDiLep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);                             
+    // constructor
+    TTZDiLep ( const TTZDiLep &other );   // copy constructor
+    ~TTZDiLep ();                            // destructor
 
     // ====================  ACCESSORS     ===============================
-    bool RunPerEvent() const;
+    bool InitCutOrder(std::string ana);
+    bool CheckCut();
+    bool BookHistograms();
+    bool FillCut();
 
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================
 
-    VarPerEvent& operator = ( const VarPerEvent &other ); // assignment operator
+    TTZDiLep& operator = ( const TTZDiLep &other ); // assignment operator
 
     // ====================  DATA MEMBERS  ===============================
 
   protected:
     // ====================  METHODS       ===============================
-    bool GetnTops() const;
-    bool GetMuInfo() const;
 
     // ====================  DATA MEMBERS  ===============================
 
@@ -60,10 +66,7 @@ class VarPerEvent
     // ====================  METHODS       ===============================
 
     // ====================  DATA MEMBERS  ===============================
-    NTupleReader *tr;
-	topTagger::type3TopTagger * type3Ptr;
 
-}; // -----  end of class VarPerEvent  -----
+}; // -----  end of class TTZDiLep  -----
 
-
-#endif   // ----- #ifndef __VARPEREVENT_INC__  -----
+#endif   // ----- #ifndef __TTZDiLep_INC__  -----

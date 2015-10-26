@@ -47,7 +47,7 @@ double GetXS(std::string name)
   std::cout << "\n";
 
   if (keyString != "")
-    std::cout << " Found " << keyString << " with XS " <<  allSamples[keyString].xsec  << " with kFactor" 
+    std::cout << " Found " << keyString << " with XS " <<  allSamples[keyString].xsec  << " with kFactor " 
       << allSamples[keyString].kfactor << std::endl;
   else
     return -1;

@@ -52,7 +52,6 @@ class TopTaggerAna
     // ====================  LIFECYCLE     ===============================
     TopTaggerAna ();
     TopTaggerAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);
-    TopTaggerAna ( const TopTaggerAna &other );                            // copy constructor
     ~TopTaggerAna ();                                                      // destructor
 
     // ====================  ACCESSORS     ===============================

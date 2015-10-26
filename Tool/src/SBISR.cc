@@ -26,7 +26,6 @@ SBISR::SBISR (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFi
 : ComAna(name, tr_, OutFile)
 {
   InitCutOrder(name);
-  BookHistograms();
   his->AddTH1("NBase", "Number of Events passed baseline", 2, 0, 2);
 }  // -----  end of method SBISR::SBISR  (constructor)  -----
 
@@ -183,7 +182,7 @@ bool SBISR::CheckCut()
 
   // Pt (non-b jet) > 250GeV
   double nonbHT = 0;
-  for (int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
+  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
   {
     if(tr->getVec<double>("recoJetsBtag_0").at(i) < CVS)
       nonbHT += tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt();

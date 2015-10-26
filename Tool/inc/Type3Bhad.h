@@ -31,7 +31,6 @@ class Type3Bhad
 
     // ====================  LIFECYCLE     ===============================
     Type3Bhad ();                             // constructor
-    Type3Bhad ( const Type3Bhad &other );   // copy constructor
     ~Type3Bhad ();                            // destructor
 
     // ====================  ACCESSORS     ===============================

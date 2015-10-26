@@ -46,15 +46,6 @@ TopTaggerAna::TopTaggerAna (std::string name, NTupleReader* tr_, std::shared_ptr
 
 //----------------------------------------------------------------------------
 //       Class:  TopTaggerAna
-//      Method:  TopTaggerAna
-// Description:  copy constructor
-//----------------------------------------------------------------------------
-TopTaggerAna::TopTaggerAna ( const TopTaggerAna &other )
-{
-}  // -----  end of method TopTaggerAna::TopTaggerAna  (copy constructor)  -----
-
-//----------------------------------------------------------------------------
-//       Class:  TopTaggerAna
 //      Method:  ~TopTaggerAna
 // Description:  destructor
 //----------------------------------------------------------------------------
@@ -312,7 +303,7 @@ int TopTaggerAna::GetGenTop()
   genDecayMomIdxVec = tr->getVec<int>            ("genDecayMomIdxVec");
   vTops.clear();
   int Nhad = 0;
-  for (int i = 0; i < genDecayMomIdxVec.size(); ++i)
+  for (unsigned int i = 0; i < genDecayMomIdxVec.size(); ++i)
   {
     if (abs(genDecayPdgIdVec[i]) == 6)
     {
@@ -342,7 +333,7 @@ int TopTaggerAna::GetGenTop()
     }
   }
 
-  assert(Nhad <= vTops.size());
+  assert(static_cast<unsigned>(Nhad) <= vTops.size());
 
   return Nhad;
 }       // -----  end of function TopTaggerAna::GetGenTop  -----
@@ -355,7 +346,7 @@ int TopTaggerAna::GetGenTop()
 int TopTaggerAna::GetChild(int parent, std::vector<int> pdgs) const
 {
   
-  for (int i = 0; i < genDecayMomIdxVec.size(); ++i)
+  for (unsigned int i = 0; i < genDecayMomIdxVec.size(); ++i)
   {
     if (abs(genDecayMomIdxVec[i]) == parent)
     {
@@ -379,7 +370,7 @@ std::vector<int> TopTaggerAna::GetChilds(int parent, std::vector<int> pdgs) cons
 {
   std::vector<int> outs;
   
-  for (int i = 0; i < genDecayMomIdxVec.size(); ++i)
+  for (unsigned int i = 0; i < genDecayMomIdxVec.size(); ++i)
   {
     if (abs(genDecayMomIdxVec[i]) == parent)
     {
@@ -406,6 +397,7 @@ bool TopTaggerAna::GetT3TopTagger(double ptcut, std::string jetstr, std::string 
   vToptagged.clear();
   RecoTops.clear();
   Type3Jets.clear();
+  (void)metstr;
 
 //----------------------------------------------------------------------------
 //  Get Jets for tagger
@@ -427,7 +419,7 @@ bool TopTaggerAna::GetT3TopTagger(double ptcut, std::string jetstr, std::string 
   assert(jetsforTT.size () > 3);
 
   // Run the Top Tagger
-  type3Ptr->setdoTopVeto(true);
+  //type3Ptr->setdoTopVeto(true);
   type3Ptr->runOnlyTopTaggerPart(jetsforTT, bjsforTT);
   if (RunType3BHad)
   {
@@ -1050,18 +1042,18 @@ bool TopTaggerAna::GetBoverlapHad() const
   std::vector<std::pair<int, int> > jetbhad;
 
   //std::cout << "number of overlap" << bhad.size() << std::endl;
-  for (int i = 0; i < bhad.size(); ++i)
+  for (unsigned int i = 0; i < bhad.size(); ++i)
   {
     TLorentzVector b = genDecayLVec[bhad.at(i).first];
     TLorentzVector had = genDecayLVec[bhad.at(i).second];
     TLorentzVector bhad = b + had;
-    for (int j = 0; j < jets.size() ; ++j)
+    for (unsigned int j = 0; j < jets.size() ; ++j)
     {
       if (jets.at(j).DeltaR(bhad) < 0.4) // jet closet to bhad
       {
         bool intype3 = false;
 
-        for (int k = 0; k < RecoTops.size(); ++k)
+        for (unsigned int k = 0; k < RecoTops.size(); ++k)
         {
           if (jets.at(j).DeltaR(RecoTops.at(k)) < 1.5)
           {
@@ -1079,7 +1071,7 @@ bool TopTaggerAna::GetBoverlapHad() const
 
   if (jetoverlap.size() == 0) return false;
 
-  for (int i = 0; i < bhad.size(); ++i)
+  for (unsigned int i = 0; i < bhad.size(); ++i)
   {
     TLorentzVector b = genDecayLVec[bhad.at(i).first];
     TLorentzVector had = genDecayLVec[bhad.at(i).second];
@@ -1118,7 +1110,7 @@ bool TopTaggerAna::GetBoverlapHad() const
     his->FillTH1("boost_GenboostdR"  , bhad.DeltaR(hh));
   }
 
-  for (int j = 0; j < jetoverlap.size() ; ++j)
+  for (unsigned int j = 0; j < jetoverlap.size() ; ++j)
   {
     his->FillTH1("bhad_PT"     , jets.at(jetoverlap.at(j)).Pt());
     his->FillTH1("bhad_Eta"    , jets.at(jetoverlap.at(j)).Eta());
