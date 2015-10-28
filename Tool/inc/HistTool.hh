@@ -14,8 +14,8 @@
 // 
 // ===========================================================================
 
-#ifndef  __HISTTOOL__
-#define  __HISTTOOL__
+#ifndef  MY_HISTTOOL_H
+#define  MY_HISTTOOL_H
 
 #include "TString.h"
 #include "TFile.h"
@@ -154,12 +154,12 @@ class HistTool
 
   private:
     // ====================  DATA MEMBERS  ===============================
-    bool SaveCutHists_;
     int CutSize; // The size of the cutbit
+    bool SaveCutHists_;
     double HWeight; // The weight of current event
-    std::shared_ptr<TFile> OutFile;
-    std::string prefix; // Name of the process
     std::string cutflag; // Name of the cutflag
+    std::string prefix; // Name of the process
+    std::shared_ptr<TFile> OutFile;
 
     std::vector<std::string> order;
     std::map<std::string, std::unique_ptr<TProfile> > ProMap; //Saving the 1D Hist 

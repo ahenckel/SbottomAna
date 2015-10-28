@@ -14,8 +14,9 @@
 // 
 // ===========================================================================
 
-#ifndef  __ROOTTOOLS_INC__
-#define  __ROOTTOOLS_INC__
+#ifndef  MY_ROOTTOOLS_INC
+#define  MY_ROOTTOOLS_INC
+
 
 #include <fstream>
 #include <iostream>
@@ -48,5 +49,5 @@ bool LTVMatch(TLorentzVector &V1, TLorentzVector V2, double dR=0.3);
 //template<typename T, typename V> int FindVectorIdX(const T &TeV, const V &t);
 int FindVectorIdX(std::vector<std::string> &TeV, std::string t);
 int HasTLV(TLorentzVector &obj, std::vector<TLorentzVector> &TLVs);
-#endif   // ----- #ifndef __ROOTTOOLS_INC__  -----
 
+#endif   // ----- #ifndef MY_ROOTTOOLS_INC  -----

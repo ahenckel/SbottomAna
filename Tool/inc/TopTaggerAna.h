@@ -14,10 +14,9 @@
 // 
 // ===========================================================================
 
+#ifndef  MY_TOPTAGGERANA_INC
+#define  MY_TOPTAGGERANA_INC
 
-
-#ifndef  __TOPTAGGERANA_INC__
-#define  __TOPTAGGERANA_INC__
 
 #include <cassert>
 #include "TLorentzVector.h"
@@ -124,4 +123,4 @@ class TopTaggerAna
 
 }; // -----  end of class TopTaggerAna  -----
 
-#endif   // ----- #ifndef __TOPTAGGERANA_INC__  -----
+#endif   // ----- #ifndef MY_TOPTAGGERANA_INC  -----

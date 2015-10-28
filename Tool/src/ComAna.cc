@@ -23,12 +23,28 @@
 //      Method:  ComAna
 // Description:  constructor
 //----------------------------------------------------------------------------
-ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile):
+ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec):
   tr(tr_)
 {
   his = new HistTool(OutFile, "Cut", name);
   type3Ptr = new topTagger::type3TopTagger();
   type3Ptr->setnJetsSel(4); // same as  AnaConsts::nJetsSel
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input Labels ~~~~~
+  jetVecLabel = "jetsLVec";
+  CSVVecLabel = "recoJetsBtag_0";
+  METLabel    = "met";
+  METPhiLabel = "metphi";
+  nCSVLabel = "cntCSVS";
+  nTopLabel = "nTopCandSortedCnt";
+  MT2Label ="best_had_brJet_MT2";
+
+  if (spec != "")
+  {
+    nCSVLabel += spec;
+    nTopLabel += spec;
+    MT2Label += spec;
+  }
 }  // -----  end of method ComAna::ComAna  (constructor)  -----
 
 
@@ -60,6 +76,7 @@ ComAna::operator = ( const ComAna &other )
 // ===========================================================================
 bool ComAna::BookHistograms()
 {
+  his->AddTH1C("NBase", "Number of Events passed baseline", 2, 0, 2);
   // Jets
   his->AddTH1C("NJets", "NJets", 10, 0, 10);
   BookTLVHistos("Jet1");
@@ -105,6 +122,7 @@ bool ComAna::InitCutOrder(std::string ana)
 // ===========================================================================
 bool ComAna::FillCut(int NCut)
 {
+  his->FillTH1(NCut, "NBase", 1);
   // Jet
   his->FillTH1(NCut, "NJets", j30count);
   FillTLVHistos(NCut, "Jet1", Jet1);
@@ -114,27 +132,27 @@ bool ComAna::FillCut(int NCut)
   Fill2TLVHistos(NCut, "J1J2", Jet1, Jet2);
 
   // MET
-  his->FillTH1(NCut, "MET", tr->getVar<double>("met") );
-  his->FillTH1(NCut, "METPhi", tr->getVar<double>("metphi") );
+  his->FillTH1(NCut, "MET", tr->getVar<double>(METLabel) );
+  his->FillTH1(NCut, "METPhi", tr->getVar<double>(METPhiLabel) );
 
   // NTops
-  his->FillTH1(NCut, "NRecoTops", tr->getVar<int>("nTopCandSortedCnt"));
+  his->FillTH1(NCut, "NRecoTops", tr->getVar<int>(nTopLabel));
   //his->FillTH1(NCut, "NRecoTops", int(vRecoTops.size()));
 
   // RM
-  if( tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 ) 
+  if( tr->getVec<TLorentzVector> (jetVecLabel).size() > 0 ) 
   {
 
-    his->FillTH1(NCut, "RM", tr->getVar<double>("met") / tr->getVec<TLorentzVector> ("jetsLVec").at(0).Pt());
+    his->FillTH1(NCut, "RM", tr->getVar<double>(METLabel) / tr->getVec<TLorentzVector> (jetVecLabel).at(0).Pt());
     TLorentzVector METLV(0, 0, 0, 0);
-    METLV.SetPtEtaPhiE(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
-    his->FillTH1(NCut, "dPhiJ1MET", tr->getVec<TLorentzVector> ("jetsLVec").at(0).DeltaPhi(METLV));
+    METLV.SetPtEtaPhiE(tr->getVar<double>(METLabel), 0, tr->getVar<double>(METPhiLabel), 0);
+    his->FillTH1(NCut, "dPhiJ1MET", tr->getVec<TLorentzVector> (jetVecLabel).at(0).DeltaPhi(METLV));
   }
 
-  his->FillTH1(NCut, "NBJets", tr->getVar<int>("cntCSVS"));
-  his->FillTH1(NCut, "NTops", tr->getVar<int>("nTopCandSortedCnt"));
-  his->FillTH1(NCut, "MT2", tr->getVar<double>("best_had_brJet_MT2"));
-  his->FillTH1(NCut, "MET", tr->getVar<double>("met"));
+  his->FillTH1(NCut, "NBJets", tr->getVar<int>(nCSVLabel));
+  his->FillTH1(NCut, "NTops", tr->getVar<int>(nTopLabel));
+  his->FillTH1(NCut, "MT2", tr->getVar<double>(MT2Label));
+  his->FillTH1(NCut, "MET", tr->getVar<double>(METLabel));
 
   return true;
 }       // -----  end of function ComAna::FillCut  -----
@@ -203,9 +221,9 @@ bool ComAna::RunEvent()
 int ComAna::CountJets(double jetPt) const
 {
   int jcount = 0;
-  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
+  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> (jetVecLabel).size(); ++i)
   {
-    if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > jetPt) 
+    if (tr->getVec<TLorentzVector> (jetVecLabel).at(i).Pt() > jetPt) 
       jcount++;
   }
   return jcount;
@@ -222,17 +240,17 @@ bool ComAna::GetLeadingJets()
   Jet3.SetPtEtaPhiE(0.0, 0.0, 0.0, 0.0);
   Jet4.SetPtEtaPhiE(0.0, 0.0, 0.0, 0.0);
 
-  if (tr->getVec<TLorentzVector> ("jetsLVec").size() > 0)
-    Jet1 = tr->getVec<TLorentzVector> ("jetsLVec").at(0);
+  if (tr->getVec<TLorentzVector> (jetVecLabel).size() > 0)
+    Jet1 = tr->getVec<TLorentzVector> (jetVecLabel).at(0);
   
-  if (tr->getVec<TLorentzVector> ("jetsLVec").size() > 1)
-    Jet2 = tr->getVec<TLorentzVector> ("jetsLVec").at(1);
+  if (tr->getVec<TLorentzVector> (jetVecLabel).size() > 1)
+    Jet2 = tr->getVec<TLorentzVector> (jetVecLabel).at(1);
 
-  if (tr->getVec<TLorentzVector> ("jetsLVec").size() > 2)
-    Jet3 = tr->getVec<TLorentzVector> ("jetsLVec").at(2);
+  if (tr->getVec<TLorentzVector> (jetVecLabel).size() > 2)
+    Jet3 = tr->getVec<TLorentzVector> (jetVecLabel).at(2);
 
-  if (tr->getVec<TLorentzVector> ("jetsLVec").size() > 3)
-    Jet4 = tr->getVec<TLorentzVector> ("jetsLVec").at(3);
+  if (tr->getVec<TLorentzVector> (jetVecLabel).size() > 3)
+    Jet4 = tr->getVec<TLorentzVector> (jetVecLabel).at(3);
 
   return true;
 }       // -----  end of function ComAna::GetLeadingJets  -----
@@ -393,15 +411,13 @@ int ComAna::GetType3TopTagger()
   std::vector<double> bjsforTT;
   std::vector<int> vToptagged;
 
-  const std::string jetstr= "jetsLVec";
-  const std::string bjstr = "recoJetsBtag_0";
   const double ptcut =30;
 
   //----------------------------------------------------------------------------
   //  Get Jets for tagger
   //----------------------------------------------------------------------------
-  std::vector<TLorentzVector> jets = tr->getVec<TLorentzVector>(jetstr);
-  std::vector<double> bjets  = tr->getVec<double>(bjstr);
+  std::vector<TLorentzVector> jets = tr->getVec<TLorentzVector>(jetVecLabel);
+  std::vector<double> bjets  = tr->getVec<double>(CSVVecLabel);
   assert(jets.size() == bjets.size());
 
   for(unsigned int i=0; i < jets.size(); ++i)
@@ -530,3 +546,4 @@ bool ComAna::SaveCutHist(bool choice) const
   assert(choice == his->SaveCutHists(choice));
   return choice;
 }       // -----  end of function ComAna::SaveCutHist  -----
+

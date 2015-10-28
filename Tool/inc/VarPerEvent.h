@@ -17,11 +17,16 @@
 #ifndef  __VARPEREVENT_INC__
 #define  __VARPEREVENT_INC__
 
+#include "boost/bimap.hpp"
+#include "boost/bimap/multiset_of.hpp"
+#include "boost/foreach.hpp"
+
 #include "TRandom3.h"
 #include "TMath.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
-#include "SusyAnaTools/Tools/customize.h"
+//#include "SusyAnaTools/Tools/customize.h"
+#include "SusyAnaTools/Tools/baselineDef.h"
 #include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
 
 void RegisterVarPerEvent(NTupleReader &tr, topTagger::type3TopTagger * type3Ptr);
@@ -53,6 +58,7 @@ class VarPerEvent
     // ====================  METHODS       ===============================
     bool GetnTops() const;
     bool GetMuInfo() const;
+    bool GetJetsNoMu() const;
 
     // ====================  DATA MEMBERS  ===============================
 

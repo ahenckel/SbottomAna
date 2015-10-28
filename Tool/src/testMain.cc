@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
   NTupleReader tr(fChain);
   AnaFunctions::prepareTopTagger();
   tr.registerFunction(&passBaselineFunc);
-  tr.registerFunction(boost::bind(&RegisterVarPerEvent, _1, type3Ptr));
+  //tr.registerFunction(boost::bind(&RegisterVarPerEvent, _1, type3Ptr));
   //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
 
   //**************************************************************************//
@@ -113,15 +113,15 @@ int main(int argc, char* argv[])
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
   //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
-  AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
-  AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile);
+  //AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
+  AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile, "TTZ");
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
   //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
   //AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
   //AnaMap["PassCut"] = new PassCut("LeftOver", &tr, OutFile);
   for( auto &it : AnaMap )
   {
-    it.second->SaveCutHist(false);
+    it.second->SaveCutHist(true);
     it.second->BookHistograms();
   }
 
@@ -131,7 +131,6 @@ int main(int argc, char* argv[])
   std::cout << "First loop begin: " << std::endl;
   while(tr.getNextEvent())
   {
-    //if(tr.getEvtNum()>12000 ) break;
     if (tr.getEvtNum() % 20000 == 0)
       std::cout << tr.getEvtNum() << "\t" << ((clock() - t0) / 1000000.0) << std::endl;
 

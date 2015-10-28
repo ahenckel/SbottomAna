@@ -22,11 +22,12 @@
 //      Method:  TTZDiLep
 // Description:  constructor
 //----------------------------------------------------------------------------
-TTZDiLep::TTZDiLep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile)
-: ComAna(name, tr_, OutFile)
+TTZDiLep::TTZDiLep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_)
+: ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
-  his->AddTH1("NBase", "Number of Events passed baseline", 2, 0, 2);
+  jetVecLabel = "prodJetsNoMu_jetsLVec";
+  CSVVecLabel = "recoJetsBtag_0_MuCleaned";
 }  // -----  end of method TTZDiLep::TTZDiLep  (constructor)  -----
 
 //----------------------------------------------------------------------------
@@ -67,7 +68,9 @@ TTZDiLep::operator = ( const TTZDiLep &other )
 bool TTZDiLep::BookHistograms()
 {
   ComAna::BookHistograms();
+  his->AddTH1C("JBT", "JBT", "JBT", "Events", 400, 0, 400);
   return true;
+
 }       // -----  end of function TTZDiLep::BookHistograms  -----
 
 // ===  FUNCTION  ============================================================
@@ -82,21 +85,19 @@ bool TTZDiLep::InitCutOrder(std::string ana)
 
   //Add name and order of the cutflow
   CutOrder.push_back("NoCut");
-  CutOrder.push_back("nJets");
-  CutOrder.push_back("dPhis");
-  CutOrder.push_back("BJets");
-  CutOrder.push_back("Tagger");
   CutOrder.push_back("Filter");
   CutOrder.push_back("HasZ");
+  CutOrder.push_back("nJets");
+  CutOrder.push_back("BJets");
+  CutOrder.push_back("Tagger");
 
   //Set the cutbit of each cut
   CutMap["NoCut"]  = "00000000000000000";
-  CutMap["nJets"]  = "00000000000000001";
-  CutMap["dPhis"]  = "00000000000000011";
-  CutMap["BJets"]  = "00000000000000111";
-  CutMap["Tagger"] = "00000000000001111";
-  CutMap["Filter"] = "00000000000011111";
-  CutMap["HasZ"]   = "00000000000111111";
+  CutMap["Filter"] = "00000000000000001";
+  CutMap["HasZ"]   = "00000000000000011";
+  CutMap["nJets"]  = "00000000000000111";
+  CutMap["BJets"]  = "00000000000001111";
+  CutMap["Tagger"] = "00000000000011111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -111,12 +112,11 @@ bool TTZDiLep::InitCutOrder(std::string ana)
 bool TTZDiLep::CheckCut()
 {
   
-  cutbit.set(0 , tr->getVar<bool>("passnJets"));
-  cutbit.set(1 , tr->getVar<bool>("passdPhis"));
-  cutbit.set(2 , tr->getVar<int>("cntCSVS") == 2);
-  cutbit.set(3 , tr->getVar<int>("nTopCandSortedCnt") == 2);
-  cutbit.set(4 , tr->getVar<bool>("passNoiseEventFilter"));
-  cutbit.set(5 , tr->getVar<bool>("passMuZinvSel"));
+  cutbit.set(0 , tr->getVar<bool>("passNoiseEventFilterTTZ"));
+  cutbit.set(1 , tr->getVar<bool>("passMuZinvSel"));
+  cutbit.set(2 , tr->getVar<bool>("passnJetsTTZ"));
+  cutbit.set(3 , tr->getVar<int>("cntCSVSTTZ") == 2);
+  cutbit.set(4 , tr->getVar<int>("nTopCandSortedCntTTZ") == 2);
 
   return true;
 }       // -----  end of function TTZDiLep::CheckCut  -----
@@ -142,9 +142,11 @@ bool TTZDiLep::FillCut()
 
     his->FillTH1("CutFlow", int(i)); 
     ComAna::FillCut(i);
+    //std::cout << ComAna::spec <<" _ "<< "jetsLVec_forTagger" + spec <<" "  << tr->getVec<TLorentzVector>("jetsLVec_forTagger" + spec).size()<< std::endl;
+    int JBTcount = tr->getVar<int>(nTopLabel) * 100 + tr->getVar<int>(nCSVLabel) * 10 + tr->getVec<TLorentzVector>("jetsLVec_forTaggerTTZ").size();
+    his->FillTH1(i, "JBT", JBTcount);
     if (i+1 == CutOrder.size()) 
     {
-      his->FillTH1("NBase", 1);
       passcuts = true;
     }
   }

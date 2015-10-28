@@ -15,8 +15,9 @@
 // 
 // ===========================================================================
 
-#ifndef  __COMANA_INC__
-#define  __COMANA_INC__
+#ifndef  MY_COMANA_INC
+#define  MY_COMANA_INC
+
 
 #include <sstream>
 #include <bitset>
@@ -40,7 +41,7 @@ class ComAna
   public:
 
     // ====================  LIFECYCLE     ===============================
-    ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);
+    ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec="");
     ~ComAna ();                            // destructor
 
     // ====================  ACCESSORS     ===============================
@@ -64,6 +65,11 @@ class ComAna
   protected:
     // ====================  METHODS       ===============================
     int GetType3TopTagger();
+    bool BookTLVHistos(std::string name);
+    bool FillTLVHistos(int NCut, std::string name, TLorentzVector TLV);
+
+    bool Book2TLVHistos(std::string name);
+    bool Fill2TLVHistos(int NCut, std::string name, TLorentzVector LV1, TLorentzVector LV2);
 
     // ====================  DATA MEMBERS  ===============================
     std::vector<std::string> CutOrder;
@@ -72,16 +78,21 @@ class ComAna
     HistTool *his;
     NTupleReader *tr;
 
-    bool BookTLVHistos(std::string name);
-    bool FillTLVHistos(int NCut, std::string name, TLorentzVector TLV);
-
-    bool Book2TLVHistos(std::string name);
-    bool Fill2TLVHistos(int NCut, std::string name, TLorentzVector LV1, TLorentzVector LV2);
 
     TLorentzVector Jet1;
     TLorentzVector Jet2;
     TLorentzVector Jet3;
     TLorentzVector Jet4;
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input Labels ~~~~~
+    std::string spec;
+    std::string jetVecLabel;
+    std::string CSVVecLabel;
+    std::string METLabel   ;
+    std::string METPhiLabel;
+    std::string nCSVLabel;
+    std::string nTopLabel;
+    std::string MT2Label;
 
   private:
     // ====================  METHODS       ===============================
@@ -99,7 +110,8 @@ class ComAna
 
     // Event variables
     int j30count;
-
+    
 
 }; // -----  end of class ComAna  -----
-#endif   // ----- #ifndef __COMANA_INC__  -----
+
+#endif   // ----- #ifndef MY__COMANA__INC  -----
