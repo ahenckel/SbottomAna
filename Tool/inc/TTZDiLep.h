@@ -49,6 +49,7 @@ class TTZDiLep : public ComAna
     bool BookHistograms();
     bool FillCut();
 
+    bool BJetTopAsso(int NCut);
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================

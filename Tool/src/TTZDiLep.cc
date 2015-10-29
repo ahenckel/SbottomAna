@@ -69,6 +69,7 @@ bool TTZDiLep::BookHistograms()
 {
   ComAna::BookHistograms();
   his->AddTH1C("JBT", "JBT", "JBT", "Events", 400, 0, 400);
+  his->AddTH1C("bJetinTop", "bJetinTop", "bJetinTop", "Events", 5, -1, 4);
   return true;
 
 }       // -----  end of function TTZDiLep::BookHistograms  -----
@@ -90,6 +91,7 @@ bool TTZDiLep::InitCutOrder(std::string ana)
   CutOrder.push_back("nJets");
   CutOrder.push_back("BJets");
   CutOrder.push_back("Tagger");
+  CutOrder.push_back("MET70");
 
   //Set the cutbit of each cut
   CutMap["NoCut"]  = "00000000000000000";
@@ -98,6 +100,7 @@ bool TTZDiLep::InitCutOrder(std::string ana)
   CutMap["nJets"]  = "00000000000000111";
   CutMap["BJets"]  = "00000000000001111";
   CutMap["Tagger"] = "00000000000011111";
+  CutMap["MET70"]  = "00000000000111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -115,8 +118,9 @@ bool TTZDiLep::CheckCut()
   cutbit.set(0 , tr->getVar<bool>("passNoiseEventFilterTTZ"));
   cutbit.set(1 , tr->getVar<bool>("passMuZinvSel"));
   cutbit.set(2 , tr->getVar<bool>("passnJetsTTZ"));
-  cutbit.set(3 , tr->getVar<int>("cntCSVSTTZ") == 2);
+  cutbit.set(3 , tr->getVar<int>("cntCSVSTTZ") >= 1);
   cutbit.set(4 , tr->getVar<int>("nTopCandSortedCntTTZ") == 2);
+  cutbit.set(5 , tr->getVar<double>(METLabel) < 70);
 
   return true;
 }       // -----  end of function TTZDiLep::CheckCut  -----
@@ -145,6 +149,10 @@ bool TTZDiLep::FillCut()
     //std::cout << ComAna::spec <<" _ "<< "jetsLVec_forTagger" + spec <<" "  << tr->getVec<TLorentzVector>("jetsLVec_forTagger" + spec).size()<< std::endl;
     int JBTcount = tr->getVar<int>(nTopLabel) * 100 + tr->getVar<int>(nCSVLabel) * 10 + tr->getVec<TLorentzVector>("jetsLVec_forTaggerTTZ").size();
     his->FillTH1(i, "JBT", JBTcount);
+    BJetTopAsso(i);
+
+
+
     if (i+1 == CutOrder.size()) 
     {
       passcuts = true;
@@ -154,5 +162,43 @@ bool TTZDiLep::FillCut()
   return passcuts;
 }       // -----  end of function TTZDiLep::FillCut  -----
 
+// ===  FUNCTION  ============================================================
+//         Name:  TTZDiLep::BJetTopAsso
+//  Description:  
+// ===========================================================================
+bool TTZDiLep::BJetTopAsso(int NCut) 
+{
+  const std::map<int, std::vector<TLorentzVector> > &mtopjets = tr->getMap<int, std::vector<TLorentzVector> >("mTopJetsTTZ");
+  const std::vector<TLorentzVector> &jets = tr->getVec<TLorentzVector>(jetVecLabel);
+  const std::vector<double> &bjets = tr->getVec<double>(CSVVecLabel);
+
+  std::vector<int> vbinTop;
+
+  for(unsigned int i=0; i < jets.size(); ++i)
+  {
+    if (bjets.at(i) < 0.890) continue;
+
+    for(auto &topit  : mtopjets)
+    {
+      for(auto &topjet : topit.second)
+      {
+        if ( topjet.Pt() == jets.at(i).Pt()
+            && topjet.Eta() == jets.at(i).Eta()
+            && topjet.Phi() == jets.at(i).Phi() )
+        {
+          vbinTop.push_back(topit.first);
+        }
+      }
+    }
+  }
+
+  if (vbinTop.empty()) 
+    his->FillTH1(NCut, "bJetinTop", -1);
+  else
+    for(auto &it : vbinTop)
+      his->FillTH1(NCut, "bJetinTop", it);
+
+  return true;
+}       // -----  end of function TTZDiLep::BJetTopAsso  -----
 
 
