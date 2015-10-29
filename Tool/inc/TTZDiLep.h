@@ -49,7 +49,7 @@ class TTZDiLep : public ComAna
     bool BookHistograms();
     bool FillCut();
 
-    bool BJetTopAsso(int NCut);
+    std::vector<int> BJetTopAsso() const;
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================
