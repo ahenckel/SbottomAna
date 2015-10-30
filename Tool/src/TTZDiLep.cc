@@ -88,6 +88,7 @@ bool TTZDiLep::InitCutOrder(std::string ana)
   CutOrder.push_back("NoCut");
   CutOrder.push_back("Filter");
   CutOrder.push_back("HasZ");
+  CutOrder.push_back("2Leps");
   CutOrder.push_back("nJets");
   CutOrder.push_back("BJets");
   CutOrder.push_back("Tagger");
@@ -98,11 +99,12 @@ bool TTZDiLep::InitCutOrder(std::string ana)
   CutMap["NoCut"]  = "00000000000000000";
   CutMap["Filter"] = "00000000000000001";
   CutMap["HasZ"]   = "00000000000000011";
-  CutMap["nJets"]  = "00000000000000111";
-  CutMap["BJets"]  = "00000000000001111";
-  CutMap["Tagger"] = "00000000000011111";
-  CutMap["MET70"]  = "00000000000111111";
-  CutMap["BinTop"] = "00000000001111111";
+  CutMap["2Leps"]  = "00000000000000111";
+  CutMap["nJets"]  = "00000000000001111";
+  CutMap["BJets"]  = "00000000000011111";
+  CutMap["Tagger"] = "00000000000111111";
+  CutMap["MET70"]  = "00000000001111111";
+  CutMap["BinTop"] = "00000000011111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -119,10 +121,14 @@ bool TTZDiLep::CheckCut()
   
   cutbit.set(0 , tr->getVar<bool>("passNoiseEventFilterTTZ"));
   cutbit.set(1 , tr->getVar<bool>("passMuZinvSel"));
-  cutbit.set(2 , tr->getVec<TLorentzVector>("jetsLVec_forTaggerTTZ").size() >= 4);
-  cutbit.set(3 , tr->getVar<int>("cntCSVSTTZ") >= 1);
-  cutbit.set(4 , tr->getVar<int>("nTopCandSortedCntTTZ") == 2);
-  cutbit.set(5 , tr->getVar<double>(METLabel) < 70);
+
+  cutbit.set(2 , tr->getVec<TLorentzVector>("cutMuVec").size() == 2);
+
+  cutbit.set(3 , tr->getVec<TLorentzVector>("jetsLVec_forTaggerTTZ").size() >= 4);
+
+  cutbit.set(4 , tr->getVar<int>("cntCSVSTTZ") >= 1);
+  cutbit.set(5 , tr->getVar<int>("nTopCandSortedCntTTZ") == 2);
+  cutbit.set(6 , tr->getVar<double>(METLabel) < 70);
 
   std::vector<int> vbinTop = BJetTopAsso();
   cutbit.set(6 , vbinTop.size() > 0);
