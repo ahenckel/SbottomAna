@@ -28,6 +28,18 @@
 #include "RootTools.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
+#include "SusyAnaTools/Tools/baselineDef.h"
+
+
+inline void passBaselineTTZ(NTupleReader &tr)
+{
+  BaselineVessel blv("TTZ");
+  blv.jetVecLabel = "prodJetsNoMu_jetsLVec";
+  blv.CSVVecLabel = "recoJetsBtag_0_MuCleaned";
+  blv.prepareTopTagger();
+  blv.passBaseline(tr);
+  blv.GetnTops(&tr);
+}
 
 // ===========================================================================
 //        Class:  TTZDiLep
@@ -49,7 +61,7 @@ class TTZDiLep : public ComAna
     bool BookHistograms();
     bool FillCut();
 
-    std::vector<int> BJetTopAsso() const;
+    std::vector<int> BJetTopAsso();
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================

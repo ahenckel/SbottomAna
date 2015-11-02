@@ -25,11 +25,10 @@
 #include "TMath.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
-//#include "SusyAnaTools/Tools/customize.h"
 #include "SusyAnaTools/Tools/baselineDef.h"
 #include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
 
-void RegisterVarPerEvent(NTupleReader &tr, topTagger::type3TopTagger * type3Ptr);
+void RegisterVarPerEvent(NTupleReader &tr);
 // ===========================================================================
 //        Class:  VarPerEvent
 //  Description:  A local class which will be called per event, to calculate
@@ -40,7 +39,7 @@ class VarPerEvent
   public:
 
     // ====================  LIFECYCLE     ===============================
-    VarPerEvent (NTupleReader *tr_, topTagger::type3TopTagger * type3Ptr_);
+    VarPerEvent (NTupleReader *tr_);
     ~VarPerEvent ();                            // destructor
 
     // ====================  ACCESSORS     ===============================
@@ -56,7 +55,6 @@ class VarPerEvent
 
   protected:
     // ====================  METHODS       ===============================
-    bool GetnTops() const;
     bool GetMuInfo() const;
     bool GetJetsNoMu() const;
 
@@ -67,7 +65,6 @@ class VarPerEvent
 
     // ====================  DATA MEMBERS  ===============================
     NTupleReader *tr;
-	topTagger::type3TopTagger * type3Ptr;
 
 }; // -----  end of class VarPerEvent  -----
 

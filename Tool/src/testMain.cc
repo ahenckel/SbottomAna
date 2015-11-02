@@ -104,17 +104,18 @@ int main(int argc, char* argv[])
   //clock to monitor the run time
   size_t t0 = clock();
   NTupleReader tr(fChain);
-  AnaFunctions::prepareTopTagger();
   tr.registerFunction(&passBaselineFunc);
-  //tr.registerFunction(boost::bind(&RegisterVarPerEvent, _1, type3Ptr));
+  tr.registerFunction(&passBaselineTTZ);
+  tr.registerFunction(&RegisterVarPerEvent);
+
   //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
 
   //**************************************************************************//
   //                           Prepare the analysis                           //
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
-  //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
-  //AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
+  AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
   AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile, "TTZ");
   AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "TTZ");
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
@@ -133,7 +134,6 @@ int main(int argc, char* argv[])
   std::cout << "First loop begin: " << std::endl;
   while(tr.getNextEvent())
   {
-    //if (tr.getEvtNum() > 20000) break;
     if (tr.getEvtNum() % 20000 == 0)
       std::cout << tr.getEvtNum() << "\t" << ((clock() - t0) / 1000000.0) << std::endl;
 

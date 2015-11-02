@@ -8,14 +8,14 @@ else
   CXX       = ~/.vim/bundle/ClangComplete/bin/cc_args.py g++
 endif
 
-CXXFLAGS  += -Iinc -std=c++0x 
-## Optimization flag
+CXXFLAGS  += -Iinc -std=c++14
+# Optimization flag
 #CXXFLAGS += -g -O3 -fstack-protector-all 
 ## Enable the maximun warning
-CXXFLAGS += -Wall -Wextra -Weffc++ -g
+#CXXFLAGS += -Wall -Wextra -Weffc++ -g -Weverything
 
 ## Include ROOT
-CXXFLAGS  += $(shell root-config --cflags)
+CXXFLAGS  += $(subst -I, -isystem , $(shell root-config --cflags))
 #CXXDEPFLAGS = -MMD -MP
 
 ifneq ($(shell echo $$CMSSW_BASE), )
@@ -44,7 +44,7 @@ ifneq ($(shell echo $$BOOSTROOT), )
   CXXFLAGS  += -isystem $(shell echo $(BOOSTROOT))
 endif
 
-SUSYTools = $(SUSYObj)/NTupleReader.o $(SUSYObj)/samples.o
+SUSYTools = $(SUSYObj)/NTupleReader.o $(SUSYObj)/samples.o $(SUSYObj)/baselineDef.o $(SUSYObj)/customize.o
 
 FILES = $(wildcard $(SDIR)/*.cc)
 OBJS  := $(FILES:$(SDIR)/%.cc=$(ODIR)/%.o)

@@ -132,22 +132,22 @@ bool SBMulti::CheckCut()
   cutbit.reset();
 
   // Eletron Veto
-  cutbit.set(0, tr->getVar<bool>("passEleVeto"));
+  cutbit.set(0, tr->getVar<bool>(Label["passEleVeto"]));
   
   // Muon Veto
-  cutbit.set(1, tr->getVar<bool>("passMuonVeto"));
+  cutbit.set(1, tr->getVar<bool>(Label["passMuonVeto"]));
 
   // IsoTrack Veto
-  cutbit.set(2, tr->getVar<bool>("passIsoTrkVeto"));
+  cutbit.set(2, tr->getVar<bool>(Label["passIsoTrkVeto"]));
 
   // MET > 200 GeV
-  cutbit.set(3, tr->getVar<double>("met") > 200);
+  cutbit.set(3, tr->getVar<double>(METLabel) > 200);
 
   // dPhi 1, 2, 3 for QCD rejection
-  cutbit.set(4, tr->getVar<bool>("passdPhis"));
+  cutbit.set(4, tr->getVar<bool>(Label["passdPhis"]));
 
   // Veto Top using Type3 
-  cutbit.set(5, ComAna::GetType3TopTagger() == 0);
+  cutbit.set(5, tr->getVar<int>(Label["nTopCandSortedCnt"]));
 /*
  *
  *  // Exactly 3 jet with pT > 30GeV and |eta| < 2.5

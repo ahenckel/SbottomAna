@@ -127,12 +127,12 @@ bool SBDiJet::CheckCut()
   double diJetHT = 0;
   std::vector<int> jet70Idx;
   
-  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
+  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> (jetVecLabel).size(); ++i)
   {
-    if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > 70 && fabs(tr->getVec<TLorentzVector> ("jetsLVec").at(i).Eta()) < 2.4)
+    if (tr->getVec<TLorentzVector> (jetVecLabel).at(i).Pt() > 70 && fabs(tr->getVec<TLorentzVector> (jetVecLabel).at(i).Eta()) < 2.4)
     {
       jet70count++;
-      diJetHT +=  tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt();
+      diJetHT +=  tr->getVec<TLorentzVector> (jetVecLabel).at(i).Pt();
       jet70Idx.push_back(i);
     }
   }
@@ -142,16 +142,16 @@ bool SBDiJet::CheckCut()
   int bjet70count = 0;
   for (unsigned int i = 0; i < jet70Idx.size(); ++i)
   {
-    if (tr->getVec<double>("recoJetsBtag_0").at(jet70Idx.at(i)) > 0.814)
+    if (tr->getVec<double>(CSVVecLabel).at(jet70Idx.at(i)) > 0.814)
       bjet70count++;
   }
   cutbit.set(1, bjet70count >= 1);
 
   // Veto event with if a third leading jet with pT > 50GeV, |eta| < 5.0
   bool jet3Veto = false;
-  if (tr->getVec<TLorentzVector> ("jetsLVec").size() > 2)
+  if (tr->getVec<TLorentzVector> (jetVecLabel).size() > 2)
   {
-    TLorentzVector jet3 = tr->getVec<TLorentzVector> ("jetsLVec").at(2);
+    TLorentzVector jet3 = tr->getVec<TLorentzVector> (jetVecLabel).at(2);
     //if (jet3.Pt() > 50 && fabs(jet3.Eta()) < 5) // 8TeV
     if (jet3.Pt() > 70 && fabs(jet3.Eta()) < 5) // 13TeV
     {
@@ -161,40 +161,40 @@ bool SBDiJet::CheckCut()
   cutbit.set(2, !jet3Veto);
 
   // Eletron Veto
-  cutbit.set(3, tr->getVar<bool>("passEleVeto"));
+  cutbit.set(3, tr->getVar<bool>(Label["passEleVeto"]));
   
   // Muon Veto
-  cutbit.set(4, tr->getVar<bool>("passMuonVeto"));
+  cutbit.set(4, tr->getVar<bool>(Label["passMuonVeto"]));
 
   // IsoTrack Veto
-  cutbit.set(5, tr->getVar<bool>("passIsoTrkVeto"));
+  cutbit.set(5, tr->getVar<bool>(Label["passIsoTrkVeto"]));
 
   // HT(scalar sum of jet pt) > 250GeV
   cutbit.set(6, diJetHT > 250);
 
   // MET > 175 GeV
-  cutbit.set(7, tr->getVar<double>("met") > 175);
+  cutbit.set(7, tr->getVar<double>(METLabel) > 175);
 
   // Delta Phi (b1, b2) < 2.5
   TLorentzVector Jet1(0, 0, 0, 0);
   TLorentzVector Jet2(0, 0, 0, 0);
 
-  if (tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 ) 
-    Jet1 = tr->getVec<TLorentzVector> ("jetsLVec").at(0);
-  if (tr->getVec<TLorentzVector> ("jetsLVec").size() > 1 ) 
-    Jet2 = tr->getVec<TLorentzVector> ("jetsLVec").at(1);
-  cutbit.set(8, tr->getVec<TLorentzVector> ("jetsLVec").size() > 1 && fabs(Jet1.DeltaPhi(Jet2))<2.5);
+  if (tr->getVec<TLorentzVector> (jetVecLabel).size() > 0 ) 
+    Jet1 = tr->getVec<TLorentzVector> (jetVecLabel).at(0);
+  if (tr->getVec<TLorentzVector> (jetVecLabel).size() > 1 ) 
+    Jet2 = tr->getVec<TLorentzVector> (jetVecLabel).at(1);
+  cutbit.set(8, tr->getVec<TLorentzVector> (jetVecLabel).size() > 1 && fabs(Jet1.DeltaPhi(Jet2))<2.5);
 
   //MT(J2, MET) > 200GeV
   MTJ2MET = 0;
   TLorentzVector METLV(0, 0, 0, 0);
-  METLV.SetPtEtaPhiE(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
+  METLV.SetPtEtaPhiE(tr->getVar<double>(METLabel), 0, tr->getVar<double>(METPhiLabel), 0);
   MTJ2MET = CalMT(Jet2, METLV);
   double MTJ1MET = CalMT(Jet1, METLV); // 13TeV
   MTJ2MET = MTJ2MET < MTJ1MET ? MTJ2MET : MTJ1MET;
-  cutbit.set(9, tr->getVec<TLorentzVector> ("jetsLVec").size() > 1 && MTJ2MET > 200);
+  cutbit.set(9, tr->getVec<TLorentzVector> (jetVecLabel).size() > 1 && MTJ2MET > 200);
 
-  cutbit.set(10, ComAna::GetType3TopTagger() == 0 );
+  cutbit.set(10, tr->getVar<int>(Label["nTopCandSortedCnt"]));
   //----------------------------------------------------------------------------
   //  Always fill in the event cutbits information
   //----------------------------------------------------------------------------

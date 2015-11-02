@@ -128,10 +128,10 @@ bool SBISR::CheckCut()
   cutbit.reset();
   // Exactly 3 jet with pT > 30GeV and |eta| < 2.5
   int jet30count = 0;
-  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
+  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> (jetVecLabel).size(); ++i)
   {
-    if (tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt() > 30 &&
-        fabs(tr->getVec<TLorentzVector> ("jetsLVec").at(i).Eta()) < 2.4)
+    if (tr->getVec<TLorentzVector> (jetVecLabel).at(i).Pt() > 30 &&
+        fabs(tr->getVec<TLorentzVector> (jetVecLabel).at(i).Eta()) < 2.4)
     {
       jet30count++;
     }
@@ -140,56 +140,56 @@ bool SBISR::CheckCut()
 
   // Two leading jets pT > 70 GeV
   bool Dijet70 = false;
-  if (tr->getVec<TLorentzVector> ("jetsLVec").size() >=2)
+  if (tr->getVec<TLorentzVector> (jetVecLabel).size() >=2)
   {
     //if (tr->getVec<TLorentzVector> ("jetsLVec").at(0).Pt() > 70  // 8TeV
         //&& tr->getVec<TLorentzVector> ("jetsLVec").at(1).Pt() > 70)  // 8TeV
-    if (tr->getVec<TLorentzVector> ("jetsLVec").at(0).Pt() > 40 
-        && tr->getVec<TLorentzVector> ("jetsLVec").at(1).Pt() > 40) 
+    if (tr->getVec<TLorentzVector> (jetVecLabel).at(0).Pt() > 40 
+        && tr->getVec<TLorentzVector> (jetVecLabel).at(1).Pt() > 40) 
       Dijet70 = true;
   }
   cutbit.set(1, Dijet70);
 
   // First Jet is not tagged as a b-jet (loose CSV point)
-  cutbit.set(2, tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 && tr->getVec<double>("recoJetsBtag_0").at(0) <  0.423 );
+  cutbit.set(2, tr->getVec<TLorentzVector> (jetVecLabel).size() > 0 && tr->getVec<double>(CSVVecLabel).at(0) <  0.423 );
 
   // Second or third or both jets are b-jet
   bool bjets23 = false;
-  if (tr->getVec<TLorentzVector> ("jetsLVec").size() >=3)
+  if (tr->getVec<TLorentzVector> (jetVecLabel).size() >=3)
   {
-    if ( tr->getVec<double>("recoJetsBtag_0").at(1)  > CVS || tr->getVec<double>("recoJetsBtag_0").at(2) >  CVS )
+    if ( tr->getVec<double>(CSVVecLabel).at(1)  > CVS || tr->getVec<double>(CSVVecLabel).at(2) >  CVS )
       bjets23 = true;
   }
   cutbit.set(3, bjets23);
 
   // Eletron Veto
-  cutbit.set(4, tr->getVar<bool>("passEleVeto"));
+  cutbit.set(4, tr->getVar<bool>(Label["passEleVeto"]));
   
   // Muon Veto
-  cutbit.set(5, tr->getVar<bool>("passMuonVeto"));
+  cutbit.set(5, tr->getVar<bool>(Label["passMuonVeto"]));
 
   // IsoTrack Veto
-  cutbit.set(6, tr->getVar<bool>("passIsoTrkVeto"));
+  cutbit.set(6, tr->getVar<bool>(Label["passIsoTrkVeto"]));
 
   // HT(scalar sum of jet pt) > 250GeV
-  cutbit.set(7, tr->getVar<double>("mht") > 250);
+  cutbit.set(7, tr->getVar<double>(Label["mht"]) > 250);
 
   // MET > 250 GeV
-  cutbit.set(8, tr->getVar<double>("met") > 250);
+  cutbit.set(8, tr->getVar<double>(METLabel) > 250);
   
   // dPhi 1, 2, 3 for QCD rejection
-  cutbit.set(9, tr->getVar<bool>("passdPhis"));
+  cutbit.set(9, tr->getVar<bool>(Label["passdPhis"]));
 
   // Pt (non-b jet) > 250GeV
   double nonbHT = 0;
-  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> ("jetsLVec").size(); ++i)
+  for (unsigned int i = 0; i < tr->getVec<TLorentzVector> (jetVecLabel).size(); ++i)
   {
-    if(tr->getVec<double>("recoJetsBtag_0").at(i) < CVS)
-      nonbHT += tr->getVec<TLorentzVector> ("jetsLVec").at(i).Pt();
+    if(tr->getVec<double>(CSVVecLabel).at(i) < CVS)
+      nonbHT += tr->getVec<TLorentzVector> (jetVecLabel).at(i).Pt();
   }
   cutbit.set(10, nonbHT > 250);
 
-  cutbit.set(11, ComAna::GetType3TopTagger() == 0 );
+  cutbit.set(11, tr->getVar<int>(Label["nTopCandSortedCnt"]));
 
   return true;
 }       // -----  end of function SBISR::CheckCut  -----

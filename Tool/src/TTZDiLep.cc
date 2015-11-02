@@ -119,15 +119,15 @@ bool TTZDiLep::InitCutOrder(std::string ana)
 bool TTZDiLep::CheckCut()
 {
   
-  cutbit.set(0 , tr->getVar<bool>("passNoiseEventFilterTTZ"));
+  cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
   cutbit.set(1 , tr->getVar<bool>("passMuZinvSel"));
 
   cutbit.set(2 , tr->getVec<TLorentzVector>("cutMuVec").size() == 2);
 
-  cutbit.set(3 , tr->getVec<TLorentzVector>("jetsLVec_forTaggerTTZ").size() >= 4);
+  cutbit.set(3 , tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size() >= 4);
 
-  cutbit.set(4 , tr->getVar<int>("cntCSVSTTZ") >= 1);
-  cutbit.set(5 , tr->getVar<int>("nTopCandSortedCntTTZ") == 2);
+  cutbit.set(4 , tr->getVar<int>(Label["cntCSVS"]) >= 1);
+  cutbit.set(5 , tr->getVar<int>(Label["nTopCandSortedCnt"]) == 2);
   cutbit.set(6 , tr->getVar<double>(METLabel) < 70);
 
   std::vector<int> vbinTop = BJetTopAsso();
@@ -159,7 +159,7 @@ bool TTZDiLep::FillCut()
     his->FillTH1("CutFlow", int(i)); 
     ComAna::FillCut(i);
     //std::cout << ComAna::spec <<" _ "<< "jetsLVec_forTagger" + spec <<" "  << tr->getVec<TLorentzVector>("jetsLVec_forTagger" + spec).size()<< std::endl;
-    int JBTcount = tr->getVar<int>(nTopLabel) * 100 + tr->getVar<int>(nCSVLabel) * 10 + tr->getVec<TLorentzVector>("jetsLVec_forTaggerTTZ").size();
+    int JBTcount = tr->getVar<int>(Label["nTopCandSortedCnt"]) * 100 + tr->getVar<int>(Label["cntCSVS"]) * 10 + tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size();
     his->FillTH1(i, "JBT", JBTcount);
 
     if (vbinTop.empty()) 
@@ -182,9 +182,9 @@ bool TTZDiLep::FillCut()
 //         Name:  TTZDiLep::BJetTopAsso
 //  Description:  
 // ===========================================================================
-std::vector<int> TTZDiLep::BJetTopAsso() const
+std::vector<int> TTZDiLep::BJetTopAsso()
 {
-  const std::map<int, std::vector<TLorentzVector> > &mtopjets = tr->getMap<int, std::vector<TLorentzVector> >("mTopJetsTTZ");
+  const std::map<int, std::vector<TLorentzVector> > &mtopjets = tr->getMap<int, std::vector<TLorentzVector> >(Label["mTopJets"]);
   const std::vector<TLorentzVector> &jets = tr->getVec<TLorentzVector>(jetVecLabel);
   const std::vector<double> &bjets = tr->getVec<double>(CSVVecLabel);
 

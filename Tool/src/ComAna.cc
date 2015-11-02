@@ -27,26 +27,63 @@ ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &Out
   tr(tr_)
 {
   his = new HistTool(OutFile, "Cut", name);
-  type3Ptr = new topTagger::type3TopTagger();
-  type3Ptr->setnJetsSel(4); // same as  AnaConsts::nJetsSel
+  DefineLabels(spec);
+}  // -----  end of method ComAna::ComAna  (constructor)  -----
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input Labels ~~~~~
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::DefineLabels
+//  Description:  
+// ===========================================================================
+bool ComAna::DefineLabels(std::string spec)
+{
   jetVecLabel = "jetsLVec";
   CSVVecLabel = "recoJetsBtag_0";
   METLabel    = "met";
   METPhiLabel = "metphi";
-  nCSVLabel = "cntCSVS";
-  nTopLabel = "nTopCandSortedCnt";
-  MT2Label ="best_had_brJet_MT2";
+
+  Label["nMuons_CUT"]             = "nMuons_CUT"              ;
+  Label["nElectrons_CUT"]         = "nElectrons_CUT"          ;
+  Label["nIsoTrks_CUT"]           = "nIsoTrks_CUT"            ;
+  Label["cntNJetsPt50Eta24"]      = "cntNJetsPt50Eta24"       ;
+  Label["cntNJetsPt30Eta24"]      = "cntNJetsPt30Eta24"       ;
+  Label["dPhiVec"]                = "dPhiVec"                 ;
+  Label["cntCSVS"]                = "cntCSVS"                 ;
+  Label["jetsLVec_forTagger"]     = "jetsLVec_forTagger"      ;
+  Label["recoJetsBtag_forTagger"] = "recoJetsBtag_forTagger";
+  Label["cntNJetsPt30"]           = "cntNJetsPt30"            ;
+  Label["passLeptVeto"]           = "passLeptVeto"            ;
+  Label["passMuonVeto"]           = "passMuonVeto"            ;
+  Label["passEleVeto"]            = "passEleVeto"             ;
+  Label["passIsoTrkVeto"]         = "passIsoTrkVeto"          ;
+  Label["passnJets"]              = "passnJets"               ;
+  Label["passdPhis"]              = "passdPhis"               ;
+  Label["passBJets"]              = "passBJets"               ;
+  Label["passMET"]                = "passMET"                 ;
+  Label["passMT2"]                = "passMT2"                 ;
+  Label["passHT"]                 = "passHT"                  ;
+  Label["passTagger"]             = "passTagger"              ;
+  Label["passNoiseEventFilter"]   = "passNoiseEventFilter"    ;
+  Label["passBaseline"]           = "passBaseline"            ;
+  Label["passBaselineNoTagMT2"]   = "passBaselineNoTagMT2"    ;
+  Label["passBaselineNoTag"]      = "passBaselineNoTag"       ;
+  Label["nTopCandSortedCnt"]      = "nTopCandSortedCnt"       ;
+  Label["best_lept_brJet_MT"]     = "best_lept_brJet_MT"      ;
+  Label["best_had_brJet_MT"]      = "best_had_brJet_MT"       ;
+  Label["best_had_brJet_mTcomb"]  = "best_had_brJet_mTcomb"   ;
+  Label["best_had_brJet_MT2"]     = "best_had_brJet_MT2"      ;
+  Label["HT"]                     = "HT"                      ;
+  Label["vTops"]                  = "vTops"                   ;
+  Label["mTopJets"]               = "mTopJets"                ;
 
   if (spec != "")
   {
-    nCSVLabel += spec;
-    nTopLabel += spec;
-    MT2Label += spec;
+    for(auto &it: Label)
+    {
+      it.second += spec;
+    }
   }
-}  // -----  end of method ComAna::ComAna  (constructor)  -----
-
+  return true;
+}       // -----  end of function ComAna::DefineLabels  -----
 
 //----------------------------------------------------------------------------
 //       Class:  ComAna
@@ -136,7 +173,7 @@ bool ComAna::FillCut(int NCut)
   his->FillTH1(NCut, "METPhi", tr->getVar<double>(METPhiLabel) );
 
   // NTops
-  his->FillTH1(NCut, "NRecoTops", tr->getVar<int>(nTopLabel));
+  his->FillTH1(NCut, "NRecoTops", tr->getVar<int>(Label["nTopCandSortedCnt"]));
   //his->FillTH1(NCut, "NRecoTops", int(vRecoTops.size()));
 
   // RM
@@ -149,9 +186,9 @@ bool ComAna::FillCut(int NCut)
     his->FillTH1(NCut, "dPhiJ1MET", tr->getVec<TLorentzVector> (jetVecLabel).at(0).DeltaPhi(METLV));
   }
 
-  his->FillTH1(NCut, "NBJets", tr->getVar<int>(nCSVLabel));
-  his->FillTH1(NCut, "NTops", tr->getVar<int>(nTopLabel));
-  his->FillTH1(NCut, "MT2", tr->getVar<double>(MT2Label));
+  his->FillTH1(NCut, "NBJets", tr->getVar<int>(Label["cntCSVS"]));
+  his->FillTH1(NCut, "NTops", tr->getVar<int>(Label["nTopCandSortedCnt"]));
+  his->FillTH1(NCut, "MT2", tr->getVar<double>(Label["best_had_brJet_MT2"]));
   his->FillTH1(NCut, "MET", tr->getVar<double>(METLabel));
 
   return true;
@@ -401,73 +438,6 @@ bool ComAna::Fill2TLVHistos(int NCut, std::string name, TLorentzVector LV1, TLor
 }       // -----  end of function ComAna::Fill2TLVHistos  -----
 
 // ===  FUNCTION  ============================================================
-//         Name:  ComAna::GetType3TopTagger
-//  Description:  
-// ===========================================================================
-int ComAna::GetType3TopTagger()
-{
-  vRecoTops.clear();
-  std::vector<TLorentzVector> jetsforTT;
-  std::vector<double> bjsforTT;
-  std::vector<int> vToptagged;
-
-  const double ptcut =30;
-
-  //----------------------------------------------------------------------------
-  //  Get Jets for tagger
-  //----------------------------------------------------------------------------
-  std::vector<TLorentzVector> jets = tr->getVec<TLorentzVector>(jetVecLabel);
-  std::vector<double> bjets  = tr->getVec<double>(CSVVecLabel);
-  assert(jets.size() == bjets.size());
-
-  for(unsigned int i=0; i < jets.size(); ++i)
-  {
-    if (jets.at(i).Pt() > ptcut)
-    {
-      jetsforTT.push_back(jets.at(i));
-      bjsforTT.push_back(bjets.at(i));
-    }
-  } 
-
-  // Some event selection cuts
-  if(jetsforTT.size () <= 3) return vRecoTops.size();
-
-  // Run the Top Tagger
-  //type3Ptr->setdoTopVeto(true);
-  type3Ptr->runOnlyTopTaggerPart(jetsforTT, bjsforTT);
-
-  //Get Pt order jet list, passing the requirement
-  boost::bimap<int, double > topdm;
-  for (size_t j = 0; j < type3Ptr->finalCombfatJets.size(); ++j)
-  {
-    TLorentzVector jjjTop(0, 0, 0, 0);
-    for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(j).size(); ++k)
-    {
-      jjjTop += jetsforTT.at(type3Ptr->finalCombfatJets.at(j).at(k));
-    }
-
-    if (PassType3TopCrite(type3Ptr, jetsforTT, bjsforTT, j))
-    {
-      vToptagged.push_back(j);
-      topdm.insert(boost::bimap<int, double >::value_type(j, fabs(jjjTop.M() - 172.5)));
-    }
-  }
-  vToptagged = SortToptager(topdm);
-
-  for(unsigned int j=0; j < vToptagged.size(); ++j)
-  {
-    TLorentzVector jjjTop(0, 0, 0, 0);
-    for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(vToptagged.at(j)).size(); ++k)
-    {
-      jjjTop +=  jetsforTT.at(type3Ptr->finalCombfatJets.at(vToptagged.at(j)).at(k));
-    }
-    vRecoTops.push_back(jjjTop);
-  }
-
-  return vRecoTops.size();
-}       // -----  end of function ComAna::GetType3TopTagger  -----
-
-// ===  FUNCTION  ============================================================
 //         Name:  ComAna::PassType3TopCrite
 //  Description:  
 // ===========================================================================
@@ -490,40 +460,6 @@ bool ComAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std
     if (jjjTop.M() < 110 || jjjTop.M() > 240 ) return false;
     return true;
 }       // -----  end of function ComAna::PassType3TopCrite  -----
-
-// ===  FUNCTION  ============================================================
-//         Name:  ComAna::SortToptager
-//  Description:  
-// ===========================================================================
-std::vector<int> ComAna::SortToptager( boost::bimap<int, double >  dm_bimap) 
-{
-  std::vector<int> sortedtagger;
-  std::set<int> jetset;
-  
-  double largerdm = -1;
-  for(boost::bimap<int, double>::right_map::const_iterator it=dm_bimap.right.begin();
-      it!=dm_bimap.right.end(); ++it)
-  {
-    //std::cout << "dm" << it->first <<" inex " << it->second << std::endl;
-    assert(it->first >= largerdm);
-    largerdm = it->first;
-    bool foundduplicatedjets = false;
-    for (size_t k = 0; k < type3Ptr->finalCombfatJets.at(it->second).size(); ++k)
-    {
-      if (!jetset.insert(type3Ptr->finalCombfatJets.at(it->second).at(k)).second)
-      {
-        foundduplicatedjets = true;
-        break;
-      }
-    }
-    if (!foundduplicatedjets)
-    {
-      sortedtagger.push_back(it->second);
-    }
-  }
-
-  return sortedtagger;
-}       // -----  end of function ComAna::SortToptager  -----
 
 
 // ===  FUNCTION  ============================================================

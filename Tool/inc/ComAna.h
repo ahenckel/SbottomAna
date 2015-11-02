@@ -64,20 +64,19 @@ class ComAna
 
   protected:
     // ====================  METHODS       ===============================
-    int GetType3TopTagger();
     bool BookTLVHistos(std::string name);
     bool FillTLVHistos(int NCut, std::string name, TLorentzVector TLV);
 
     bool Book2TLVHistos(std::string name);
     bool Fill2TLVHistos(int NCut, std::string name, TLorentzVector LV1, TLorentzVector LV2);
 
+    bool DefineLabels(std::string spec);
     // ====================  DATA MEMBERS  ===============================
     std::vector<std::string> CutOrder;
     std::bitset<NBITS> cutbit;
     std::map<std::string, std::string>  CutMap;
     HistTool *his;
     NTupleReader *tr;
-
 
     TLorentzVector Jet1;
     TLorentzVector Jet2;
@@ -90,9 +89,8 @@ class ComAna
     std::string CSVVecLabel;
     std::string METLabel   ;
     std::string METPhiLabel;
-    std::string nCSVLabel;
-    std::string nTopLabel;
-    std::string MT2Label;
+    // Label defined in derived, which changed by spec name
+    std::map<std::string, std::string> Label;
 
   private:
     // ====================  METHODS       ===============================
@@ -103,7 +101,6 @@ class ComAna
 
     bool PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std::vector<TLorentzVector>& oriJetsVec, 
         std::vector<double>& recoJetsBtagCSVS, int ic) const;
-    std::vector<int> SortToptager( boost::bimap<int, double > dm_bimap);
     // ====================  DATA MEMBERS  ===============================
     topTagger::type3TopTagger * type3Ptr;
     std::vector<TLorentzVector> vRecoTops;
