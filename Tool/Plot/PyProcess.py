@@ -10,6 +10,7 @@
 # histogram of the corresponding process
 
 from PyHist import PyHist
+import os.path
 
 
 class PyProcess():
@@ -18,7 +19,8 @@ class PyProcess():
         self.ProList = []
         self.lumi = lumi
         for file in filelist:
-            self.ProList.append(PyHist(file, Lumi=self.lumi))
+            if os.path.isfile(file):
+                self.ProList.append(PyHist(file, Lumi=self.lumi))
         self.linecolor = attribute["linecolor"] if "linecolor" in attribute else 1
         self.linestyle = attribute["linestyle"] if "linestyle" in attribute else 1
         self.markercolor = attribute["markercolor"] if "markercolor" in attribute else 1

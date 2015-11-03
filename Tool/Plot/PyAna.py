@@ -25,7 +25,9 @@ class PyAna():
 
     def FormProcesses(self):
         for key, vdict in self.Prodmap.items():
-            self.AllProds[key] = PyProcess(key, ["%s/%s" % (self.Directory, file) for file in vdict["file"]], vdict)
+            tempPro = PyProcess(key, ["%s/%s" % (self.Directory, file) for file in vdict["file"]], vdict)
+            if hasattr(tempPro, "ProList") and len(tempPro.ProList) != 0:
+                self.AllProds[key] = tempPro
 
 # ============================================================================#
 # ----------------------------     User Access     ---------------------------#
@@ -112,7 +114,10 @@ class PyAna():
 
         # Label
         if len(pronames) != 1:
-            leglable += self.Prodmap[lhist.proname]["label"] + " "
+            if lhist.proname in self.Prodmap:
+                leglable += self.Prodmap[lhist.proname]["label"] + " "
+            else:
+                leglable += lhist.proname + " "
         if len(dirnames) != 1:
             leglable += lhist.DirLabel + " " if hasattr(lhist, "DirLabel") else lhist.dirname.split("_")[-1] + " "
         if len(histnames) != 1:

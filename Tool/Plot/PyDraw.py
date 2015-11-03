@@ -242,7 +242,7 @@ class PyDraw():
         if len(orgTitle) == 0:
             orgTitle = "a.u."
         else:
-            if len(set(UnitItgl)) == 0 and UnitItgl[0] == "Unit":
+            if len(set(UnitItgl)) == 1 and UnitItgl[0] == "Unit":
                 orgTitle += " (Norm. to Unity)"
         yaxis.SetTitle(orgTitle)
 
@@ -250,6 +250,7 @@ class PyDraw():
         if len(hists) == 0:
             return
         yaxis = hists[0].GetYaxis()
+        xaxis = hists[0].GetXaxis()
 
         # Set Axis properties
         if prefix == "Ratio":
@@ -262,6 +263,8 @@ class PyDraw():
             # hists[0].GetYaxis().SetTitleOffset(ROOT.gStyle.GetTitleOffset("Y"))
 
         # Set YAxis Title
+        if "XTitle" in kw:
+            xaxis.SetTitle(kw["XTitle"])
         if prefix == "" or (prefix == "Ratio" and loc == "top"):
             if "YTitle" in kw:
                 yaxis.SetTitle(kw["YTitle"])
@@ -362,6 +365,7 @@ class PyDraw():
             hists[0].SetMaximum(returnmax)
         else:
             if haxis is not None:
+                ## this is  problematic for logY and X axis
                 haxis.SetRangeUser(returnmin, returnmax)
 
     def UpdateRatioAxis(self, hist, position):
@@ -461,7 +465,7 @@ class PyDraw():
             canvas.toppad.SetLeftMargin(canvas.GetLeftMargin())
             canvas.toppad.SetRightMargin(canvas.GetRightMargin())
             canvas.toppad.SetTopMargin(canvas.GetTopMargin())
-            canvas.toppad.SetBottomMargin(0)
+            canvas.toppad.SetBottomMargin(0.01)
             canvas.toppad.SetFrameFillStyle(0)
             canvas.toppad.SetFrameBorderMode(0)
             canvas.toppad.cd()
@@ -478,7 +482,7 @@ class PyDraw():
             canvas.botpad.SetTicky(1)
             canvas.botpad.SetLeftMargin(canvas.GetLeftMargin())
             canvas.botpad.SetRightMargin(canvas.GetRightMargin())
-            canvas.botpad.SetTopMargin(0)
+            canvas.botpad.SetTopMargin(0.01)
             canvas.botpad.SetBottomMargin(3*canvas.GetBottomMargin())
             canvas.botpad.SetFrameFillStyle(0)
             canvas.botpad.SetFrameBorderMode(0)
@@ -499,8 +503,9 @@ class PyDraw():
         # Setting up the ratio hist
         # 1. No input hist, but only two hists in plot
         if ratiohist is None:
-            if len(hists) == 2:
-                rhists = self.GetRatioPlot(formular, hists, hists)
+            rhists = self.GetRatioPlot(formular, hists, hists)
+            # if len(hists) == 2:
+                # rhists = self.GetRatioPlot(formular, hists, hists)
         else:
             if not isinstance(ratiohist, list):
                 ratiohist = [ratiohist]
@@ -567,6 +572,7 @@ class PyDraw():
         for As in rhists[0]:
             histformular = rhists[1:]
             histformular.insert(0, As)
+            print histformular
             ratios.append(self.EvalRatioFormular(formular, histformular, len(rhists[0])))
         return ratios
 
@@ -734,19 +740,19 @@ class PyDraw():
         rehist["Background"]["Total"] = bkhist
         return rehist
 
-    def CalSignificance(self, hists, formular=None):
+    def CalSignificance(self, hists, formular=None, direction=0):
         rehists = []
         for k, v in hists["Signal"].iteritems():
             temphist = v.Clone(k)
             for k1, v1 in vars(v).iteritems():
                 setattr(temphist, k1, v1)
             if formular == "S/B":
-                rehists.append(self.SigSBRatio(temphist, hists["Background"]["Total"]))
+                rehists.append(self.SigSBRatio(temphist, hists["Background"]["Total"], direction))
             if formular is None:
-                rehists.append(self.SigFormular15(temphist, hists["Background"]["Total"]))
+                rehists.append(self.SigFormular15(temphist, hists["Background"]["Total"], direction))
         return rehists
 
-    def SigSBRatio(self, sighist, bkhist):
+    def SigSBRatio(self, sighist, bkhist, direction):
         # print bkhist.Integral()
         for ibins in range(1, sighist.GetNbinsX()):
             newcontent = 0
@@ -928,6 +934,7 @@ class PyDraw():
         for hdir in list(dirSet):
             dirhists = [hist for hist in inhists if hist.dirname == hdir]
             mhists = self.MergeHistCate(dirhists)
-            linehists += self.CalSignificance(mhists, kw.get("SigOpt", None))
+            linehists += self.CalSignificance(mhists, formular=kw.get("SigOpt", None),
+                                              direction=kw.get("Direction", 0))
 
         return self.DrawLineComparison(linehists, **kw)

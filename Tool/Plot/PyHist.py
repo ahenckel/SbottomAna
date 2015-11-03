@@ -47,7 +47,10 @@ class PyHist:
             hist = self.GetCutFlow(dirname, Norm=norm)
         else:
             if "%s/%s" % (dirname, BaseName) in self.file:
-                nBase = self.file.Get("%s/%s" % (dirname, BaseName)).GetBinContent(2)
+                if BaseName == "NBase":
+                    nBase = self.file.Get("%s/%s" % (dirname, BaseName)).GetBinContent(2)
+                else:
+                    nBase = self.file.Get("%s/%s" % (dirname, BaseName)).Integral()
             else:
                 nBase = 0
 
