@@ -109,6 +109,13 @@ bool STISR::BookHistograms()
   his->AddTH1C("LeadingJetPTIso8", "LeadingJetPTIso8", 100, 0, 1);
   his->AddTH1C("LeadingJetPTIso4", "LeadingJetPTIso4", 100, 0, 1);
 
+  his->AddTH1C("LeadingJetMIso15", "LeadingJetMIso15", 100, 0, 1);
+  his->AddTH1C("LeadingJetMIso8", "LeadingJetMIso8", 100, 0, 1);
+  his->AddTH1C("LeadingJetMIso4", "LeadingJetMIso4", 100, 0, 1);
+
+  his->AddTH2C("LJIsoVsTops", "LJIsoVsTops", "Jet Isolation", "nTops", 100, 0, 1, 5, -1, 4);
+  his->AddTH2C("LJnoGenPTVsRM", "LJnoGenPTVsRM", "Jet PT", "RM", 100, 0, 1000, 100, 0, 1);
+  his->AddTH2C("LJPTVsRM", "LJPTVsRM", "Jet PT", "RM", 100, 0, 1000, 100, 0, 1);
   return true;
 }       // -----  end of function STISR::BookHistograms  -----
 
@@ -192,7 +199,7 @@ bool STISR::CheckCut()
 {
   //const double CVS = 0.814;
   cutbit.reset();
-  if( tr->getVec<TLorentzVector> ("jetsLVec").size() == 0 ) 
+  if( tr->getVec<TLorentzVector> (jetVecLabel).size() == 0 ) 
   {
     cutbit.set();
     cutbit.flip();
@@ -200,28 +207,28 @@ bool STISR::CheckCut()
   }
 
   // Eletron Veto
-  cutbit.set(0, tr->getVar<bool>("passEleVeto"));
+  cutbit.set(0, tr->getVar<bool>(Label["passEleVeto"]));
   
   // Muon Veto
-  cutbit.set(1, tr->getVar<bool>("passMuonVeto"));
+  cutbit.set(1, tr->getVar<bool>(Label["passMuonVeto"]));
 
   // IsoTrack Veto
-  cutbit.set(2, tr->getVar<bool>("passIsoTrkVeto"));
+  cutbit.set(2, tr->getVar<bool>(Label["passIsoTrkVeto"]));
 
   // MET > 200 GeV
-  cutbit.set(3, tr->getVar<double>("met") > 200);
+  cutbit.set(3, tr->getVar<double>(METLabel) > 200);
 
-  cutbit.set(4 , tr->getVar<bool>("passnJets"));
+  cutbit.set(4 , tr->getVar<bool>(Label["passnJets"]));
 
   // At least one top tag
-  cutbit.set(5 , tr->getVar<int>("nTopCandSortedCnt") >= 1);
+  cutbit.set(5 , tr->getVar<int>(Label["nTopCandSortedCnt"]) >= 1);
 
   TLorentzVector J1(0, 0, 0, 0);
-  if( tr->getVec<TLorentzVector> ("jetsLVec").size() > 0 )
-    J1 = tr->getVec<TLorentzVector> ("jetsLVec").at(0);
+  if( tr->getVec<TLorentzVector> (jetVecLabel).size() > 0 )
+    J1 = tr->getVec<TLorentzVector> (jetVecLabel).at(0);
 
   // | phi_j0 - phi_MET - pi | < 0.5
-  cutbit.set(6, fabs(fabs(J1.Phi() - tr->getVar<double>("metphi"))- 3.14) < 0.5);
+  cutbit.set(6, fabs(fabs(J1.Phi() - tr->getVar<double>(METPhiLabel))- 3.14) < 0.5);
 
   // | phi_j0 - phi_Top - pi | < 0.5
   //std::vector<TLorentzVector> vTops;
@@ -232,8 +239,8 @@ bool STISR::CheckCut()
     //cutbit.set(7, false);
   cutbit.set(7, true);
 
-  if( tr->getVec<TLorentzVector> ("recoJetsBtag_0").size() > 0 )
-    cutbit.set(8,  tr->getVec<double> ("recoJetsBtag_0").at(0)  < 0.814 );
+  if( tr->getVec<TLorentzVector> (CSVVecLabel).size() > 0 )
+    cutbit.set(8,  tr->getVec<double> (CSVVecLabel).at(0)  < 0.814 );
   else
     cutbit.set(8,  true);
 
@@ -307,6 +314,17 @@ bool STISR::FillCut()
   CheckCut();
   ComAna::RunEvent();
 
+  // ISR Jet Study
+  topAna->GetGenTop();
+  // Getting the jet list
+  jetsforTT.clear();
+  jetsforTTplt.clear();
+  jetsforTT = tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]);
+  for(auto &it : tr->getMap<int, std::vector<TLorentzVector> >(Label["mTopJets"]))
+  {
+    jetsforTTplt.insert(jetsforTTplt.begin(), it.second.begin(), it.second.end());
+  }
+
   for (unsigned int i = 0; i < CutOrder.size(); ++i)
   {
     std::bitset<NBITS> locbit(CutMap[CutOrder.at(i)]);
@@ -315,75 +333,15 @@ bool STISR::FillCut()
     his->FillTH1("CutFlow", int(i)); 
     ComAna::FillCut(i);
     if (i+1 == CutOrder.size()) his->FillTH1("NBase", 1);
-    // ISR Jet Study
-    topAna->GetGenTop();
-    jetsforTT.clear();
-    jetsforTTplt.clear();
-
-    for(unsigned int i=0; i < tr->getVec<TLorentzVector>("jetsLVec").size(); ++i)
-    {
-      if (tr->getVec<TLorentzVector>("jetsLVec").at(i).Pt() > 30) 
-        jetsforTT.push_back(tr->getVec<TLorentzVector>("jetsLVec").at(i));
-    }
-    if (jetsforTT.size() >= 4)
-    {
-      topAna->GetT3TopTagger(30, "jetsLVec", "recoJetsBtag_0", "met");
-      for(unsigned int i=0; i < topAna->Type3Jets.size(); ++i)
-      {
-        jetsforTTplt.push_back(jetsforTT.at(topAna->Type3Jets.at(i)));
-      }
-    }
-
-    std::map<std::string, bool> jet1Matched =  JetOrgAna(i, "LeadingJetType", Jet1);
-    std::map<std::string, bool> jet2Matched =  JetOrgAna(i, "SecondJetType", Jet2);
-    JetOrgAna(i, "ThirdJetType", Jet3);
-    JetOrgAna(i, "ForthJetType", Jet4);
-
-
-    his->FillTH1(i, "Jet1METdPhi", Jet1.Phi() - tr->getVar<double>("metphi"));
-    his->FillTH1(i, "Jet1METdPT", Jet1.Pt() - tr->getVar<double>("met"));
-    if (!jet1Matched["MatchGen"]) 
-    {
-      FillTLVHistos(i, "Jet1NoGen", Jet1);
-      his->FillTH1(i, "Jet1NoGenMETdPhi", Jet1.Phi() - tr->getVar<double>("metphi"));
-      his->FillTH1(i, "Jet1NoGenMETdPT", Jet1.Pt() - tr->getVar<double>("met"));
-      if (topAna->RecoTops.size() > 0)
-        Fill2TLVHistos(i, "J1NGT1", Jet1, topAna->RecoTops.at(0));
-      if (topAna->RecoTops.size() > 1)
-        Fill2TLVHistos(i, "J1NGT1", Jet1, topAna->RecoTops.at(1));
-    }
-    if (!jet1Matched["MatchT3"]) 
-    {
-      FillTLVHistos(i, "Jet1NoT3", Jet1);
-      his->FillTH1(i, "Jet1NoT3METdPhi", Jet1.Phi() - tr->getVar<double>("metphi"));
-      his->FillTH1(i, "Jet1NoT3METdPT", Jet1.Pt() - tr->getVar<double>("met"));
-      if (topAna->RecoTops.size() > 0)
-        Fill2TLVHistos(i, "J1NTT1", Jet1, topAna->RecoTops.at(0));
-      if (topAna->RecoTops.size() > 1)
-        Fill2TLVHistos(i, "J1NTT1", Jet1, topAna->RecoTops.at(1));
-    }
-
-
-    if (!jet2Matched["MatchGen"]) 
-    {
-      FillTLVHistos(i, "Jet2NoGen", Jet2);
-      if (topAna->RecoTops.size() > 0)
-        Fill2TLVHistos(i, "J2NGT1", Jet2, topAna->RecoTops.at(0));
-      if (topAna->RecoTops.size() > 1)
-        Fill2TLVHistos(i, "J2NGT1", Jet2, topAna->RecoTops.at(1));
-    }
-    if (!jet2Matched["MatchT3"]) 
-    {
-      FillTLVHistos(i, "Jet2NoT3", Jet2);
-      if (topAna->RecoTops.size() > 0)
-        Fill2TLVHistos(i, "J2NTT1", Jet2, topAna->RecoTops.at(0));
-      if (topAna->RecoTops.size() > 1)
-        Fill2TLVHistos(i, "J2NTT1", Jet2, topAna->RecoTops.at(1));
-    }
+   
+    FillLJAna(i);
 
     his->FillTH1(i, "LeadingJetPTIso15", LJPTIso(1.5));
     his->FillTH1(i, "LeadingJetPTIso8", LJPTIso(0.8));
     his->FillTH1(i, "LeadingJetPTIso4", LJPTIso(0.4));
+    his->FillTH1(i, "LeadingJetMIso15", LJMIso(1.5));
+    his->FillTH1(i, "LeadingJetMIso8", LJMIso(0.8));
+    his->FillTH1(i, "LeadingJetMIso4", LJMIso(0.4));
   }
 
   return true;
@@ -505,15 +463,15 @@ bool STISR::WriteHistogram()
 //         Name:  STISR::LJinTops
 //  Description:  
 // ===========================================================================
-bool STISR::LJinTops() const
+bool STISR::LJinTops()
 {
   TLorentzVector Jet1(0, 0, 0, 0);
-  if( tr->getVec<TLorentzVector> ("jetsLVec").size() == 0 ) 
+  if( tr->getVec<TLorentzVector> (jetVecLabel).size() == 0 ) 
     return false;
 
-  Jet1 =  tr->getVec<TLorentzVector> ("jetsLVec").at(0);
+  Jet1 =  tr->getVec<TLorentzVector> (jetVecLabel).at(0);
 
-  std::map<int, std::vector<TLorentzVector> > vTopJets = tr->getMap<int, std::vector<TLorentzVector> >("mTopJets");
+  std::map<int, std::vector<TLorentzVector> > vTopJets = tr->getMap<int, std::vector<TLorentzVector> >(Label["mTopJets"]);
   
   for(std::map<int, std::vector<TLorentzVector> >::const_iterator it=vTopJets.begin();
     it!=vTopJets.end(); ++it)
@@ -537,7 +495,7 @@ bool STISR::LJinTops() const
 // ===========================================================================
 double STISR::LJPTIso(double coneSize) const
 {
-  const std::vector<TLorentzVector> vJets = tr->getVec<TLorentzVector> ("jetsLVec");
+  const std::vector<TLorentzVector> vJets = tr->getVec<TLorentzVector> (jetVecLabel);
   if( vJets.size() == 0 ) 
     return 1;
 
@@ -557,3 +515,94 @@ double STISR::LJPTIso(double coneSize) const
   else
     return Jet1.Pt()/ SumPT;
 }       // -----  end of function STISR::LJPTIso  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  STISR::LJMIso
+//  Description:  ISR jet should be isolated from the rest system, idea from
+//  Rick, checking mass relative isolation
+// ===========================================================================
+double STISR::LJMIso(double coneSize) const
+{
+  const std::vector<TLorentzVector> vJets = tr->getVec<TLorentzVector> (jetVecLabel);
+  if( vJets.size() == 0 ) 
+    return 1;
+
+  const TLorentzVector Jet1 = vJets.at(0);
+  TLorentzVector conejet(0,0,0,0);
+
+  for(unsigned int i=1; i < vJets.size(); ++i)
+  {
+    if (Jet1.DeltaR(vJets.at(i)) < coneSize)
+    {
+      conejet +=vJets.at(i);
+    }
+  }
+
+  if (conejet.M() == 0.0)
+    return 1;
+  else
+    return Jet1.M()/ conejet.M();
+}       // -----  end of function STISR::LJMIso  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  STISR::FillLJAna
+//  Description:  
+// ===========================================================================
+bool STISR::FillLJAna(int i)
+{
+  //Jet original check
+  std::map<std::string, bool> jet1Matched =  JetOrgAna(i, "LeadingJetType", Jet1);
+  std::map<std::string, bool> jet2Matched =  JetOrgAna(i, "SecondJetType", Jet2);
+  JetOrgAna(i, "ThirdJetType", Jet3);
+  JetOrgAna(i, "ForthJetType", Jet4);
+
+  int LJtype = int(LJinTops()) * 2 + int( jet1Matched["MatchGen"]);
+  his->FillTH2(i, "LJIsoVsTops", LJPTIso(1.5), LJtype);
+
+  his->FillTH1(i, "Jet1METdPhi", Jet1.Phi() - tr->getVar<double>(METPhiLabel));
+  his->FillTH1(i, "Jet1METdPT", Jet1.Pt() - tr->getVar<double>(METLabel));
+  his->FillTH2(i, "LJPTVsRM", Jet1.Pt(), tr->getVar<double>(METLabel) / Jet1.Pt());
+
+  if (!jet1Matched["MatchGen"]) 
+  {
+    FillTLVHistos(i, "Jet1NoGen", Jet1);
+    his->FillTH1(i, "Jet1NoGenMETdPhi", Jet1.Phi() - tr->getVar<double>(METPhiLabel));
+    his->FillTH1(i, "Jet1NoGenMETdPT", Jet1.Pt() - tr->getVar<double>(METLabel));
+    if (topAna->RecoTops.size() > 0)
+      Fill2TLVHistos(i, "J1NGT1", Jet1, topAna->RecoTops.at(0));
+    if (topAna->RecoTops.size() > 1)
+      Fill2TLVHistos(i, "J1NGT1", Jet1, topAna->RecoTops.at(1));
+    his->FillTH2(i, "LJnoGenPTVsRM", Jet1.Pt(), tr->getVar<double>(METLabel) / Jet1.Pt());
+  }
+  if (!jet1Matched["MatchT3"]) 
+  {
+    FillTLVHistos(i, "Jet1NoT3", Jet1);
+    his->FillTH1(i, "Jet1NoT3METdPhi", Jet1.Phi() - tr->getVar<double>(METPhiLabel));
+    his->FillTH1(i, "Jet1NoT3METdPT", Jet1.Pt() - tr->getVar<double>(METLabel));
+    if (topAna->RecoTops.size() > 0)
+      Fill2TLVHistos(i, "J1NTT1", Jet1, topAna->RecoTops.at(0));
+    if (topAna->RecoTops.size() > 1)
+      Fill2TLVHistos(i, "J1NTT1", Jet1, topAna->RecoTops.at(1));
+  }
+
+
+  if (!jet2Matched["MatchGen"]) 
+  {
+    FillTLVHistos(i, "Jet2NoGen", Jet2);
+    if (topAna->RecoTops.size() > 0)
+      Fill2TLVHistos(i, "J2NGT1", Jet2, topAna->RecoTops.at(0));
+    if (topAna->RecoTops.size() > 1)
+      Fill2TLVHistos(i, "J2NGT1", Jet2, topAna->RecoTops.at(1));
+  }
+  if (!jet2Matched["MatchT3"]) 
+  {
+    FillTLVHistos(i, "Jet2NoT3", Jet2);
+    if (topAna->RecoTops.size() > 0)
+      Fill2TLVHistos(i, "J2NTT1", Jet2, topAna->RecoTops.at(0));
+    if (topAna->RecoTops.size() > 1)
+      Fill2TLVHistos(i, "J2NTT1", Jet2, topAna->RecoTops.at(1));
+  }
+
+  return true;
+}       // -----  end of function STISR::FillLJAna  -----

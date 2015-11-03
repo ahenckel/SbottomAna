@@ -67,8 +67,10 @@ class STISR : public ComAna
 
   private:
     // ====================  METHODS       ===============================
-    bool LJinTops() const;
+    bool LJinTops();
+    double LJMIso(double coneSize) const;
     double LJPTIso(double coneSize) const;
+    bool FillLJAna(int i);
 
     // ====================  DATA MEMBERS  ===============================
     std::vector<std::string> JetType;
