@@ -106,7 +106,15 @@ bool VarPerEvent::GetMuInfo() const
     jetsLVec                            = tr->getVec<TLorentzVector>("jetsLVec");
     recoJetschargedEmEnergyFraction     = tr->getVec<double>("recoJetschargedEmEnergyFraction");
     recoJetschargedHadronEnergyFraction = tr->getVec<double>("recoJetschargedHadronEnergyFraction");
-    muonsFlagIDVec                      = tr->getVec<int>("muonsFlagMedium");
+    try
+    {
+      muonsFlagIDVec                      = tr->getVec<int>("muonsFlagMedium");
+    }
+    catch (std::string var)
+    {
+      muonsFlagIDVec = std::vector<int>(tr->getVec<double>("muonsMiniIso").size(), 1);
+    }
+
     ht                                  = tr->getVar<double>("ht");
     met                                 = tr->getVar<double>("met");
     metphi                              = tr->getVar<double>("metphi");
@@ -114,6 +122,7 @@ bool VarPerEvent::GetMuInfo() const
   }
   catch (std::string var)
   {
+    std::cout << "Missing inputs for VarPerEvent::GetMuInfo" << std::endl;
     return false;
   }
 

@@ -26,8 +26,12 @@ TTZDiLep::TTZDiLep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> 
 : ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
-  jetVecLabel = "prodJetsNoMu_jetsLVec";
-  CSVVecLabel = "recoJetsBtag_0_MuCleaned";
+  if (spec_ == "TTZ")
+  {
+    jetVecLabel = "prodJetsNoMu_jetsLVec";
+    CSVVecLabel = "recoJetsBtag_0_MuCleaned";
+  }
+
 }  // -----  end of method TTZDiLep::TTZDiLep  (constructor)  -----
 
 //----------------------------------------------------------------------------

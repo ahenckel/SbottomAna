@@ -50,7 +50,7 @@ class TTZDiLep : public ComAna
   public:
 
     // ====================  LIFECYCLE     ===============================
-    TTZDiLep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_="NM");
+    TTZDiLep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_="");
     // constructor
     TTZDiLep ( const TTZDiLep &other );   // copy constructor
     ~TTZDiLep ();                            // destructor

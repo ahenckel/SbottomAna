@@ -26,8 +26,11 @@ TTZ3Lep::TTZ3Lep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
 : ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
-  jetVecLabel = "prodJetsNoMu_jetsLVec";
-  CSVVecLabel = "recoJetsBtag_0_MuCleaned";
+  if (spec_ == "TTZ")
+  {
+    jetVecLabel = "prodJetsNoMu_jetsLVec";
+    CSVVecLabel = "recoJetsBtag_0_MuCleaned";
+  }
 }  // -----  end of method TTZ3Lep::TTZ3Lep  (constructor)  -----
 
 //----------------------------------------------------------------------------
@@ -111,18 +114,18 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
 // ===========================================================================
 bool TTZ3Lep::CheckCut()
 {
-  cutbit.set(0 , tr->getVar<bool>("passNoiseEventFilterTTZ"));
+  cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
 
   // Check event has Z
   //cutbit.set(1 , HasZ());
   cutbit.set(1 , tr->getVar<bool>("passMuZinvSel"));
 
   cutbit.set(2 , tr->getVec<TLorentzVector>("cutMuVec").size() == 3
-      || tr->getVar<int>("nElectrons_CUTTTZ") == 1);
+      || tr->getVar<int>(Label["nElectrons_CUT"]) == 1);
 
-  cutbit.set(3 , tr->getVar<int>("cntCSVSTTZ") >= 1);
+  cutbit.set(3 , tr->getVar<int>(Label["cntCSVS"]) >= 1);
 
-  cutbit.set(4 , tr->getVar<int>("nTopCandSortedCntTTZ") >= 1);
+  cutbit.set(4 , tr->getVar<int>(Label["nTopCandSortedCnt"]) >= 1);
 
   cutbit.set(5 , tr->getVar<double>(METLabel) < 70);
 
