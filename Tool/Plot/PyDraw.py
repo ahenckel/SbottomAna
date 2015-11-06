@@ -16,6 +16,7 @@ import os
 import math
 import re
 import copy
+import rootpy
 from rootpy.plotting import Canvas
 from Config import PyOutPut, Lumi
 
@@ -216,6 +217,19 @@ class PyDraw():
         return self.SetLegend([hist.title for hist in hists], res[0])
 
     def LegendAddEntry(self, leg, hists):
+        # For cut flow
+        pronames = list(set([h.proname for h in hists]))
+        dirnames = list(set([h.dirname for h in hists]))
+        shistnames = list(set([h.striphistname for h in hists]))
+        histnames = list(set([h.histname for h in hists]))
+        if len(pronames) == 1 and len(dirnames) ==1 and len(shistnames) == 1 and len(histnames) != 1 :
+            # hists = [x for x in hists if "_" in x.histname]
+            hists.sort(key=lambda x: int(x.histname.split("_")[-1]))
+            for h in hists:
+                leg.AddEntry(h, h.title, "l")
+            return True
+
+        # DATA first
         from collections import defaultdict
         typedict = defaultdict(list)
         histdict = {}
@@ -223,11 +237,11 @@ class PyDraw():
             histdict[hist.title] = hist
             typedict[hist.ptype].append(hist.title)
 
-        # DATA first
         for order in ["Data", "Signal", "Background"]:
             if order not in typedict:
                 continue
 
+            # By default, sort by title
             for htitle in sorted(typedict[order]):
                 leg.AddEntry(histdict[htitle], htitle, "l")
 
@@ -262,7 +276,7 @@ class PyDraw():
             hists[0].GetXaxis().SetLabelSize(ROOT.gStyle.GetLabelSize("X"))
             # hists[0].GetYaxis().SetTitleOffset(ROOT.gStyle.GetTitleOffset("Y"))
 
-        # Set YAxis Title
+        # Set Title
         if "XTitle" in kw:
             xaxis.SetTitle(kw["XTitle"])
         if prefix == "" or (prefix == "Ratio" and loc == "top"):
@@ -284,7 +298,7 @@ class PyDraw():
                     else:
                         yaxis.SetTitle("Ratio")
 
-        # Set Yaxis range
+        # Set Range
         if prefix == "Ratio" and loc == "bot":
             self.SetAxisRange(hists, kw, prefix=prefix, axis="X")
             self.SetAxisRange(hists, kw, prefix=prefix, axis="Y")
@@ -311,8 +325,8 @@ class PyDraw():
         histmax = None
 
         if axis == "Y":
-            [hist.SetMaximum() for hist in hists]
-            [hist.SetMinimum() for hist in hists]
+            [hist.GetMaximum() for hist in hists]
+            [hist.GetMinimum() for hist in hists]
             histmax = max([hist.GetMaximum() for hist in hists])
             histmin = min([hist.GetMinimum() for hist in hists])
         elif axis == "X":
@@ -337,8 +351,10 @@ class PyDraw():
             returnmin = None if len(templist) == 0 else min(templist)
         # Still None? Set to default
         if returnmin is None:
-            returnmin = histmin
-            # returnmin = histmin if histmin <= 0 else 0
+            if axis == "Y" and "Logy" in kw:
+                returnmin = None
+            else:
+                returnmin = histmin
 
         # For Max
         if prefix + axis + "Max" in kw:
@@ -358,14 +374,17 @@ class PyDraw():
             returnmax = None if len(templist) == 0 else max(templist)
         # Still None? Set to default
         if returnmax is None:
-            returnmax = 1.25 * histmax if histmax > 0 else 0.8 * histmax
+            if axis == "Y":
+                returnmax = 1.25 * histmax if histmax > 0 else 0.8 * histmax
+            else:
+                returnmax = histmax
 
         if hists[0].InheritsFrom("THStack") and axis == "Y":
             hists[0].SetMinimum(returnmin)
             hists[0].SetMaximum(returnmax)
         else:
-            if haxis is not None:
-                ## this is  problematic for logY and X axis
+            if haxis is not None and returnmin is not None:
+                # this is  problematic for logY and X axis
                 haxis.SetRangeUser(returnmin, returnmax)
 
     def UpdateRatioAxis(self, hist, position):
@@ -572,7 +591,6 @@ class PyDraw():
         for As in rhists[0]:
             histformular = rhists[1:]
             histformular.insert(0, As)
-            print histformular
             ratios.append(self.EvalRatioFormular(formular, histformular, len(rhists[0])))
         return ratios
 
@@ -654,7 +672,6 @@ class PyDraw():
         setattr(rehist, "title", hist.title)
         return rehist
 
-
 # ============================================================================#
 # -------------------------------     Tools     ------------------------------#
 # ============================================================================#
@@ -716,6 +733,15 @@ class PyDraw():
             rehist.append(hist.Clone())
             for k, v in vars(hist).iteritems():
                 setattr(rehist[i], k, v)
+
+        pronames = list(set([h.proname for h in hists]))
+        dirnames = list(set([h.dirname for h in hists]))
+        shistnames = list(set([h.striphistname for h in hists]))
+        histnames = list(set([h.histname for h in hists]))
+        if len(pronames) == 1 and len(dirnames) ==1 and len(shistnames) == 1 and len(histnames) != 1 :
+            # hists = [x for x in hists if "_" in x.histname]
+            rehist.sort(key=lambda x: int(x.histname.split("_")[-1]))
+
         return rehist
 
     def MergeHistCate(self, hists):
@@ -824,7 +850,6 @@ class PyDraw():
 
         self.UpdateLineColor(hists)
         leg = self.SetLegend([hist.title for hist in hists], legloc)
-        # leg = self.SetAutoLegend(hists)
         if leg is not None:
             self.LegendAddEntry(leg, hists)
             leg.Draw()
@@ -938,3 +963,33 @@ class PyDraw():
                                               direction=kw.get("Direction", 0))
 
         return self.DrawLineComparison(linehists, **kw)
+
+    def Draw2DComparison(self, hists_, **kw):
+        """ A funtion for comparing lines """
+        hists = self.CopyLocalHists(hists_)
+        self.UpdateKWargs(hists, kw)
+        options = kw.get('DrawOpt', "COLZ")
+
+        self.canvas.cd()
+        self.canvas.Clear()
+        if len(hists) > 1:
+            self.canvas.DivideSquare(len(hists), 0.0001, 0.0001)
+
+        for it in range(0, len(hists)):
+            curpad = self.canvas.cd(it+1)
+            hists[it].Draw(options)
+            if isinstance(hists[it], rootpy.plotting.hist._Hist2D):
+                self.DrawTLatex((0.5, 0.96, hists[it].title, 2, 0.06))
+            else:
+                self.PadRedraw(curpad, kw)
+
+        return self.CanvasSave(canvas=self.canvas,
+                               outname=kw.get('outname', "output_%s" % time.strftime("%y%m%d_%H%M%S")))
+
+    def DrawComparison(self, hists_, **kw):
+        htype = list(set([isinstance(h, rootpy.plotting.hist._Hist) for h in hists_]))
+
+        if len(htype) == 1 and htype[0]:
+            return self.DrawLineComparison(hists_, **kw)
+        else:
+            return self.Draw2DComparison(hists_, **kw)

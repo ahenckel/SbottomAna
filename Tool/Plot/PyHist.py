@@ -13,6 +13,8 @@ from __future__ import print_function
 from rootpy.io import root_open
 from Config import HIST_Proper
 from Config import DIR_Proper
+import re
+import rootpy
 
 
 class PyHist:
@@ -26,6 +28,7 @@ class PyHist:
         self.lumi = Lumi
         self.xs = self.file.Get(XSName).GetBinContent(2) if XSName in self.file else 0
         self.Nevent = self.file.Get(EventName).GetBinContent(2) if EventName in self.file else 0
+        self.cutpat = re.compile("^(\w*)_(\d+)")
 
     def GetCutFlow(self, dirname="", Norm=None):
         if dirname == "":
@@ -42,23 +45,17 @@ class PyHist:
                 cutflowhist.Scale(self.xs * self.lumi/cutflowhist.GetBinContent(1))
         return cutflowhist
 
-    def GetHist(self, dirname, histname, norm="Lumi", BaseName="NBase"):
+    def GetHist(self, dirname, histname, norm="Lumi", BaseName="NBase", **kw):
         if histname == "CutFlow":
             hist = self.GetCutFlow(dirname, Norm=norm)
         else:
-            if "%s/%s" % (dirname, BaseName) in self.file:
-                if BaseName == "NBase":
-                    nBase = self.file.Get("%s/%s" % (dirname, BaseName)).GetBinContent(2)
-                else:
-                    nBase = self.file.Get("%s/%s" % (dirname, BaseName)).Integral()
-            else:
-                nBase = 0
-
             if dirname != "":
                 hist = self.file.Get("%s/%s" % (dirname, histname))
             else:
                 hist = self.file.Get("%s" % histname)
 
+        nBase = self.GetNBase(dirname, histname, BaseName)
+        hist.cutname = self.GetCutName(dirname, histname)
         hist.dirname = dirname
         hist.histname = histname
 
@@ -69,11 +66,22 @@ class PyHist:
             elif norm == "Unit":
                 hist.Scale(1/hist.Integral())
 
-        return self.SetHistProperty(hist)
+        return self.SetHistProperty(hist, kw)
 
-    def SetHistProperty(self, hist):
+    def SetHistProperty(self, hist, kw):
+        ## Setting some default
         hist.SetLineWidth(3)
         hist.SetMarkerSize(1)
+        if not hasattr(hist, "outname"):
+            setattr(hist, "outname", hist.histname)
+        if not hasattr(hist, "Linecolor"):
+            setattr(hist, "Linecolor", 1)
+        if not hasattr(hist, "Linestyle"):
+            setattr(hist, "Linestyle", 1)
+        if not hasattr(hist, "ptype"):
+            setattr(hist, "ptype", "Signal")
+        if not hasattr(hist, "proname"):
+            setattr(hist, "proname", "X")
 
         if hist.histname in HIST_Proper:
             for keys, values in HIST_Proper[hist.histname].iteritems():
@@ -83,31 +91,30 @@ class PyHist:
             for keys, values in DIR_Proper[hist.dirname].iteritems():
                 setattr(hist, keys, values)
 
-        if "RebinX" in hist:
-            self.Hist1DRebinX(hist.histname, hist)
+        for k, v in kw.iteritems():
+            setattr(hist, k, v)
 
-        ## Setting some default
-        if not hasattr(hist, "outname"):
-            setattr(hist, "outname", hist.histname)
-        if not hasattr(hist, "Linecolor"):
-            setattr(hist, "Linecolor", 1)
-        if not hasattr(hist, "Linestyle"):
-            setattr(hist, "Linestyle", 1)
-        if not hasattr(hist, "ptype"):
-            setattr(hist, "ptype", "Signal")
-        # hist.title = hist.dirname
+        # Set strip histname
+        rematch = re.match("^(\w*)_(\d+)", hist.histname)
+        if rematch is None:
+            setattr(hist, "striphistname", hist.histname)
+        else:
+            setattr(hist, "striphistname", rematch.group(1))
 
+        self.HistRebin(hist)
         return hist
 
-    def Hist1DRebinX(self, histname, hist):
-        label = hist.GetYaxis().GetTitle()
-        if "RebinX" in HIST_Proper[histname]:
-            hist.Rebin(HIST_Proper[histname]['RebinX'])
-        avgbinwidth = (hist.GetXaxis().GetXmax() - hist.GetXaxis().GetXmin()) / hist.GetNbinsX()
-        avgbinwidth = "0.1f".format(avgbinwidth) if avgbinwidth - int(avgbinwidth) > 0 else int(avgbinwidth)
-        import re
-        matchout = re.sub(r"(\d+)", str(avgbinwidth), label)
-        hist.SetYTitle(matchout)
+    def HistRebin(self, hist):
+        if hasattr(hist, "Rebiny") and isinstance(hist, rootpy.plotting.hist._Hist2D):
+            hist.RebinY(hist.Rebiny)
+
+        if hasattr(hist, "Rebinx"):
+            hist.RebinX(hist.Rebinx)
+            label = hist.GetYaxis().GetTitle()
+            avgbinwidth = (hist.GetXaxis().GetXmax() - hist.GetXaxis().GetXmin()) / hist.GetNbinsX()
+            avgbinwidth = "0.1f".format(avgbinwidth) if avgbinwidth - int(avgbinwidth) > 0 else int(avgbinwidth)
+            matchout = re.sub(r"/\s*(\d+)", str(avgbinwidth), label)
+            hist.SetYTitle(matchout)
 
     def GetDirnames(self):
         for paths, apples, objects in self.file.walk(maxdepth=0):
@@ -117,3 +124,29 @@ class PyHist:
         for paths, apples, objects in self.file.walk():
             if paths == directory:
                 return objects
+
+    def GetNBase(self, dirname, histname, BaseName_):
+        patmat = self.cutpat.match(histname)
+        if patmat is None:
+            BaseName = BaseName_
+        else:
+            BaseName = "%s_%s" % (BaseName_, patmat.group(2))
+
+        if "%s/%s" % (dirname, BaseName) in self.file:
+            if "NBase" in BaseName:
+                nBase = self.file.Get("%s/%s" % (dirname, BaseName)).GetBinContent(2)
+            else:
+                nBase = self.file.Get("%s/%s" % (dirname, BaseName)).Integral()
+        else:
+            nBase = 0
+
+        return nBase
+
+    def GetCutName(self, dirname, histname):
+        patmat = self.cutpat.match(histname)
+        if patmat is None:
+            return ""
+        else:
+            cutbin = int(patmat.group(2))+1
+            cutflowhist = self.file.Get("%s/CutFlow" % dirname)
+            return cutflowhist.GetXaxis().GetBinLabel(cutbin)

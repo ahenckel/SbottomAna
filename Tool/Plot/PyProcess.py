@@ -30,14 +30,14 @@ class PyProcess():
         self.stype = attribute["type"] if "type" in attribute else "Signal"
         self.label = attribute["label"] if "label" in attribute else name
 
-    def GetHist(self, dirname, histname, norm="Lumi", BaseName="NBase"):
+    def GetHist(self, dirname, histname, norm="Lumi", BaseName="NBase", **kw):
         rehist = 0
         done = False
         if not done and histname.find("Efficiency") != -1:
-            rehist = self.GetEfficiency(dirname, histname)
+            rehist = self.GetEfficiency(dirname, histname, kw)
             done = True
         if not done:
-            hists = [pros.GetHist(dirname, histname, norm, BaseName) for pros in self.ProList]
+            hists = [pros.GetHist(dirname, histname, norm, BaseName, **kw) for pros in self.ProList]
             for hist in hists:
                 rehist += hist
             for var in vars(hists[0]):
@@ -71,14 +71,14 @@ class PyProcess():
             if paths == directory:
                 return objects
 
-    def GetEfficiency(self, dirname, histname):
+    def GetEfficiency(self, dirname, histname, kw):
         if histname.find("Efficiency") == -1:
             print("Wrong")
             return
         denorminator = histname.replace("Efficiency", "Denominator")
         numerator = histname.replace("Efficiency", "Numerator")
-        hdenorminator = self.GetHist(dirname, denorminator, norm="None")
-        hnumerator = self.GetHist(dirname, numerator, norm="None")
+        hdenorminator = self.GetHist(dirname, denorminator, norm="None", **kw)
+        hnumerator = self.GetHist(dirname, numerator, norm="None", **kw)
         hdenorminator.Sumw2()
         hnumerator.Sumw2()
         hdenorminator.Divide(hnumerator, hdenorminator, 1, 1, "B")

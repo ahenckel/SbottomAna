@@ -22,7 +22,13 @@ PyColors = [
     ROOT.kCyan,
     ROOT.kMagenta,
     ROOT.kYellow,
-    ROOT.kGreen
+    ROOT.kGreen,
+    ROOT.kGray,
+    ROOT.kSpring,
+    ROOT.kTeal,
+    ROOT.kAzure,
+    ROOT.kViolet,
+    ROOT.kPink
 ]
 
 # (1001, 228,26,28),
@@ -169,7 +175,7 @@ Prodmap = {
                   "fillcolor" : ROOT.kTeal+4,
                   "fillstyle" : 1001,
                  },
-"QCD"  : { "file" : ["QCD_HT1000to1500.root", "QCD_HT1500to2000.root", "QCD_HT2000toInf.root", 
+"QCD"  : { "file" : ["QCD_HT1000to1500.root", "QCD_HT1500to2000.root", "QCD_HT2000toInf.root",
                      "QCD_HT200to300.root", "QCD_HT300to500.root",
                      "QCD_HT500to700.root", "QCD_HT700to1000.root"],
           "label" : "QCD",
@@ -234,7 +240,7 @@ def PrintHist(hist):
 #============================================================================#
 HIST_Proper = {
     "MissTopTagPT": {
-        "RebinX": 5,
+        "Rebinx": 5,
         "HistLabel": "----",
         "Logy": False,
         "Logx": False,

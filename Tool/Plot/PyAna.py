@@ -12,6 +12,7 @@
 from PyProcess import PyProcess
 from Config import Prodmap as PRODMA
 from Config import Lumi
+import re
 
 
 class PyAna():
@@ -44,7 +45,7 @@ class PyAna():
     def GetHistNames(self, directory):
         return(self.AllProds.itervalues().next().GetHistnames(directory))
 
-    def GetHist(self, proname_, dirname_, histname_, norm="Lumi", BaseName="NBase"):
+    def GetHist(self, proname_, dirname_, histname_, norm="Lumi", BaseName="NBase", **kw):
         hists = []
         proname, dirname, histname = self.FormListofHist(proname_, dirname_, histname_)
 
@@ -57,14 +58,13 @@ class PyAna():
             for hdist in dirname:
                 for hhist in histname:
                     # for key, value in self.AllProds.items():
-                    lhist = self.AllProds[hpro].GetHist(hdist, hhist, norm, BaseName)
+                    lhist = self.AllProds[hpro].GetHist(hdist, hhist, norm, BaseName, **kw)
                     lhist.proname = hpro
-                    self.SmartLegendEntry(lhist, proname, dirname, histname)
                     hists.append(lhist)
+        self.SmartLegendEntry(hists, proname, dirname, histname)
         return hists
 
     def FormListofHist(self, proname_, dirname_, histname_):
-        # localProd = self.AllProds.copy()
         if not isinstance(proname_, list):
             proname = [proname_]
         else:
@@ -72,6 +72,14 @@ class PyAna():
                 proname = list(self.AllProds.keys())
             else:
                 proname = proname_
+        tmp = []
+        tmpProds = self.AllProds.keys() + ["Data", "Background", "Signal"]
+        for reg in proname:
+            if '+' in reg or '*' in reg or '?' in reg:
+                tmp+=[pro for pro in tmpProds if re.match(reg, pro)]
+            else:
+                tmp.append(reg)
+        proname = tmp
 
         if not isinstance(dirname_, list):
             dirname = [dirname_]
@@ -80,6 +88,13 @@ class PyAna():
                 dirname = self.AllProds.itervalues().next().GetDirnames()
             else:
                 dirname = dirname_
+        tmp = []
+        for reg in dirname:
+            if '+' in reg or '*' in reg or '?' in reg:
+                tmp+=[pro for pro in self.AllProds.itervalues().next().GetDirnames() if re.match(reg, pro)]
+            else:
+                tmp.append(reg)
+        dirname = tmp
 
         if not isinstance(histname_, list):
             histname = [histname_]
@@ -88,6 +103,14 @@ class PyAna():
                 histname = self.AllProds.itervalues().next().GetHistnames(dirname[0])
             else:
                 histname = histname_
+        tmp = []
+        for reg in histname:
+            if '+' in reg or '*' in reg or '?' in reg:
+                tmp+=[pro for pro in self.AllProds.itervalues().next().GetHistnames(dirname[0]) if re.match(reg, pro)]
+            else:
+                tmp.append(reg)
+        histname = tmp
+
         return(proname, dirname, histname)
 
     def MergeProcesses(self, name, prolist=[], **kw):
@@ -108,35 +131,44 @@ class PyAna():
         for keys, values in kw.iteritems():
             setattr(self.AllProds[name], keys, values)
 
-    def SmartLegendEntry(self, lhist, pronames, dirnames, histnames):
-        leglable = ""
-        outname = ""
-
-        # Label
-        if len(pronames) != 1:
-            if lhist.proname in self.Prodmap:
-                leglable += self.Prodmap[lhist.proname]["label"] + " "
+    def SmartLegendEntry(self, hists, pronames, dirnames, histnames_):
+        histnames = []
+        for hname in histnames_:
+            rematch = re.match("^(\w*)_(\d+)", hname)
+            if rematch is None:
+                histnames.append(hname)
             else:
-                leglable += lhist.proname + " "
-        if len(dirnames) != 1:
-            leglable += lhist.DirLabel + " " if hasattr(lhist, "DirLabel") else lhist.dirname.split("_")[-1] + " "
-        if len(histnames) != 1:
-            leglable += lhist.HistLabel + " " if hasattr(lhist, "HistLabel") else lhist.histname + " "
-        if len(pronames) == 1 and len(dirnames) == 1 and len(histnames) == 1:
-            leglable += self.Prodmap[lhist.proname]["label"] + " "
+                histnames.append(rematch.group(1))
+        histnames = list(set(histnames))
 
-        # Output filename
-        if len(pronames) == 1:
-            outname += lhist.proname + "_"
-        if len(dirnames) == 1:
-            outname += lhist.dirname.split("_")[-1] + "_"
-        if len(histnames) == 1:
-            outname += lhist.histname + "_"
+        for lhist in hists:
+            leglable = ""
+            outname = ""
+            # Label
+            if len(pronames) != 1:
+                if lhist.proname in self.Prodmap:
+                    leglable += self.Prodmap[lhist.proname]["label"] + " "
+                else:
+                    leglable += lhist.proname + " "
+            if len(dirnames) != 1:
+                leglable += lhist.DirLabel + " " if hasattr(lhist, "DirLabel") else lhist.dirname.split("_")[-1] + " "
+            if len(histnames) != 1:
+                leglable += lhist.HistLabel + " " if hasattr(lhist, "HistLabel") else lhist.histname + " "
+            if len(pronames) == 1 and len(dirnames) == 1 and len(histnames) == 1:
+                leglable += lhist.cutname
 
-        # Lagend Style
-        # Can't do much here. This should be handled in PyDraw
-        lhist.title = leglable.strip()
-        lhist.outname = outname.strip("_")
+            # Output filename
+            if len(pronames) == 1:
+                outname += lhist.proname + "_"
+            if len(dirnames) == 1:
+                outname += lhist.dirname.split("_")[-1] + "_"
+            if len(histnames) == 1:
+                outname += histnames[0] + "_"
+
+            # Lagend Style
+            # Can't do much here. This should be handled in PyDraw
+            lhist.title = leglable.strip()
+            lhist.outname = outname.strip("_")
 
     def GetSignalBackground(self, proname_, dirname_, histname_, style="line", norm="Lumi", BaseName="NBase"):
         pass
