@@ -71,6 +71,7 @@ TTZ3Lep::operator = ( const TTZ3Lep &other )
 bool TTZ3Lep::BookHistograms()
 {
   ComAna::BookHistograms();
+  BookTLVHistos("RecoZ");
   return true;
 }       // -----  end of function TTZ3Lep::BookHistograms  -----
 
@@ -121,7 +122,7 @@ bool TTZ3Lep::CheckCut()
   cutbit.set(1 , tr->getVar<bool>("passMuZinvSel"));
 
   cutbit.set(2 , tr->getVec<TLorentzVector>("cutMuVec").size() == 3
-      || tr->getVar<int>(Label["nElectrons_CUT"]) == 1);
+      || tr->getVar<int>(Label["nElectrons_Base"]) == 1);
 
   cutbit.set(3 , tr->getVar<int>(Label["cntCSVS"]) >= 1);
 
@@ -153,6 +154,10 @@ bool TTZ3Lep::FillCut()
     if ( (cutbit & locbit) != locbit) continue;
 
     his->FillTH1("CutFlow", int(i)); 
+
+    if (tr->getVec<TLorentzVector>("recoZVec").at(0).Pt() != 0)
+      FillTLVHistos(i, "RecoZ", tr->getVec<TLorentzVector>("recoZVec").at(0));
+
     ComAna::FillCut(i);
     if (i+1 == CutOrder.size()) 
     {

@@ -79,6 +79,9 @@ class HistTool
         const Int_t& logx=0, const Int_t& logy=0);
     int AddTH1C(const std::string& name, const std::string& title, 
         std::vector<std::string>& BinLabels);
+    int AddTH1C(const std::string& name, const std::string& title, 
+        const std::string& xlabel, const std::string& ylabel, 
+        std::vector<std::string>& BinLabels);
     TH1F* AddTH1(const std::string& name, const std::string& title, 
         std::vector<std::string>& BinLabels);
 

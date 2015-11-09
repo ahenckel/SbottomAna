@@ -22,7 +22,7 @@
 // Description:  constructor
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 HistTool::HistTool (std::shared_ptr<TFile> OutFile_, std::string name, std::string cut_):
-  OutFile(OutFile_), prefix(name), cutflag(cut_)
+ cutflag(cut_), prefix(name), OutFile(OutFile_)
 { 
   OutFile->cd();
   if (cutflag != "")
@@ -84,7 +84,7 @@ std::vector<std::string> HistTool::Cutorder()
     order.push_back("CTMjj");
     order.push_back("CTMet200");
     order.push_back("AllCut");
-    CutSize = order.size();
+    CutSize = static_cast<int>(order.size());
     return order;
 }       // -----  end of function HistTool::Cutorder  -----
 
@@ -95,12 +95,12 @@ std::vector<std::string> HistTool::Cutorder()
 int HistTool::Cutorder(std::string ana, std::vector<std::string>& CutOrder, unsigned int Nbits)
 {
   order = CutOrder;
-  CutSize = order.size();
+  CutSize = static_cast<int>(order.size());
 
   // Initial the cutflow
   TString title = ana == "DM" ? "SUSY VBF DM" : ana;
 
-  TH1 *temp = AddTH1("CutFlow", title.Data(), CutOrder.size(), 0 , CutOrder.size());
+  TH1 *temp = AddTH1("CutFlow", title.Data(), static_cast<int>(CutOrder.size()), 0 , CutOrder.size());
   for (unsigned int i = 0; i < CutOrder.size(); ++i)
     temp->GetXaxis()->SetBinLabel(i+1, CutOrder.at(i).c_str());
 
@@ -138,6 +138,29 @@ int HistTool::AddTH1C(const std::string& name, const std::string& title, std::ve
   AddTH1(name.c_str(), title.c_str(), BinLabels);
   return 1;
 }       // -----  end of function HistTool::AddTH1C  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  HistTool::AddTH1C
+//  Description:  /* cursor */
+// ===========================================================================
+int HistTool::AddTH1C(const std::string& name, const std::string& title, 
+    const std::string& xlabel, const std::string& ylabel,
+    std::vector<std::string>& BinLabels) 
+{
+  if (SaveCutHists_)
+  {
+    for (Long_t i = 0; i < CutSize; ++i)
+    {
+      TString mapname = name+"_"+i;
+      TString maptitle = title+" ("+order.at(i)+");"+xlabel+";"+ylabel;
+      AddTH1(mapname.Data(), maptitle.Data(), BinLabels);
+    }
+  }
+  TString newtitle = title+";"+xlabel+";"+ylabel;
+  AddTH1(name.c_str(), title.c_str(), BinLabels);
+  return 1;
+}       // -----  end of function HistTool::AddTH1C  -----
+
 
 // ===  FUNCTION  ============================================================
 //         Name:  HistTool::AddTH1C

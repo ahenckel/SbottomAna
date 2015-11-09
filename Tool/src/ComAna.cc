@@ -41,9 +41,9 @@ bool ComAna::DefineLabels(std::string spec)
   METLabel    = "met";
   METPhiLabel = "metphi";
 
-  Label["nMuons_CUT"]             = "nMuons_CUT"              ;
-  Label["nElectrons_CUT"]         = "nElectrons_CUT"          ;
-  Label["nIsoTrks_CUT"]           = "nIsoTrks_CUT"            ;
+  Label["nMuons_Base"]             = "nMuons_Base"              ;
+  Label["nElectrons_Base"]         = "nElectrons_Base"          ;
+  Label["nIsoTrks_Base"]           = "nIsoTrks_Base"            ;
   Label["cntNJetsPt50Eta24"]      = "cntNJetsPt50Eta24"       ;
   Label["cntNJetsPt30Eta24"]      = "cntNJetsPt30Eta24"       ;
   Label["dPhiVec"]                = "dPhiVec"                 ;
@@ -115,7 +115,6 @@ bool ComAna::BookHistograms()
 {
   his->AddTH1C("NBase", "Number of Events passed baseline", 2, 0, 2);
   // Jets
-  his->AddTH1C("NJets", "NJets", 10, 0, 10);
   BookTLVHistos("Jet1");
   BookTLVHistos("Jet2");
   BookTLVHistos("Jet3");
@@ -123,23 +122,23 @@ bool ComAna::BookHistograms()
   Book2TLVHistos("J1J2");
 
   //  MET
-  his->AddTH1C("MET", "MET", "MET [GeV]", "Events"     , 200, 0, 800);
-  his->AddTH1C("METPhi", "METPhi", "#phi MET [GeV]", "Events"     , 20, -5, 5);
+  his->AddTH1C("MET",    "MET",    "#slash{E}_{T} [GeV]",      "Events" , 200, 0,  800);
+  his->AddTH1C("METPhi", "METPhi", "#phi #slash{E}_{T} [GeV]", "Events" , 20,  -5, 5);
 
-  // Ntops
-  his->AddTH1C("NRecoTops"            , "NRecoTops"            , "No. of Reco Tops"        , "Events"        , 5 , 0  , 5);
-  
+  // Number of Objects
+  his->AddTH1C("NJets"     , "NJets"     , "Number of Jets"   , "Events" , 10 , 0 , 10);
+  his->AddTH1C("NRecoTops" , "NRecoTops" , "No. of Reco Tops" , "Events" , 5  , 0 , 5);
+  his->AddTH1C("NBJets", "NBJets", "Number of b-Jets"   , "Events" , 4, 0, 4);
+  his->AddTH1C("NEles"     , "NEles"     , "Number of Electrons"   , "Events" , 10 , 0 , 10);
+  his->AddTH1C("NMuons"     , "NMuons"     , "Number of Muons"   , "Events" , 10 , 0 , 10);
+  his->AddTH1C("NIsks"     , "NIsks"     , "Number of IsoTracks"   , "Events" , 10 , 0 , 10);
 
   // RM from arXiv:1506.00653
-  his->AddTH1C("RM"            , "RM"            , "#frac{MET}{ISR Jet}"        , "Events"        , 100, 0, 1);
-  //
-  his->AddTH1C("dPhiJ1MET", "dPhiJ1MET", "#phi(J1, MET)", "Events",  20, -5, 5);
+  his->AddTH1C("dPhiJ1MET", "dPhiJ1MET", "#phi(J1, #slash{E}_{T})", "Events",  20, -5, 5);
 
   // Search bins
-  his->AddTH1C("NBJets", "NBJets", 4, 0, 4);
-  his->AddTH1C("NTops", "NTops", 4, 0, 4);
-  his->AddTH1C("MT2", "MT2", 300, 0, 1500);
-  his->AddTH1C("MET", "MET", 300, 0, 1500);
+  his->AddTH1C("MT2", "MT2", "MT2", "Events",  300, 0, 1500);
+  
   return true;
 }       // -----  end of function ComAna::BookHistograms  -----
 
@@ -186,6 +185,9 @@ bool ComAna::FillCut(int NCut)
     his->FillTH1(NCut, "dPhiJ1MET", tr->getVec<TLorentzVector> (jetVecLabel).at(0).DeltaPhi(METLV));
   }
 
+  his->FillTH1(NCut, "NEles", tr->getVar<int>(Label["nElectrons_Base"]));
+  his->FillTH1(NCut, "NMuons", tr->getVar<int>(Label["nMuons_Base"]));
+  his->FillTH1(NCut, "NIsks", tr->getVar<int>(Label["nIsoTrks_Base"]));
   his->FillTH1(NCut, "NBJets", tr->getVar<int>(Label["cntCSVS"]));
   his->FillTH1(NCut, "NTops", tr->getVar<int>(Label["nTopCandSortedCnt"]));
   his->FillTH1(NCut, "MT2", tr->getVar<double>(Label["best_had_brJet_MT2"]));

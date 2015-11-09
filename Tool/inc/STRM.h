@@ -1,55 +1,60 @@
 // ===========================================================================
 // 
-//       Filename:  PassCut.h
+//       Filename:  STRM.h
 // 
-//    Description:  
+//    Description:  An analysis implementing arXiv: 1506.00653
 // 
 //        Version:  1.0
-//        Created:  09/21/2015 12:21:10
+//        Created:  11/03/2015 16:36:40
 //       Revision:  none
 //       Compiler:  g++
 // 
-//         Author:  Zhenbin Wu (benwu), benwu@fnal.gov
-//        Company:  Baylor University, CDF@FNAL, CMS@LPC
+//         Author:  Zhenbin Wu (benwu), zhenbin.wu@gmail.com
+//        Company:  UIC, CMS@LPC, CDF@FNAL
 // 
 // ===========================================================================
 
-#ifndef  MY_PASSCUT_INC
-#define  MY_PASSCUT_INC
+#ifndef  MY_STRM_INC
+#define  MY_STRM_INC
 
 // stdlib
 #include <cassert>
+#include <functional>   // std::bind
 
 // ROOT
 
 // User class
 #include "ComAna.h"
 #include "HistTool.hh"
+#include "TopTaggerAna.h"
 #include "RootTools.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
 // ===========================================================================
-//        Class:  PassCut
-//  Description:  S
+//        Class:  STRM
+//  Description:  
 // ===========================================================================
-class PassCut : public ComAna
+class STRM : public ComAna
 {
   public:
 
     // ====================  LIFECYCLE     ===============================
-    PassCut (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);   
+    STRM (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);
     // constructor
-    PassCut ( const PassCut &other );   // copy constructor
-    ~PassCut ();                            // destructor
+    ~STRM ();                            // destructor
 
     // ====================  ACCESSORS     ===============================
-
+    bool InitCutOrder(std::string ana);
+    bool CheckCut();
+    bool BookHistograms();
+    bool WriteHistogram();
     bool FillCut();
+
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================
 
-    PassCut& operator = ( const PassCut &other ); // assignment operator
+    STRM& operator = ( const STRM &other ); // assignment operator
 
     // ====================  DATA MEMBERS  ===============================
 
@@ -63,6 +68,6 @@ class PassCut : public ComAna
 
     // ====================  DATA MEMBERS  ===============================
 
-}; // -----  end of class PassCut  -----
+}; // -----  end of class STRM  -----
 
-#endif   // ----- #ifndef MY_PASSCUT_INC  -----
+#endif   // ----- #ifndef MY_STRM_INC  -----

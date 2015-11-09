@@ -78,10 +78,10 @@ bool STISR::BookHistograms()
   JetType.push_back("GenLep");
   JetType.push_back("Gens");
   JetType.push_back("T3Top");
-  his->AddTH1C("LeadingJetType", "LeadingJetType", JetType);
-  his->AddTH1C("SecondJetType", "SecondJetType", JetType);
-  his->AddTH1C("ThirdJetType", "ThirdJetType", JetType);
-  his->AddTH1C("ForthJetType", "ForthJetType", JetType);
+  his->AddTH1C("LeadingJetType", "LeadingJetType", "Type", "Events", JetType);
+  his->AddTH1C("SecondJetType",  "SecondJetType",  "Type", "Events", JetType);
+  his->AddTH1C("ThirdJetType",   "ThirdJetType",   "Type", "Events", JetType);
+  his->AddTH1C("ForthJetType",   "ForthJetType",   "Type", "Events", JetType);
 
   BookTLVHistos("Jet1NoGen");
   BookTLVHistos("Jet1NoT3");
@@ -105,13 +105,13 @@ bool STISR::BookHistograms()
   Book2TLVHistos("J2NGT2");
   Book2TLVHistos("J2NTT2");
 
-  his->AddTH1C("LeadingJetPTIso15", "LeadingJetPTIso15", 100, 0, 1);
-  his->AddTH1C("LeadingJetPTIso8", "LeadingJetPTIso8", 100, 0, 1);
-  his->AddTH1C("LeadingJetPTIso4", "LeadingJetPTIso4", 100, 0, 1);
+  his->AddTH1C("LeadingJetPTIso15", "LeadingJetPTIso15", "PT Isolation 1.5", "Jets", 100, 0, 1);
+  his->AddTH1C("LeadingJetPTIso8", "LeadingJetPTIso8", "PT Isolation 0.8", "Jets", 100, 0, 1);
+  his->AddTH1C("LeadingJetPTIso4", "LeadingJetPTIso4", "PT Isolation 0.4", "Jets", 100, 0, 1);
 
-  his->AddTH1C("LeadingJetMIso15", "LeadingJetMIso15", 100, 0, 1);
-  his->AddTH1C("LeadingJetMIso8", "LeadingJetMIso8", 100, 0, 1);
-  his->AddTH1C("LeadingJetMIso4", "LeadingJetMIso4", 100, 0, 1);
+  his->AddTH1C("LeadingJetMIso15", "LeadingJetMIso15", "Mass Isolation 1.5", "Jets", 100, 0, 1);
+  his->AddTH1C("LeadingJetMIso8", "LeadingJetMIso8", "Mass Isolation 0.8", "Jets", 100, 0, 1);
+  his->AddTH1C("LeadingJetMIso4", "LeadingJetMIso4", "Mass Isolation 0.4", "Jets", 100, 0, 1);
 
   his->AddTH2C("LJIsoVsTops", "LJIsoVsTops", "Jet Isolation", "nTops", 100, 0, 1, 5, -1, 4);
   his->AddTH2C("LJnoGenPTVsRM", "LJnoGenPTVsRM", "Jet PT", "RM", 100, 0, 1000, 100, 0, 1);
