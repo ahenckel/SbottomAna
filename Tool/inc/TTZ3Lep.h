@@ -28,6 +28,7 @@
 #include "RootTools.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
+#include "SusyAnaTools/Tools/customize.h"
 
 // ===========================================================================
 //        Class:  TTZ3Lep
@@ -66,6 +67,7 @@ class TTZ3Lep : public ComAna
 
   private:
     // ====================  METHODS       ===============================
+    bool Check3rdLep(int NCut);
 
     // ====================  DATA MEMBERS  ===============================
 

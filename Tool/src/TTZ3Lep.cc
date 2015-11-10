@@ -72,6 +72,8 @@ bool TTZ3Lep::BookHistograms()
 {
   ComAna::BookHistograms();
   BookTLVHistos("RecoZ");
+  BookTLVHistos("3rdMuon");
+  BookTLVHistos("3rdEle");
   return true;
 }       // -----  end of function TTZ3Lep::BookHistograms  -----
 
@@ -141,6 +143,13 @@ bool TTZ3Lep::CheckCut()
 bool TTZ3Lep::FillCut()
 {
 
+  //std::cout << "nMuons "<< tr->getVar<int>("nMuons")
+    //<< " nMuons_CUT "<< tr->getVar<int>("nMuons_CUT")
+    //<< " nMuons_Base "<< tr->getVar<int>("nMuons_Base")
+    //<< " nMuonsVec "<< tr->getVec<TLorentzVector>("muonsLVec").size()
+    //<< " cutMuVec "<< tr->getVec<TLorentzVector>("cutMuVec").size()
+    //<< std::endl;
+
 //----------------------------------------------------------------------------
 //  Check cut and fill cut-based plots
 //----------------------------------------------------------------------------
@@ -159,6 +168,7 @@ bool TTZ3Lep::FillCut()
       FillTLVHistos(i, "RecoZ", tr->getVec<TLorentzVector>("recoZVec").at(0));
 
     ComAna::FillCut(i);
+    Check3rdLep(i);
     if (i+1 == CutOrder.size()) 
     {
       passcuts = true;
@@ -207,3 +217,77 @@ bool TTZ3Lep::HasZ() const
       (cutMuVec)[0].Pt() > highMuPt && (cutMuVec)[1].Pt() > minMuPt &&
     (bestRecoZ.M() > zMassMin) && (bestRecoZ.M() < zMassMax);        
 }       // -----  end of function TTZ3Lep::HasZ  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  TTZ3Lep::Check3rdLep
+//  Description:  
+// ===========================================================================
+bool TTZ3Lep::Check3rdLep(int NCut)
+{
+  //----------------------------------------------------------------------------
+  //  Z from diMuon
+  //----------------------------------------------------------------------------
+  // 3rd Ele
+  std::string elesFlagIDLabel = "";
+  const std::vector<int> & elesFlagIDVec = elesFlagIDLabel.empty()? std::vector<int>(tr->getVec<double>("elesMiniIso").size(), 1)
+    :tr->getVec<int>(elesFlagIDLabel.c_str()); // Fake electrons since we don't have different ID for electrons now, but maybe later
+  TLorentzVector thirdEle(0, 0, 0, 0);
+  int cntNElectrons = 0;
+  for(unsigned int ie=0; ie<tr->getVec<TLorentzVector>("elesLVec").size(); ie++)
+  {
+    if(AnaFunctions::passElectron(tr->getVec<TLorentzVector>("elesLVec").at(ie), 
+          tr->getVec<double>("elesMiniIso").at(ie), tr->getVec<double>("elesMtw").at(ie), 
+          tr->getVec<unsigned int>("elesisEB").at(ie), elesFlagIDVec.at(ie), AnaConsts::elesMiniIsoArr))
+    {
+      cntNElectrons ++;
+      thirdEle = tr->getVec<TLorentzVector>("elesLVec").at(ie);
+    }
+  }
+  if (cntNElectrons == 1)
+  {
+    FillTLVHistos(NCut, "3rdEle", thirdEle);
+  }
+
+  if (tr->getVec<TLorentzVector>("recoZVec").size() == 0 || 
+      tr->getVec<TLorentzVector>("recoZVec").at(0).Pt() == 0 ||
+      tr->getVec<TLorentzVector>("cutMuVec").size() != 3)
+    return false;
+
+  //3rd Muon
+  TLorentzVector thirdMuon(0, 0, 0, 0);
+  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec");
+  TLorentzVector recoZ = tr->getVec<TLorentzVector>("recoZVec").at(0);
+  std::map<unsigned, bool> MuonIdx;
+  const double minMuPt = 20.0;
+  const double highMuPt = 45.0;
+
+  for(unsigned int i = 0; i < cutMuVec.size(); ++i)
+  {
+    if(cutMuVec.at(i).Pt() < minMuPt) continue;
+    for(unsigned int j = 0; j < i && j < cutMuVec.size(); ++j)
+    {
+      if(cutMuVec.at(j).Pt() < minMuPt) continue;
+      TLorentzVector localZ  = (cutMuVec.at(i) + cutMuVec.at(j));
+      if (localZ == recoZ)
+      {
+        MuonIdx[i] = true;
+        MuonIdx[j] = true;
+      }
+    }
+  }
+
+  for(unsigned int i = 0; i < cutMuVec.size(); ++i)
+  {
+    if (MuonIdx.find(i) != MuonIdx.end())
+      continue;
+    thirdMuon = cutMuVec.at(i);
+  }
+
+  if (thirdMuon.Pt() != 0)
+  {
+    FillTLVHistos(NCut, "3rdMuon", thirdMuon);
+  }
+
+  return true;
+}       // -----  end of function TTZ3Lep::Check3rdLep  -----

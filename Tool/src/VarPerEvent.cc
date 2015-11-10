@@ -312,7 +312,7 @@ bool VarPerEvent::GetMuInfo() const
   metZ.SetPtEtaPhiM(bestRecoZ.Pt(), 0.0, bestRecoZ.Phi(), 0.0);
   TLorentzVector cleanMet = metV + metZ;
 
-  bool passMuZinvSel = (cutMuVec->size() == 2 && sumCharge == 0 && (*cutMuVec)[0].Pt() > highMuPt && (*cutMuVec)[1].Pt() > minMuPt) && (bestRecoZ.M() > zMassMin) && (bestRecoZ.M() < zMassMax);        
+  bool passMuZinvSel = (cutMuVec->size() >= 2 && sumCharge == 0 && (*cutMuVec)[0].Pt() > highMuPt && (*cutMuVec)[1].Pt() > minMuPt) && (bestRecoZ.M() > zMassMin) && (bestRecoZ.M() < zMassMax);        
 
   double cutMuPt1 = -999.9;
   double cutMuPt2 = -999.9;
