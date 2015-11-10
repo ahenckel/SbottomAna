@@ -134,7 +134,8 @@ bool ComAna::BookHistograms()
   his->AddTH1C("NIsks"     , "NIsks"     , "Number of IsoTracks"   , "Events" , 10 , 0 , 10);
 
   // RM from arXiv:1506.00653
-  his->AddTH1C("dPhiJ1MET", "dPhiJ1MET", "#phi(J1, #slash{E}_{T})", "Events",  20, -5, 5);
+  his->AddTH1C("RM"        , "RM"        , "#frac{MET}{ISR Jet}" , "Events"        , 100      , 0  , 1);
+  his->AddTH1C("dPhiJ1MET" , "dPhiJ1MET" , "#phi(J1, #slash{E}_{T})" , "Events" , 20 , -5  , 5);
 
   // Search bins
   his->AddTH1C("MT2", "MT2", "MT2", "Events",  300, 0, 1500);
