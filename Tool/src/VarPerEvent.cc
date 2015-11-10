@@ -283,9 +283,9 @@ bool VarPerEvent::GetMuInfo() const
   }
   bool passDiMuTrig  = nTriggerMuons >= 2;
 
-  const double zMassMin = 71.0;
+  const double zMassMin = 81.0;
   const double zMass    = 91.0;
-  const double zMassMax = 111.0;
+  const double zMassMax = 101.0;
 
   double zMassCurrent = 1.0e300;
   //double zMassCurrent = 1.0e300, zEff = 1.0e100, zAcc = 1.0e100;

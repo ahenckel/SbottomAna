@@ -70,6 +70,7 @@ bool STISR::BookHistograms()
   ComAna::BookHistograms();
 
   // Plots for Leading Jet Ana
+  JetType.clear();
   JetType.push_back("All");
   JetType.push_back("GenTop");
   JetType.push_back("GenB");
@@ -116,6 +117,9 @@ bool STISR::BookHistograms()
   his->AddTH2C("LJIsoVsTops", "LJIsoVsTops", "Jet Isolation", "nTops", 100, 0, 1, 5, -1, 4);
   his->AddTH2C("LJnoGenPTVsRM", "LJnoGenPTVsRM", "Jet PT", "RM", 100, 0, 1000, 100, 0, 1);
   his->AddTH2C("LJPTVsRM", "LJPTVsRM", "Jet PT", "RM", 100, 0, 1000, 100, 0, 1);
+  
+  his->AddTH2C("LeadingJetPTIso15VsPT", "LeadingJetPTIso15VsPT", "Jets PT", "PT Isolation 1.5",100, 0, 1000, 100, 0, 1);
+  his->AddTH2C("LeadingJetMIso15VsPT", "LeadingJetMIso15VsPT", "Jets PT", "M Isolation 1.5",100, 0, 1000, 100, 0, 1);
   return true;
 }       // -----  end of function STISR::BookHistograms  -----
 
@@ -342,6 +346,9 @@ bool STISR::FillCut()
     his->FillTH1(i, "LeadingJetMIso15", LJMIso(1.5));
     his->FillTH1(i, "LeadingJetMIso8", LJMIso(0.8));
     his->FillTH1(i, "LeadingJetMIso4", LJMIso(0.4));
+
+    his->FillTH2(i, "LeadingJetPTIso15VsPT", Jet1.Pt(), LJPTIso(1.5));
+    his->FillTH2(i, "LeadingJetMIso15VsPT", Jet1.Pt(), LJMIso(1.5));
   }
 
   return true;
