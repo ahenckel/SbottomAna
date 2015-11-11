@@ -22,6 +22,7 @@
 #include <functional>   // std::bind
 
 // ROOT
+#include "TMath.h"
 
 // User class
 #include "ComAna.h"

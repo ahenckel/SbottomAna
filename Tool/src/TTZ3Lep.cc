@@ -74,6 +74,7 @@ bool TTZ3Lep::BookHistograms()
   BookTLVHistos("RecoZ");
   BookTLVHistos("3rdMuon");
   BookTLVHistos("3rdEle");
+  his->AddTH1C("JBT", "JBT", "JBT", "Events", 400, 0, 400);
   return true;
 }       // -----  end of function TTZ3Lep::BookHistograms  -----
 
@@ -123,10 +124,9 @@ bool TTZ3Lep::CheckCut()
 
   // Check event has Z
   //cutbit.set(1 , HasZ());
-  cutbit.set(1 , tr->getVar<bool>("passMuZinvSel"));
+  cutbit.set(1 , tr->getVec<TLorentzVector>("recoZVec").size() == 1);
 
-  cutbit.set(2 , tr->getVec<TLorentzVector>("cutMuVec").size() == 3
-      || tr->getVar<int>(Label["nElectrons_Base"]) == 1);
+  cutbit.set(2 ,  tr->getVar<int>("nMuons_Base") + tr->getVar<int>("nElectrons_Base") == 3 );
 
   cutbit.set(3 , tr->getVar<int>(Label["cntCSVS"]) >= 1);
 
@@ -134,8 +134,9 @@ bool TTZ3Lep::CheckCut()
 
   cutbit.set(5 , tr->getVar<double>(METLabel) < 70);
 
-  cutbit.set(6 , tr->getVar<bool>("PassDiMuonTrigger"));
+  cutbit.set(6 , tr->getVar<bool>("PassDiMuonTrigger") || tr->getVar<bool>("PassDiEleTrigger"));
 
+  cutbit.set(7 , tr->getVar<int>(Label["cntCSVS"]) >= 1);
 
   return true;
 }       // -----  end of function TTZ3Lep::CheckCut  -----
@@ -168,8 +169,11 @@ bool TTZ3Lep::FillCut()
 
     his->FillTH1("CutFlow", int(i)); 
 
-    if (tr->getVec<TLorentzVector>("recoZVec").at(0).Pt() != 0)
+    if (tr->getVec<TLorentzVector>("recoZVec").size() > 0)
       FillTLVHistos(i, "RecoZ", tr->getVec<TLorentzVector>("recoZVec").at(0));
+
+    int JBTcount = tr->getVar<int>(Label["nTopCandSortedCnt"]) * 100 + tr->getVar<int>(Label["cntCSVS"]) * 10 + tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size();
+    his->FillTH1(i, "JBT", JBTcount);
 
     ComAna::FillCut(i);
     Check3rdLep(i);
@@ -229,63 +233,57 @@ bool TTZ3Lep::HasZ() const
 // ===========================================================================
 bool TTZ3Lep::Check3rdLep(int NCut)
 {
-  //----------------------------------------------------------------------------
-  //  Z from diMuon
-  //----------------------------------------------------------------------------
-  // 3rd Ele
-  std::string elesFlagIDLabel = "";
-  const std::vector<int> & elesFlagIDVec = elesFlagIDLabel.empty()? std::vector<int>(tr->getVec<double>("elesMiniIso").size(), 1)
-    :tr->getVec<int>(elesFlagIDLabel.c_str()); // Fake electrons since we don't have different ID for electrons now, but maybe later
-  TLorentzVector thirdEle(0, 0, 0, 0);
-  int cntNElectrons = 0;
-  for(unsigned int ie=0; ie<tr->getVec<TLorentzVector>("elesLVec").size(); ie++)
-  {
-    if(AnaFunctions::passElectron(tr->getVec<TLorentzVector>("elesLVec").at(ie), 
-          tr->getVec<double>("elesMiniIso").at(ie), tr->getVec<double>("elesMtw").at(ie), 
-          tr->getVec<unsigned int>("elesisEB").at(ie), elesFlagIDVec.at(ie), AnaConsts::elesMiniIsoArr))
-    {
-      cntNElectrons ++;
-      thirdEle = tr->getVec<TLorentzVector>("elesLVec").at(ie);
-    }
-  }
-  if (cntNElectrons == 1)
-  {
-    FillTLVHistos(NCut, "3rdEle", thirdEle);
-  }
-
-  if (tr->getVec<TLorentzVector>("recoZVec").size() == 0 || 
-      tr->getVec<TLorentzVector>("recoZVec").at(0).Pt() == 0 ||
-      tr->getVec<TLorentzVector>("cutMuVec").size() != 3)
+  if (tr->getVec<TLorentzVector>("recoZVec").size() == 0) 
     return false;
 
-  //3rd Muon
-  TLorentzVector thirdMuon(0, 0, 0, 0);
-  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec");
-  TLorentzVector recoZ = tr->getVec<TLorentzVector>("recoZVec").at(0);
-  std::map<unsigned, bool> MuonIdx;
-  const double minMuPt = 20.0;
-  const double highMuPt = 45.0;
+  if (tr->getVar<int>("nMuons_Base") + tr->getVar<int>("nElectrons_Base") != 3 ) 
+    return false;
 
-  for(unsigned int i = 0; i < cutMuVec.size(); ++i)
+  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec");
+  const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>("cutEleVec");
+
+  const std::map<unsigned int, std::pair<unsigned int, unsigned int> > ZLepIdx = 
+    tr->getMap<unsigned int, std::pair<unsigned int, unsigned int> >("ZLepIdx");
+
+  std::vector<unsigned int> EleinZ;
+  std::vector<unsigned int> MuinZ;
+  for(auto &it : ZLepIdx)
   {
-    if(cutMuVec.at(i).Pt() < minMuPt) continue;
-    for(unsigned int j = 0; j < i && j < cutMuVec.size(); ++j)
+    if (it.second.first >= 100)
     {
-      if(cutMuVec.at(j).Pt() < minMuPt) continue;
-      TLorentzVector localZ  = (cutMuVec.at(i) + cutMuVec.at(j));
-      if (localZ == recoZ)
-      {
-        MuonIdx[i] = true;
-        MuonIdx[j] = true;
-      }
+      assert(it.second.second >= 100 );
+      EleinZ.push_back(it.second.first - 100);
+      EleinZ.push_back(it.second.second - 100);
+    } else {
+      assert(it.second.second < 100 );
+      MuinZ.push_back(it.second.first);
+      MuinZ.push_back(it.second.second);
     }
   }
 
-  for(unsigned int i = 0; i < cutMuVec.size(); ++i)
+  assert((cutEleVec.size() + cutMuVec.size())  - (EleinZ.size() + MuinZ.size() ) == 1);
+
+  TLorentzVector thirdEle(0, 0, 0, 0);
+  TLorentzVector thirdMuon(0, 0, 0, 0);
+  for(unsigned int i=0; i < cutMuVec.size(); ++i)
   {
-    if (MuonIdx.find(i) != MuonIdx.end())
+    if(find(MuinZ.begin(), MuinZ.end(), i) != MuinZ.end())
       continue;
     thirdMuon = cutMuVec.at(i);
+  }
+
+  for(unsigned int i=0; i < cutEleVec.size(); ++i)
+  {
+    if(find(EleinZ.begin(), EleinZ.end(), i) != EleinZ.end())
+      continue;
+    thirdEle = cutEleVec.at(i);
+  }
+
+  assert(thirdMuon.Pt() == 0 || thirdEle.Pt() == 0);
+
+  if (thirdEle.Pt() != 0)
+  {
+    FillTLVHistos(NCut, "3rdEle", thirdEle);
   }
 
   if (thirdMuon.Pt() != 0)

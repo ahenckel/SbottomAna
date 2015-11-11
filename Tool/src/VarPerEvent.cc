@@ -63,8 +63,9 @@ VarPerEvent::operator = ( const VarPerEvent &other )
 // ===========================================================================
 bool VarPerEvent::RunPerEvent() const
 {
-  GetMuInfo();
+  GetRecoZ();
   PassDiMuonTrigger();
+  PassDiEleTrigger();
 
   return true;
 }       // -----  end of function VarPerEvent::RunPerEvent  -----
@@ -74,7 +75,7 @@ bool VarPerEvent::RunPerEvent() const
 //  Description:  Copy from Zinvisible method for muon selection and Z reco.
 //  https://github.com/susy2015/ZInvisible/blob/master/Tools/derivedTupleVariables.h#L196
 // ===========================================================================
-bool VarPerEvent::GetMuInfo() const
+bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx) const
 {
 
 //----------------------------------------------------------------------------
@@ -145,7 +146,6 @@ bool VarPerEvent::GetMuInfo() const
   std::vector<TLorentzVector>* cutMuVec = new std::vector<TLorentzVector>(); //Muons pass pt, Iso and trigger requirement
   std::vector<double>* cutMuCharge = new std::vector<double>();
   std::vector<double>* cutMuActivity = new std::vector<double>();
-  std::vector<TLorentzVector>* recoZVec = new std::vector<TLorentzVector>();
 
   std::vector<TLorentzVector> cutMuVecRecoOnly; //Muons passed pt requirement, but not Iso 
   TRandom3 *tr3 = new TRandom3();
@@ -287,8 +287,9 @@ bool VarPerEvent::GetMuInfo() const
 
   double zMassCurrent = 1.0e300;
   //double zMassCurrent = 1.0e300, zEff = 1.0e100, zAcc = 1.0e100;
-  TLorentzVector bestRecoZ;
+  TLorentzVector bestRecoZ(0, 0, 0, 0);
   int sumCharge = 0;
+  std::pair<unsigned int, unsigned int> mupair;
   for(unsigned int i = 0; i < cutMuVec->size(); ++i)
   {
     if((*cutMuVec)[i].Pt() < minMuPt) continue;
@@ -300,13 +301,18 @@ bool VarPerEvent::GetMuInfo() const
       if(fabs(zm - zMass) < fabs(zMassCurrent - zMass))
       {
         bestRecoZ = (*cutMuVec)[i] + (*cutMuVec)[j];
+        mupair = std::make_pair(i, j);
         zMassCurrent = zm;
         sumCharge = 0;
         sumCharge = cutMuCharge->at(i) + cutMuCharge->at(j);
       }
     }
   }
-  recoZVec->push_back(bestRecoZ);
+  if (bestRecoZ.Pt() != 0 && sumCharge == 0)
+  {
+    recoZVec->push_back(bestRecoZ);
+    ZLepIdx->insert(std::make_pair( recoZVec->size(), mupair));
+  }
 
   TLorentzVector metV, metZ;
   metV.SetPtEtaPhiM(met, 0.0, metphi, 0.0);
@@ -358,7 +364,6 @@ bool VarPerEvent::GetMuInfo() const
   tr->registerDerivedVec("cutMuActivity", cutMuActivity);
   tr->registerDerivedVec("genMu", genMu);
   tr->registerDerivedVec("genZ", genZ);
-  tr->registerDerivedVec("recoZVec", recoZVec);
   tr->registerDerivedVar("ngenMu", static_cast<double>(genMu->size()));
   tr->registerDerivedVec("genMuInAcc", genMuInAcc);
   tr->registerDerivedVec("genMuAct", genMuAct);
@@ -456,9 +461,128 @@ bool VarPerEvent::GetJetsNoMu() const
 bool VarPerEvent::PassDiMuonTrigger() const
 {
   const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec");
+  assert(cutMuVec.size() == tr->getVar<int>("nMuons_Base"));
   const double minMuPt = 20.0;
   const double highMuPt = 45.0;
   bool pass = (cutMuVec.size() >= 2 && (cutMuVec)[0].Pt() > highMuPt && (cutMuVec)[1].Pt() > minMuPt);
   tr->registerDerivedVar("PassDiMuonTrigger", pass);
   return pass;
 }       // -----  end of function VarPerEvent::PassDiMuonTrigger  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  VarPerEvent::PassDiEleTrigger
+//  Description:  
+// ===========================================================================
+bool VarPerEvent::PassDiEleTrigger() const
+{
+  
+  const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>("cutEleVec");
+  assert(cutEleVec.size() == tr->getVar<int>("nElectrons_Base"));
+  const double minElePt = 30.0;
+  const double highElePt = 30.0;
+  bool pass = (cutEleVec.size() >= 2 && (cutEleVec)[0].Pt() > highElePt && (cutEleVec)[1].Pt() > minElePt);
+  tr->registerDerivedVar("PassDiEleTrigger", pass);
+  return true;
+}       // -----  end of function VarPerEvent::PassDiEleTrigger  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  VarPerEvent::GetEleZ
+//  Description:  
+// ===========================================================================
+bool VarPerEvent::GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx) const
+{
+  
+  std::vector<TLorentzVector> elesLVec;
+  std::vector<double>         elesRelIso;
+  std::vector<double>         elesMiniIso;
+  std::vector<double>         elesMtw;
+  std::vector<double>         elesCharge;
+  std::vector<int>            elesFlagIDVec;
+  std::vector<unsigned int>            elesisEB;
+  const std::string elesFlagIDLabel = "";
+
+  try
+  {
+    elesLVec = tr->getVec<TLorentzVector>("elesLVec");
+    elesMiniIso = tr->getVec<double>("elesMiniIso");
+    elesCharge = tr->getVec<double>("elesCharge");
+    elesRelIso =  tr->getVec<double>("elesRelIso");
+    elesMtw =  tr->getVec<double>("elesRelIso");
+    elesisEB =  tr->getVec<unsigned int>("elesRelIso");
+    elesFlagIDVec = elesFlagIDLabel.empty()? 
+      std::vector<int>(tr->getVec<double>("elesMiniIso").size(), 1):
+      tr->getVec<int>(elesFlagIDLabel.c_str()); 
+  }
+  catch (std::string var)
+  {
+    std::cout << "Missing Var:"<< var << std::endl;
+    return false;
+  }
+
+  //Muons pass pt, Iso and trigger requirement
+  std::vector<TLorentzVector>* cutEleVec = new std::vector<TLorentzVector>(); 
+  std::vector<double>* cutEleCharge = new std::vector<double>();
+  std::vector<double>* cutEleActivity = new std::vector<double>();
+
+  for(unsigned int i = 0; i < elesLVec.size(); ++i)
+  {
+    // emulates muons with pt and iso requirements.  
+    if(AnaFunctions::passElectron(elesLVec[i], elesMiniIso[i], elesMtw[i], elesisEB[i], elesFlagIDVec[i], AnaConsts::elesMiniIsoArr) )
+    {
+      cutEleVec->push_back(elesLVec[i]);
+      cutEleCharge->push_back(elesCharge[i]);
+    }
+  }
+
+  const double zMassMin = 81.0;
+  const double zMass    = 91.0;
+  const double zMassMax = 101.0;
+  const double minElePt = 30.0, highElePt = 30.0;
+
+  double zMassCurrent = 1.0e300;
+  //double zMassCurrent = 1.0e300, zEff = 1.0e100, zAcc = 1.0e100;
+  TLorentzVector bestRecoZ(0, 0, 0, 0);
+  int sumCharge = 0;
+  std::pair<unsigned int, unsigned int> elepair;
+  for(unsigned int i = 0; i < cutEleVec->size(); ++i)
+  {
+    if((*cutEleVec)[i].Pt() < minElePt) continue;
+    for(unsigned int j = 0; j < i && j < cutEleVec->size(); ++j)
+    {
+      if((*cutEleVec)[j].Pt() < minElePt) continue;
+      double zm = ((*cutEleVec)[i] + (*cutEleVec)[j]).M();
+      //if(zm > zMassMin && zm < zMassMax && fabs(zm - zMass) < fabs(zMassCurrent - zMass))
+      if(fabs(zm - zMass) < fabs(zMassCurrent - zMass))
+      {
+        bestRecoZ = (*cutEleVec)[i] + (*cutEleVec)[j];
+        zMassCurrent = zm;
+        elepair = std::make_pair(i+100, j+100);
+        sumCharge = 0;
+        sumCharge = cutEleCharge->at(i) + cutEleCharge->at(j);
+      }
+    }
+  }
+  if (bestRecoZ.Pt() != 0 && sumCharge == 0)
+  {
+    recoZVec->push_back(bestRecoZ);
+    ZLepIdx->insert(std::make_pair( recoZVec->size(), elepair));
+  }
+  tr->registerDerivedVec("cutEleVec", cutEleVec);
+  return true;
+}       // -----  end of function VarPerEvent::GetEleZ  -----
+// ===  FUNCTION  ============================================================
+//         Name:  VarPerEvent::GetRecoZ
+//  Description:  
+// ===========================================================================
+bool VarPerEvent::GetRecoZ() const
+{
+  std::vector<TLorentzVector>* recoZVec = new std::vector<TLorentzVector>();
+  std::map<unsigned int, std::pair<unsigned int, unsigned int> > *ZLepIdx = 
+    new std::map<unsigned int, std::pair<unsigned int, unsigned int> >();
+
+  GetMuInfo(recoZVec, ZLepIdx);
+  GetEleZ(recoZVec, ZLepIdx);
+  tr->registerDerivedVec("recoZVec", recoZVec);
+  tr->registerDerivedVec("ZLepIdx", ZLepIdx);
+  return true;
+}       // -----  end of function VarPerEvent::GetRecoZ  -----

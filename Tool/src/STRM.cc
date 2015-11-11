@@ -176,7 +176,7 @@ bool STRM::CheckCut()
   METLV.SetPtEtaPhiE(tr->getVar<double>(METLabel), 0, tr->getVar<double>(METPhiLabel), 0);
 
   // | phi_j0 - phi_MET - pi | < 0.15
-  cutbit.set(7, fabs(J1.DeltaPhi(METLV)) < 0.15);
+  cutbit.set(7, fabs(fabs(J1.DeltaPhi(METLV)) - TMath::Pi()) < 0.5);
   
   // | phi_sub - phi_MET | > 0.2
   bool dPhiSub = true;

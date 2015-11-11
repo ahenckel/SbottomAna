@@ -29,6 +29,7 @@
 #include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
 
 void RegisterVarPerEvent(NTupleReader &tr);
+typedef std::map<unsigned int, std::pair<unsigned int, unsigned int> > TypeZLepIdx;
 // ===========================================================================
 //        Class:  VarPerEvent
 //  Description:  A local class which will be called per event, to calculate
@@ -55,7 +56,6 @@ class VarPerEvent
 
   protected:
     // ====================  METHODS       ===============================
-    bool GetMuInfo() const;
     bool GetJetsNoMu() const;
 
     // ====================  DATA MEMBERS  ===============================
@@ -63,6 +63,10 @@ class VarPerEvent
   private:
     // ====================  METHODS       ===============================
     bool PassDiMuonTrigger() const;
+    bool PassDiEleTrigger() const;
+    bool GetRecoZ() const;
+    bool GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx) const;
+    bool GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx) const;
 
     // ====================  DATA MEMBERS  ===============================
     NTupleReader *tr;

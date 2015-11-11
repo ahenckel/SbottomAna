@@ -72,6 +72,7 @@ TTZDiLep::operator = ( const TTZDiLep &other )
 bool TTZDiLep::BookHistograms()
 {
   ComAna::BookHistograms();
+  BookTLVHistos("RecoZ");
   his->AddTH1C("JBT", "JBT", "JBT", "Events", 400, 0, 400);
   his->AddTH1C("bJetinTop", "bJetinTop", "bJetinTop", "Events", 5, -1, 4);
   return true;
@@ -126,9 +127,10 @@ bool TTZDiLep::CheckCut()
 {
   
   cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
-  cutbit.set(1 , tr->getVar<bool>("passMuZinvSel"));
 
-  cutbit.set(2 , tr->getVec<TLorentzVector>("cutMuVec").size() == 2);
+  cutbit.set(1 , tr->getVec<TLorentzVector>("recoZVec").size() == 1);
+
+  cutbit.set(2 ,  tr->getVar<int>("nMuons_Base") + tr->getVar<int>("nElectrons_Base") == 2 );
 
   cutbit.set(3 , tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size() >= 4);
 
@@ -139,7 +141,7 @@ bool TTZDiLep::CheckCut()
   std::vector<int> vbinTop = BJetTopAsso();
   cutbit.set(7 , vbinTop.size() > 0);
 
-  cutbit.set(8 , tr->getVar<bool>("PassDiMuonTrigger"));
+  cutbit.set(8 , tr->getVar<bool>("PassDiMuonTrigger") || tr->getVar<bool>("PassDiEleTrigger"));
   return true;
 }       // -----  end of function TTZDiLep::CheckCut  -----
 
@@ -165,7 +167,8 @@ bool TTZDiLep::FillCut()
 
     his->FillTH1("CutFlow", int(i)); 
     ComAna::FillCut(i);
-    //std::cout << ComAna::spec <<" _ "<< "jetsLVec_forTagger" + spec <<" "  << tr->getVec<TLorentzVector>("jetsLVec_forTagger" + spec).size()<< std::endl;
+    if (tr->getVec<TLorentzVector>("recoZVec").size() > 0)
+      FillTLVHistos(i, "RecoZ", tr->getVec<TLorentzVector>("recoZVec").at(0));
     int JBTcount = tr->getVar<int>(Label["nTopCandSortedCnt"]) * 100 + tr->getVar<int>(Label["cntCSVS"]) * 10 + tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size();
     his->FillTH1(i, "JBT", JBTcount);
 
