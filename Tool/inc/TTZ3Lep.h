@@ -68,6 +68,7 @@ class TTZ3Lep : public ComAna
   private:
     // ====================  METHODS       ===============================
     bool Check3rdLep(int NCut);
+    bool PassDiMuonTrigger() const;
 
     // ====================  DATA MEMBERS  ===============================
 

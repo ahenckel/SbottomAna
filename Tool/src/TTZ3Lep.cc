@@ -90,6 +90,7 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
   //Add name and order of the cutflow
   CutOrder.push_back("NoCut");
   CutOrder.push_back("Filter");
+  CutOrder.push_back("Trigger");
   CutOrder.push_back("HasZ");
   CutOrder.push_back("3Leps");
   CutOrder.push_back("BJets");
@@ -97,13 +98,14 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
   CutOrder.push_back("MET70");
 
   //Set the cutbit of each cut
-  CutMap["NoCut"]  = "00000000000000000";
-  CutMap["Filter"] = "00000000000000001";
-  CutMap["HasZ"]   = "00000000000000011";
-  CutMap["3Leps"]  = "00000000000000111";
-  CutMap["BJets"]  = "00000000000001111";
-  CutMap["Tagger"] = "00000000000011111";
-  CutMap["MET70"]  = "00000000000111111";
+  CutMap["NoCut"]   = "00000000000000000";
+  CutMap["Filter"]  = "00000000000000001";
+  CutMap["Trigger"] = "00000000001000001";
+  CutMap["HasZ"]    = "00000000001000011";
+  CutMap["3Leps"]   = "00000000001000111";
+  CutMap["BJets"]   = "00000000001001111";
+  CutMap["Tagger"]  = "00000000001011111";
+  CutMap["MET70"]   = "00000000001111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -131,6 +133,8 @@ bool TTZ3Lep::CheckCut()
   cutbit.set(4 , tr->getVar<int>(Label["nTopCandSortedCnt"]) >= 1);
 
   cutbit.set(5 , tr->getVar<double>(METLabel) < 70);
+
+  cutbit.set(6 , tr->getVar<bool>("PassDiMuonTrigger"));
 
 
   return true;

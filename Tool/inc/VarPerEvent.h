@@ -62,6 +62,7 @@ class VarPerEvent
 
   private:
     // ====================  METHODS       ===============================
+    bool PassDiMuonTrigger() const;
 
     // ====================  DATA MEMBERS  ===============================
     NTupleReader *tr;

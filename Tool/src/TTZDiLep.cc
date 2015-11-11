@@ -91,6 +91,7 @@ bool TTZDiLep::InitCutOrder(std::string ana)
   //Add name and order of the cutflow
   CutOrder.push_back("NoCut");
   CutOrder.push_back("Filter");
+  CutOrder.push_back("Trigger");
   CutOrder.push_back("HasZ");
   CutOrder.push_back("2Leps");
   CutOrder.push_back("nJets");
@@ -100,15 +101,16 @@ bool TTZDiLep::InitCutOrder(std::string ana)
   CutOrder.push_back("BinTop");
 
   //Set the cutbit of each cut
-  CutMap["NoCut"]  = "00000000000000000";
-  CutMap["Filter"] = "00000000000000001";
-  CutMap["HasZ"]   = "00000000000000011";
-  CutMap["2Leps"]  = "00000000000000111";
-  CutMap["nJets"]  = "00000000000001111";
-  CutMap["BJets"]  = "00000000000011111";
-  CutMap["Tagger"] = "00000000000111111";
-  CutMap["MET70"]  = "00000000001111111";
-  CutMap["BinTop"] = "00000000011111111";
+  CutMap["NoCut"]   = "00000000000000000";
+  CutMap["Filter"]  = "00000000000000001";
+  CutMap["Trigger"] = "00000000100000001";
+  CutMap["HasZ"]    = "00000000100000011";
+  CutMap["2Leps"]   = "00000000100000111";
+  CutMap["nJets"]   = "00000000100001111";
+  CutMap["BJets"]   = "00000000100011111";
+  CutMap["Tagger"]  = "00000000100111111";
+  CutMap["MET70"]   = "00000000101111111";
+  CutMap["BinTop"]  = "00000000111111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -135,8 +137,9 @@ bool TTZDiLep::CheckCut()
   cutbit.set(6 , tr->getVar<double>(METLabel) < 70);
 
   std::vector<int> vbinTop = BJetTopAsso();
-  cutbit.set(6 , vbinTop.size() > 0);
+  cutbit.set(7 , vbinTop.size() > 0);
 
+  cutbit.set(8 , tr->getVar<bool>("PassDiMuonTrigger"));
   return true;
 }       // -----  end of function TTZDiLep::CheckCut  -----
 

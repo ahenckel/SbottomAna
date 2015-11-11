@@ -64,6 +64,7 @@ VarPerEvent::operator = ( const VarPerEvent &other )
 bool VarPerEvent::RunPerEvent() const
 {
   GetMuInfo();
+  PassDiMuonTrigger();
 
   return true;
 }       // -----  end of function VarPerEvent::RunPerEvent  -----
@@ -148,7 +149,6 @@ bool VarPerEvent::GetMuInfo() const
 
   std::vector<TLorentzVector> cutMuVecRecoOnly; //Muons passed pt requirement, but not Iso 
   TRandom3 *tr3 = new TRandom3();
-  int sumCharge = 0;
   int nTriggerMuons = 0;
 
 
@@ -171,8 +171,6 @@ bool VarPerEvent::GetMuInfo() const
       cutMuVec->push_back(muonsLVec[i]);
       cutMuCharge->push_back(muonsCharge[i]);
       cutMuActivity->push_back(AnaFunctions::getMuonActivity(muonsLVec[i], jetsLVec, recoJetschargedHadronEnergyFraction, recoJetschargedEmEnergyFraction, AnaConsts::muonsAct));
-      if(muonsCharge[i] > 0) sumCharge++;
-      else                   sumCharge--;
     }
   }
 
@@ -290,6 +288,7 @@ bool VarPerEvent::GetMuInfo() const
   double zMassCurrent = 1.0e300;
   //double zMassCurrent = 1.0e300, zEff = 1.0e100, zAcc = 1.0e100;
   TLorentzVector bestRecoZ;
+  int sumCharge = 0;
   for(unsigned int i = 0; i < cutMuVec->size(); ++i)
   {
     if((*cutMuVec)[i].Pt() < minMuPt) continue;
@@ -302,6 +301,8 @@ bool VarPerEvent::GetMuInfo() const
       {
         bestRecoZ = (*cutMuVec)[i] + (*cutMuVec)[j];
         zMassCurrent = zm;
+        sumCharge = 0;
+        sumCharge = cutMuCharge->at(i) + cutMuCharge->at(j);
       }
     }
   }
@@ -448,3 +449,16 @@ bool VarPerEvent::GetJetsNoMu() const
 }       // -----  end of function VarPerEvent::GetJetsNoMu  -----
 
 
+// ===  FUNCTION  ============================================================
+//         Name:  VarPerEvent::PassDiMuonTrigger
+//  Description:  /* cursor */
+// ===========================================================================
+bool VarPerEvent::PassDiMuonTrigger() const
+{
+  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec");
+  const double minMuPt = 20.0;
+  const double highMuPt = 45.0;
+  bool pass = (cutMuVec.size() >= 2 && (cutMuVec)[0].Pt() > highMuPt && (cutMuVec)[1].Pt() > minMuPt);
+  tr->registerDerivedVar("PassDiMuonTrigger", pass);
+  return pass;
+}       // -----  end of function VarPerEvent::PassDiMuonTrigger  -----
