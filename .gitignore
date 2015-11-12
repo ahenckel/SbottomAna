@@ -1,5 +1,8 @@
 # Compiled Object files
 .*
+*.pyc
+*.log
+*.root
 *.slo
 *.lo
 *.o
@@ -27,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+Tool/Plot/HistDump
+Tool/Plot/ROOT/
+Tool/Plot/test/

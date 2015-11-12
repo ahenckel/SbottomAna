@@ -41,6 +41,7 @@ class PyDraw():
         self.lumi = Lumi
         tdrstyle.setTDRStyle()
         self.canvas = self.CreatCanvas()
+        self._hists = None
 
 # ============================================================================#
 # ------------------------------     Canvas     ------------------------------#
@@ -76,6 +77,7 @@ class PyDraw():
 
         for outformat in PyOutPut:
             canvas.SaveAs("%s/%s.%s" % (self.OutDir, outname, outformat))
+        del self._hists
         return canvas
 
     def PadRedraw(self, pad, kw):
@@ -352,7 +354,9 @@ class PyDraw():
         # Still None? Set to default
         if returnmin is None:
             if axis == "Y" and "Logy" in kw:
-                returnmin = None
+                bins = []
+                [bins.extend(list(h.y())) for h in hists]
+                returnmin = min([x for x in bins if x > 0]) / 5
             else:
                 returnmin = histmin
 
@@ -375,7 +379,10 @@ class PyDraw():
         # Still None? Set to default
         if returnmax is None:
             if axis == "Y":
-                returnmax = 1.25 * histmax if histmax > 0 else 0.8 * histmax
+                if "Logy" in kw:
+                    returnmax = 50 * histmax if histmax > 0 else 0 * histmax
+                else:
+                    returnmax = 1.25 * histmax if histmax > 0 else 0.8 * histmax
             else:
                 returnmax = histmax
 
@@ -419,6 +426,10 @@ class PyDraw():
         latex = ROOT.TLatex()
         latex.SetNDC()
         for entry in addlatex:
+            if entry[2] == "_Cut_":
+                tmplist = list(entry)
+                tmplist[2] = "Cut : %s" % self._hists[0].cutname
+                entry = tuple(tmplist)
             if len(entry) > 3:
                 latex.SetTextColor(entry[3])
             if len(entry) > 4:
@@ -829,6 +840,7 @@ class PyDraw():
     def DrawLineComparison(self, hists_, **kw):
         """ A funtion for comparing lines """
         hists = self.CopyLocalHists(hists_)
+        self._hists = hists
         self.UpdateKWargs(hists, kw)
         legloc = kw.get('legloc', "topright")
         options = kw.get('DrawOpt', "hist")
@@ -842,6 +854,8 @@ class PyDraw():
         for it in range(0, len(hists)):
             hists[it].SetLineColor(hists[it].Linecolor)
             hists[it].SetLineStyle(hists[it].Linestyle)
+            hists[it].SetMarkerColor(hists[it].Markercolor)
+            hists[it].SetMarkerStyle(hists[it].Markerstyle)
             hists[it].SetFillColor(0)
             if it == 0:
                 hists[it].Draw(options)
@@ -869,6 +883,7 @@ class PyDraw():
         stackHists = self.CopyLocalHists(stackHists)
         overlayHists = self.CopyLocalHists(overlayHists)
         ontopHists = self.CopyLocalHists(ontopHists)
+        self._hists = stackHists
         self.canvas.cd()
         self.canvas.Clear()
 
@@ -967,6 +982,7 @@ class PyDraw():
     def Draw2DComparison(self, hists_, **kw):
         """ A funtion for comparing lines """
         hists = self.CopyLocalHists(hists_)
+        self._hists = hists
         self.UpdateKWargs(hists, kw)
         options = kw.get('DrawOpt', "COLZ")
 

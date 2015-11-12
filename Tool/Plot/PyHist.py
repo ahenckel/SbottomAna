@@ -37,12 +37,12 @@ class PyHist:
             cutflowhist = self.file.Get("%s/CutFlow" % dirname)
         if Norm is None:
             cutflowhist.Scale(1/cutflowhist.GetBinContent(1))
+        elif Norm == "XS":
+            cutflowhist.Scale(self.xs/cutflowhist.GetBinContent(1))
         else:
             if "NBase" in self.file and self.file.Get("NBase").GetBinContent(2) != 0:
                 cutflowhist.Scale((self.xs * self.lumi * self.file.Get("NBase").GetBinContent(2) / self.Nevent)
                                   / cutflowhist.GetBinContent(1))
-            else:
-                cutflowhist.Scale(self.xs * self.lumi/cutflowhist.GetBinContent(1))
         return cutflowhist
 
     def GetHist(self, dirname, histname, norm="Lumi", BaseName="NBase", **kw):
@@ -141,6 +141,28 @@ class PyHist:
             nBase = 0
 
         return nBase
+
+    def DumpContent(self, filename="HistDump", append=False):
+        if append:
+            f = open(filename, 'a')
+        else:
+            f = open(filename, 'w')
+        f.write("\n")
+
+        # Dir name
+        f.write("Dirnames:\n")
+        for d in sorted(self.GetDirnames()):
+            f.write("\t- %s\n" % d)
+
+        for d in sorted(self.GetDirnames()):
+            f.write("\n")
+            f.write("%s:\n" % d)
+            for h in sorted(self.GetHistnames(d)):
+                f.write("\t- %s\n" % h)
+
+        f.write("\n\n# vim: ")
+        f.write("ft=yaml fdm=indent")
+        f.close()
 
     def GetCutName(self, dirname, histname):
         patmat = self.cutpat.match(histname)

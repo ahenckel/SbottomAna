@@ -23,6 +23,7 @@ class PyAna():
         self.Lumi = Lumi
         self.dirnames = []
         self.FormProcesses()
+        self.DumpContent()
 
     def FormProcesses(self):
         for key, vdict in self.Prodmap.items():
@@ -170,5 +171,13 @@ class PyAna():
             lhist.title = leglable.strip()
             lhist.outname = outname.strip("_")
 
-    def GetSignalBackground(self, proname_, dirname_, histname_, style="line", norm="Lumi", BaseName="NBase"):
-        pass
+    def DumpContent(self, filename="HistDump"):
+        f = open(filename, 'w')
+        f.write("PyAna: %s\n\n" % self.Directory)
+        f.write("Pronames:\n")
+        for d in sorted(self.GetProNames()):
+            f.write("\t- %s\n" % d)
+
+        f.close()
+        self.AllProds.itervalues().next().DumpContent(filename, True)
+
