@@ -153,50 +153,58 @@ import re
 import glob
 import os
 import subprocess
+import multiprocessing
+
+def MergeFile(prod):
+    g = glob.glob("%s*.root" % prod)
+    sub = re.compile(r'^%s_\d+\.root$' % prod)
+    allfile = set()
+    goodfile = set()
+    for f in g:
+        if sub.match(f) is not None:
+            allfile.add(f)
+            if os.path.getsize(f) != 0:
+                goodfile.add(f)
+    run = "hadd -f %s.root " % prod
+    mv = "mv "
+    run += " ".join(goodfile)
+    mv += " ".join(allfile)
+    mv += " backup"
+    subprocess.call(run, shell=True)
+    subprocess.call(mv, shell=True)
 
 if __name__ == "__main__":
+    cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK)
+                               for path in os.environ["PATH"].split(os.pathsep))
+    if cmd_exists('hadd'):
+        if not os.path.isdir("backup"):
+            os.mkdir("backup")
+    else:
+        HEADER = '[95m'
+        OKBLUE = '[94m'
+        OKGREEN = '[92m'
+        WARNING = '[93m'
+        FAIL = '[91m'
+        ENDC = '[0m'
+        BOLD = '[1m'
+        UNDERLINE = '[4m'
+        print(FAIL + "Warning: no hadd available! Please setup ROOT!!" + ENDC)
+        exit()
+
     pattern = re.compile(r'^(.*)_\d+\.root$')
     g = glob.glob("*")
-    # print g
+
+    ## Get all the process
     process = set()
     for files in g:
         match = pattern.match(files)
         if match is not None:
             process.add(match.group(1))
-            # print(match.group(1))
-    for prod in process:
-        sub = re.compile(r'^%s_\d+\.root$' % prod)
-        allfile = set()
-        for f in g:
-            if sub.match(f) is not None:
-                allfile.add(f)
-        run = "hadd -f %s.root " % prod
-        mv = "mv "
-        run += " ".join(allfile)
-        mv += " ".join(allfile)
-        cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK)
-                                   for path in os.environ["PATH"].split(os.pathsep))
-        if cmd_exists('hadd'):
-            # print(run)
-            subprocess.call(run, shell=True)
-            if not os.path.isdir("backup"):
-                os.mkdir("backup")
-            mv += " backup"
-            # print mv
-            subprocess.call(mv, shell=True)
-        else:
-            HEADER = '\033[95m'
-            OKBLUE = '\033[94m'
-            OKGREEN = '\033[92m'
-            WARNING = '\033[93m'
-            FAIL = '\033[91m'
-            ENDC = '\033[0m'
-            BOLD = '\033[1m'
-            UNDERLINE = '\033[4m'
-            print(FAIL + "Warning: no hadd available! Please setup ROOT!!" + ENDC)
+
+    ## Run with multiprocessing Pool
+    pool = multiprocessing.Pool(processes = multiprocessing.cpu_count()/3)
+    pool.map(MergeFile, process)
 """
-
-
 
 def Condor_Sub(condor_file):
     ## Since we run with xrootd, setup proxy
