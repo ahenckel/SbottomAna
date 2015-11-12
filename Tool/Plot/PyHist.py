@@ -142,27 +142,29 @@ class PyHist:
 
         return nBase
 
-    def DumpContent(self, filename="HistDump", append=False):
-        if append:
-            f = open(filename, 'a')
-        else:
-            f = open(filename, 'w')
-        f.write("\n")
+    def DumpContent(self, filename=".Hist", append=False):
+        if not append:
+            import os
+            import glob
+            [os.remove(file) for file in glob.glob("%s*" % filename)]
 
         # Dir name
-        f.write("Dirnames:\n")
+        f = open("%s.Dirnames" % filename, 'w')
         for d in sorted(self.GetDirnames()):
-            f.write("\t- %s\n" % d)
-
-        for d in sorted(self.GetDirnames()):
-            f.write("\n")
-            f.write("%s:\n" % d)
-            for h in sorted(self.GetHistnames(d)):
-                f.write("\t- %s\n" % h)
-
-        f.write("\n\n# vim: ")
-        f.write("ft=yaml fdm=indent")
+            f.write("%s\n" % d)
+        f.write("\n\n\n")
+        for paths, apples, objects in self.file.walk(maxdepth=0):
+            [f.write("%s\n" % obj) for obj in objects]
         f.close()
+
+        # Hist in Each Dir
+        for d in sorted(self.GetDirnames()):
+            if(len(self.GetHistnames(d)) == 0):
+                continue
+            f = open("%s.%s" % (filename, d), 'w')
+            for h in sorted(self.GetHistnames(d)):
+                f.write("%s\n" % h)
+            f.close()
 
     def GetCutName(self, dirname, histname):
         patmat = self.cutpat.match(histname)

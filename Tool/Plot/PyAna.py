@@ -13,6 +13,8 @@ from PyProcess import PyProcess
 from Config import Prodmap as PRODMA
 from Config import Lumi
 import re
+import os
+import glob
 
 
 class PyAna():
@@ -171,13 +173,31 @@ class PyAna():
             lhist.title = leglable.strip()
             lhist.outname = outname.strip("_")
 
-    def DumpContent(self, filename="HistDump"):
-        f = open(filename, 'w')
-        f.write("PyAna: %s\n\n" % self.Directory)
-        f.write("Pronames:\n")
-        for d in sorted(self.GetProNames()):
-            f.write("\t- %s\n" % d)
+    def DumpContent(self, filename=".Hist"):
+        redo = False
+        if os.path.isfile("%s.Pronames" % filename):
+            f = open("%s.Pronames" % filename, 'r')
+            for line in f.readlines():
+                if "PyAna" in line:
+                    rematch = re.match("PyAna: (.+)$", line)
+                    if rematch is not None:
+                        redo = (rematch.group(1) != self.Directory)
+                        break
+            f.close()
+        else:
+            redo = True
 
+        if not redo:
+            return
+
+        # Redo all the Hist Dump, first remove all the old files
+        [os.remove(file) for file in glob.glob("%s*" % filename)]
+
+        f = open("%s.Pronames" % filename, 'w')
+        f.write("PyAna: %s\n\n" % self.Directory)
+        for d in sorted(self.GetProNames()):
+            f.write("%s\n" % d)
         f.close()
+
         self.AllProds.itervalues().next().DumpContent(filename, True)
 

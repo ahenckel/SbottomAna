@@ -30,7 +30,7 @@ class PyProcess():
         self.stype = attribute["type"] if "type" in attribute else "Signal"
         self.label = attribute["label"] if "label" in attribute else name
 
-    def DumpContent(self, filename="HistDump", append=False):
+    def DumpContent(self, filename=".Hist", append=False):
         self.ProList[0].DumpContent(filename, append)
 
     def GetHist(self, dirname, histname, norm="Lumi", BaseName="NBase", **kw):
