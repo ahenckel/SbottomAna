@@ -185,6 +185,24 @@ LPCNameDir = {
     "Signal_T2bb_mSbottom900_mLSP100"   : "T2bb_2J_mStop-900_mLSP-100_madgraph-tauola.txt",
     "Signal_TTDMDMJets_M600GeV"         : "TTDMDMJets_M600GeV.txt",
     "Signal_TTDMDMJets_M1000GeV"        : "TTDMDMJets_M1000GeV.txt",
+
+
+    #============================================================================#
+    #---------------------------     Top Projected     --------------------------#
+    #============================================================================#
+    #"DYJetsToLL_HT_600toInf"            : "DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt",
+    #"DYJetsToLL_HT_400to600"            : "DYJetsToLL_M-50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt",
+    #"DYJetsToLL_HT_200to400"            : "DYJetsToLL_M-50_HT-200to400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt",
+    #"DYJetsToLL_HT_100to200"            : "DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt",
+    #"tW_antitop"                        : "addJetsForZinv/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1.txt",
+    #"tW_top"                            : "addJetsForZinv/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1.txt",
+    #"TTbarDiLep"                        : "addJetsForZinv/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt",
+    #"TTZToLLNuNu"                       : "addJetsForZinv/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8.txt",
+    #"ZJetsToNuNu_HT_100to200"           : "addJetsForZinv/ZJetsToNuNu_HT-100To200_13TeV-madgraph.txt",
+    #"ZJetsToNuNu_HT_200to400"           : "addJetsForZinv/ZJetsToNuNu_HT-200To400_13TeV-madgraph.txt",
+    #"ZJetsToNuNu_HT_400to600"           : "addJetsForZinv/ZJetsToNuNu_HT-400To600_13TeV-madgraph.txt",
+    #"ZJetsToNuNu_HT_600toInf"           : "addJetsForZinv/ZJetsToNuNu_HT-600ToInf_13TeV-madgraph.txt",
+
 }
 
 
@@ -205,7 +223,7 @@ def GetLPClist():
         if not os.path.isfile(filename):
             continue
         print(filename)
-        shutil.copyfile(filename, key+".txt")
+        shutil.copyfile(filename, key+".list")
 
 
     # for key, value in LPCNameDir.items():

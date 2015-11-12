@@ -19,5 +19,11 @@ echo $EXE $argv
 ./$EXE $argv
 
 if ($? == 0) then
-  mv *root ${OUTPUT}
+  foreach outfile (`ls *root`)
+    echo "Copying ${outfile} to ${OUTPUT}"
+    xrdcp $outfile "root://cmseos.fnal.gov/${OUTPUT}"
+    if ($? == 0) then
+      rm $outfile
+    endif
+  end
 endif

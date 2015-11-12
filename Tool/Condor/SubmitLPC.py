@@ -8,11 +8,12 @@ import subprocess
 import glob
 
 DelExe    = '../testMain'
-OutDir = '/eos/uscms/store/user/benwu/Stop/TopTagger/Jul23'
+#OutDir = '/store/user/benwu/Stop/TTZ/'
+#OutDir = '/store/user/benwu/Stop/Comb/'
 
 tempdir = ''
 UserEMAIL = 'benwu@fnal.gov'
-ProjectName = 'Mistag'
+ProjectName = 'Test0'
 Process = {
     #'DYJetsToLL_HT_100to200'                     : ['../FileList/DYJetsToLL_HT_100to200.list',                     1],
     #'DYJetsToLL_HT_200to400'                     : ['../FileList/DYJetsToLL_HT_200to400.list',                     1],
@@ -24,25 +25,119 @@ Process = {
     #'Signal_T1tttt_mGluino1500_mLSP100'          : ['../FileList/Signal_T1tttt_mGluino1500_mLSP100.list',          1],
     #'Signal_T2bb_mSbottom600_mLSP580'            : ['../FileList/Signal_T2bb_mSbottom600_mLSP580.list',            1],
     #'Signal_T2bb_mSbottom900_mLSP100'            : ['../FileList/Signal_T2bb_mSbottom900_mLSP100.list',            1],
-    'Signal_T2tt_mStop425_mLSP325'                : ['../FileList/Signal_T2tt_mStop425_mLSP325.list',               1],
-    'Signal_T2tt_mStop500_mLSP325'                : ['../FileList/Signal_T2tt_mStop500_mLSP325.list',               1],
-    'Signal_T2tt_mStop650_mLSP325'                : ['../FileList/Signal_T2tt_mStop650_mLSP325.list',               1],
-    'Signal_T2tt_mStop850_mLSP100'                : ['../FileList/Signal_T2tt_mStop850_mLSP100.list',               1],
+    #'Signal_T2tt_mStop425_mLSP325'                : ['../FileList/Signal_T2tt_mStop425_mLSP325.list',               1],
+    #'Signal_T2tt_mStop500_mLSP325'                : ['../FileList/Signal_T2tt_mStop500_mLSP325.list',               1],
+    #'Signal_T2tt_mStop650_mLSP325'                : ['../FileList/Signal_T2tt_mStop650_mLSP325.list',               1],
+    #'Signal_T2tt_mStop850_mLSP100'                : ['../FileList/Signal_T2tt_mStop850_mLSP100.list',               1],
     ##'Signal_T5tttt_mGluino1300_mStop300_mCh285'  : ['../FileList/Signal_T5tttt_mGluino1300_mStop300_mCh285.list',  1],
     ##'Signal_T5tttt_mGluino1300_mStop300_mChi280' : ['../FileList/Signal_T5tttt_mGluino1300_mStop300_mChi280.list', 1],
     ##'TTZ'                                        : ['../FileList/TTZ.list',                                        1],
-    'TTbar'                                       : ['../FileList/TTbar.list',                                      40],
-    'QCD'                                         : ['../FileList/QCD_HT_500to1000.list',                           7],
+    #'TTbar'                                       : ['../FileList/TTbar.list',                                      40],
+    #'QCD'                                         : ['../FileList/QCD_HT_500to1000.list',                           7],
     ##'T_tW'                                       : ['../FileList/T_tW.list',                                       2],
     ##'Tbar_tW'                                    : ['../FileList/Tbar_tW.list',                                    1],
-    'WJetsToLNu_HT_100to200'                     : ['../FileList/WJetsToLNu_HT_100to200.list',                     10],
-    'WJetsToLNu_HT_200to400'                     : ['../FileList/WJetsToLNu_HT_200to400.list',                     10],
-    'WJetsToLNu_HT_400to600'                     : ['../FileList/WJetsToLNu_HT_400to600.list',                     10],
-    'WJetsToLNu_HT_600toInf'                     : ['../FileList/WJetsToLNu_HT_600toInf.list',                     10],
-    'ZJetsToNuNu_HT_100to200'                     : ['../FileList/ZJetsToNuNu_HT_100to200.list',                    13],
-    'ZJetsToNuNu_HT_200to400'                     : ['../FileList/ZJetsToNuNu_HT_200to400.list',                    10],
-    'ZJetsToNuNu_HT_400to600'                     : ['../FileList/ZJetsToNuNu_HT_400to600.list',                    10],
-    'ZJetsToNuNu_HT_600toInf'                     : ['../FileList/ZJetsToNuNu_HT_600toInf.list',                    14],
+    #'WJetsToLNu_HT_100to200'                     : ['../FileList/WJetsToLNu_HT_100to200.list',                     10],
+    #'WJetsToLNu_HT_200to400'                     : ['../FileList/WJetsToLNu_HT_200to400.list',                     10],
+    #'WJetsToLNu_HT_400to600'                     : ['../FileList/WJetsToLNu_HT_400to600.list',                     10],
+    #'WJetsToLNu_HT_600toInf'                     : ['../FileList/WJetsToLNu_HT_600toInf.list',                     10],
+    #'ZJetsToNuNu_HT_100to200'                     : ['../FileList/ZJetsToNuNu_HT_100to200.list',                    13],
+    #'ZJetsToNuNu_HT_200to400'                     : ['../FileList/ZJetsToNuNu_HT_200to400.list',                    10],
+    #'ZJetsToNuNu_HT_400to600'                     : ['../FileList/ZJetsToNuNu_HT_400to600.list',                    10],
+    #'ZJetsToNuNu_HT_600toInf'                     : ['../FileList/ZJetsToNuNu_HT_600toInf.list',                    14],
+    #"WJetsToLNu_HT_600toInf"            : ['',6],
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ f ~~~~~
+    #"TTbarInc"                          : ['',35],
+    #"WJetsToLNu_HT_100to200"            : ['',30],
+    #"WJetsToLNu_HT_200to400"            : ['',17],
+    #"WJetsToLNu_HT_400to600"            : ['',10],
+    #"WJetsToLNu_HT_600to800"            : ['',15],
+    #"WJetsToLNu_HT_800to1200"           : ['',11],
+    #"WJetsToLNu_HT_1200to2500"          : ['',7],
+    #"WJetsToLNu_HT_2500toInf"           : ['',7],
+
+    #"ZJetsToNuNu_HT_600toInf"           : ['',10],
+    #"ZJetsToNuNu_HT_400to600"           : ['',7],
+    #"ZJetsToNuNu_HT_200to400"           : ['',20],
+    #"ZJetsToNuNu_HT_100to200"           : ['',20],
+
+    #"TTZToLLNuNu"                       : ['',4],
+    #"TTZToQQ"                           : ['',4],
+    #"TTWJetsToLNu"                      : ['',4],
+    #"TTWJetsToQQ"                       : ['',7],
+    #"DYJetsToLL_HT_600toInf"            : ['../FileList/TopProj-DYJetsToLL_HT_600toInf.list',10],
+    #"DYJetsToLL_HT_400to600"            : ['../FileList/TopProj-DYJetsToLL_HT_400to600.list',10],
+    #"DYJetsToLL_HT_200to400"            : ['../FileList/TopProj-DYJetsToLL_HT_200to400.list',10],
+    #"DYJetsToLL_HT_100to200"            : ['../FileList/TopProj-DYJetsToLL_HT_100to200.list',10],
+
+    #"TTbar_HT-600to800"                 : ['',20],
+    #"TTbar_HT-800to1200"                : ['',4],
+    #"TTbar_HT-1200to2500"               : ['',4],
+    #"TTbar_HT-2500toInf"                : ['',4],
+    #"Signal_T2tt_mStop425_mLSP325"      : ['',1],
+    #"Signal_T2tt_mStop500_mLSP325"      : ['',1],
+    "Signal_T2tt_mStop650_mLSP325"      : ['',1],
+    #"Signal_T2tt_mStop850_mLSP100"      : ['',1],
+    #"QCD_HT100to200"                    : ['',100],
+    #"QCD_HT200to300"                    : ['',50],
+    #"QCD_HT300to500"                    : ['',50],
+    #"QCD_HT500to700"                    : ['',50],
+    #"QCD_HT700to1000"                   : ['',40],
+    #"QCD_HT1000to1500"                  : ['',8],
+    #"QCD_HT1500to2000"                  : ['',6],
+    #"QCD_HT2000toInf"                   : ['',4],
+
+    #"tW_top"                            : ['../FileList/TopProj-tW_top.list'                ,4],
+    #"tW_antitop"                        : ['../FileList/TopProj-tW_antitop.list'            ,4],
+    #"TTbarDiLep"                        : ['../FileList/TopProj-TTbarDiLep.list'            ,60],
+    #"TTZToLLNuNu"                       : ['../FileList/TopProj-TTZToLLNuNu.list'           ,4],
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ f ~~~~~
+
+    ##"IncDYSampleSet"                    : ['',4],
+    ##"QCD_Pt_10to15"                     : ['',4],
+    ##"QCD_Pt_15to30"                     : ['',4],
+    ##"QCD_Pt_30to50"                     : ['',4],
+    ##"QCD_Pt_50to80"                     : ['',4],
+    ##"QCD_Pt_80to120"                    : ['',4],
+    ##"QCD_Pt_120to170"                   : ['',4],
+    ##"QCD_Pt_170to300"                   : ['',4],
+    ##"QCD_Pt_300to470"                   : ['',4],
+    ##"QCD_Pt_470to600"                   : ['',4],
+    ##"QCD_Pt_600to800"                   : ['',4],
+    ##"QCD_Pt_800to1000"                  : ['',4],
+    ##"QCD_Pt_1000to1400"                 : ['',4],
+    ##"QCD_Pt_1400to1800"                 : ['',4],
+    ##"QCD_Pt_1800to2400"                 : ['',4],
+    ##"QCD_Pt_2400to3200"                 : ['',4],
+    ##"QCD_Pt_3200toInf"                  : ['',4],
+    #"Data_SingleElectron_2015B"         : ['',4],
+    #"Data_SingleElectron_2015C"         : ['',4],
+    #"Data_SingleElectron_2015D"         : ['',4],
+    #"Data_DoubleMuon_2015B"             : ['',4],
+    #"Data_DoubleMuon_2015C"             : ['',4],
+    #"Data_DoubleMuon_2015D"             : ['',4],
+    #"Data_DoubleEG_2015B"               : ['',4],
+    #"Data_DoubleEG_2015C"               : ['',4],
+    #"Data_DoubleEG_2015D"               : ['',4],
+    #"Data_HTMHT_2015B"                  : ['',4],
+    #"Data_HTMHT_2015C"                  : ['',4],
+    #"Data_HTMHT_2015D"                  : ['',4],
+    #"Signal_T1tttt_mGluino1200_mLSP800" : ['',1],
+    #"Signal_T1tttt_mGluino1500_mLSP100" : ['',1],
+    #"Signal_T1bbbb_mGluino1000_mLSP900" : ['',1],
+    #"Signal_T1bbbb_mGluino1500_mLSP100" : ['',1],
+    #"Signal_T2bb_mSbottom600_mLSP580"   : ['',1],
+    #"Signal_T2bb_mSbottom900_mLSP100"   : ['',1],
+    #"Signal_TTDMDMJets_M600GeV"         : ['',1],
+    #"Signal_TTDMDMJets_M1000GeV"        : ['',1],
+
+
+
+
+    #"tW_top"                            : ['../FileList/TopProj-tW_top.list'                ,4],
+    #"tW_antitop"                        : ['../FileList/TopProj-tW_antitop.list'            ,4],
+    #"TTbarDiLep"                        : ['../FileList/TopProj-TTbarDiLep.list'            ,60],
+    #"TTZToLLNuNu"                       : ['../FileList/TopProj-TTZToLLNuNu.list'           ,4],
 }
 
 Mergeblock = """#!/usr/bin/env python
@@ -89,6 +184,16 @@ if __name__ == "__main__":
             mv += " backup"
             # print mv
             subprocess.call(mv, shell=True)
+        else:
+            HEADER = '\033[95m'
+            OKBLUE = '\033[94m'
+            OKGREEN = '\033[92m'
+            WARNING = '\033[93m'
+            FAIL = '\033[91m'
+            ENDC = '\033[0m'
+            BOLD = '\033[1m'
+            UNDERLINE = '\033[4m'
+            print(FAIL + "Warning: no hadd available! Please setup ROOT!!" + ENDC)
 """
 
 
@@ -128,15 +233,25 @@ def SplitPro(key, file, fraction):
 
     f = open(filename, 'r')
     lines = f.readlines()
-    lineperfile = len(lines) / fraction
+    if len(lines) <= fraction:
+        lineperfile = 1
+        fraction = len(lines)
+    else:
+        lineperfile = len(lines) / fraction
+        if len(lines) % fraction > 0:
+            lineperfile += 1
+
 
     for i in range(0, fraction):
-        outf = open("%s/%s.%d.list" % (filelistdir, key, i), 'w')
-        splitedfiles.append(os.path.abspath("%s/%s.%d.list" % (filelistdir, key, i)))
+        wlines = []
         if i == fraction - 1 :
-            outf.writelines(lines[lineperfile*i :])
+            wlines = lines[lineperfile*i :]
         else:
-            outf.writelines(lines[lineperfile*i : lineperfile*(i+1)])
+            wlines = lines[lineperfile*i : lineperfile*(i+1)]
+        if len(wlines) > 0:
+            outf = open("%s/%s.%d.list" % (filelistdir, key, i), 'w')
+            outf.writelines(wlines)
+            splitedfiles.append(os.path.abspath("%s/%s.%d.list" % (filelistdir, key, i)))
         outf.close()
 
     return splitedfiles
@@ -145,6 +260,8 @@ def my_process():
     ## temp dir for submit
     global tempdir
     global Mergeblock
+    global ProjectName
+    ProjectName = time.strftime('%b%d') + ProjectName
     tempdir = '/tmp/' + os.getlogin() + "/" + ProjectName +  "/"
     try:
         os.makedirs(tempdir)
@@ -155,9 +272,6 @@ def my_process():
     outdir = OutDir +  "/" + ProjectName + "/"
     try:
         os.makedirs(outdir)
-        f = open("%s/merge.py", 'w')
-        f.writelines(Mergeblock)
-        f.close()
     except OSError:
         pass
 
@@ -171,8 +285,18 @@ def my_process():
             line = line.replace("OUTDIR", outdir)
             outfile.write(line)
 
+    ## Script for merging output histograms
+    MergeFile = tempdir + "/" + "merge.py"
+    f = open("%s/merge.py" % tempdir, 'wt')
+    f.writelines(Mergeblock)
+    f.close()
+    import shutil
+    shutil.copy2("%s/merge.py" % tempdir, "%s/merge.py" % outdir)
+
     ### Update condor files
     for key, value in Process.items():
+        if value[0] == "":
+            value[0] = "../FileList/"+key+".list"
         if not os.path.isfile(value[0]):
             continue
         npro = GetProcess(key, value)

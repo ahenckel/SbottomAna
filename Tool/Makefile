@@ -8,7 +8,7 @@ else
   CXX       = ~/.vim/bundle/ClangComplete/bin/cc_args.py g++
 endif
 
-CXXFLAGS  += -Iinc -std=c++14
+CXXFLAGS  += -Iinc -std=c++11
 # Optimization flag
 #CXXFLAGS += -g -O3 -fstack-protector-all 
 ## Enable the maximun warning
