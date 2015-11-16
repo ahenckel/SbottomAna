@@ -97,16 +97,26 @@ int main(int argc, char* argv[])
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Initialize output file ~~~~~
   std::shared_ptr<TFile> OutFile(new TFile(outFileName, "RECREATE"));
   HistTool* his = new HistTool(OutFile, "d");
-  his->AddTPro("XS", "Cross Section", 2, 0, 2);
   his->AddTH1("NEvent", "Number of Events", 2, 0, 2);
   his->AddTH1("Weight", "Number of Events", 200, -1, 1);
-  his->FillTPro("XS", 1, GetXS(inputFileList));
+
+  std::map<std::string, double> SamplePro = GetXS(inputFileList);
+  std::vector<std::string> Probins= { "key", "xsec", "lumi", "kfactor", "nEvts", "color" };
+  his->AddTPro("XS", "Cross Section", Probins);
+  for(unsigned int i=0; i < Probins.size(); ++i)
+  {
+    std::string &binlabel = Probins.at(i);
+    std::cout <<i << " "<< binlabel <<" " << SamplePro[binlabel]<< std::endl;
+    assert(SamplePro.find(binlabel) != SamplePro.end());
+    his->FillTPro("XS", static_cast<int>(i), SamplePro[binlabel]);
+  }
+
 
   //clock to monitor the run time
   size_t t0 = clock();
   NTupleReader tr(fChain);
   tr.registerFunction(&passBaselineFunc);
-  //tr.registerFunction(&passBaselineTTZ);
+  tr.registerFunction(&passBaselineZRec);
   tr.registerFunction(&RegisterVarPerEvent);
 
   //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
@@ -115,13 +125,11 @@ int main(int argc, char* argv[])
   //                           Prepare the analysis                           //
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
-  AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
-  AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
-  AnaMap["STRM"] = new STRM("STRM", &tr, OutFile);
-  AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile);
-  AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile);
-  //AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile, "TTZ");
-  //AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "TTZ");
+  //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  //AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
+  //AnaMap["STRM"] = new STRM("STRM", &tr, OutFile);
+  AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile, "ZRec");
+  AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "ZRec");
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
   //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
   //AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
@@ -148,7 +156,7 @@ int main(int argc, char* argv[])
       stored_weight = tr.getVar<double>("stored_weight");
     } catch (std::string var) {
     }
-    if (stored_weight == -999) stored_weight = 0;
+    if (stored_weight == -999) stored_weight = 1;
     int evtWeight = stored_weight >= 0 ? 1 : -1;
     his->FillTH1("NEvent", 1, evtWeight);
     his->FillTH1("Weight", stored_weight);

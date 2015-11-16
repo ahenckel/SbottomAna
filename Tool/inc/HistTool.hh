@@ -100,6 +100,8 @@ class HistTool
 //----------------------------------------------------------------------------
     // Book the His TPro
     TProfile* AddTPro(TProfile* pro);
+    TProfile* AddTPro(const std::string& name, const std::string& title, 
+        std::vector<std::string>& BinLabels);
     TProfile* AddTPro (const std::string name, const std::string title, 
         const std::string xlabel, const std::string ylabel, 
         Int_t nxbins, Axis_t xmin, Axis_t xmax, Int_t logx=0, Int_t logy=0);

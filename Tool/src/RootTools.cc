@@ -21,16 +21,16 @@
 //         Name:  GetXS
 //  Description:  /* cursor */
 // ===========================================================================
-double GetXS(std::string name)
+std::map<std::string, double> GetXS(std::string name)
 {
   AnaSamples::SampleSet        allSamples;
   typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
   boost::char_separator<char> sep("/.-");
   tokenizer tokens(name, sep);
 
-
   //double scaleMC = allSamples[keyString].getWeight();
   std::string keyString("");
+  std::map<std::string, double> reVal;
 
   std::cout << " input " << name << std::endl;
   for (tokenizer::iterator tok_iter = tokens.begin();
@@ -47,12 +47,19 @@ double GetXS(std::string name)
   std::cout << "\n";
 
   if (keyString != "")
+  {
+    reVal["key"] = 0;
+    reVal["xsec"] = allSamples[keyString].xsec;
+    reVal["lumi"] = allSamples[keyString].lumi;
+    reVal["kfactor"] = allSamples[keyString].kfactor;
+    reVal["nEvts"] = allSamples[keyString].nEvts;
+    reVal["color"] = allSamples[keyString].color;
+
     std::cout << " Found " << keyString << " with XS " <<  allSamples[keyString].xsec  << " with kFactor " 
       << allSamples[keyString].kfactor << std::endl;
-  else
-    return -1;
+  }
 
-  return  allSamples[keyString].xsec * allSamples[keyString].kfactor;
+  return  reVal;
 }       // -----  end of function GetXS  -----
 
 // ===  FUNCTION  ============================================================

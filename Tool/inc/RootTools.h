@@ -35,7 +35,7 @@
 #include "SusyAnaTools/Tools/samples.h"
 #include "SusyAnaTools/Tools/NTupleReader.h"
 
-double GetXS(std::string name);
+std::map<std::string, double> GetXS(std::string name);
 int GetCutBin( std::vector<std::string> &CutOrder , std::string name);
 double CalMT(TLorentzVector J1, TLorentzVector J2);
 double CalMCT(TLorentzVector J1, TLorentzVector J2);

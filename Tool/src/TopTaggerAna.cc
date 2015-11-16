@@ -297,10 +297,21 @@ int TopTaggerAna::GetGenTop()
   genDecayPdgIdVec.clear();  
   genDecayMomIdxVec.clear(); 
   
-  genDecayLVec      = tr->getVec<TLorentzVector> ("genDecayLVec");
-  genDecayIdxVec    = tr->getVec<int>            ("genDecayIdxVec");
-  genDecayPdgIdVec  = tr->getVec<int>            ("genDecayPdgIdVec");
-  genDecayMomIdxVec = tr->getVec<int>            ("genDecayMomIdxVec");
+  try{
+    genDecayLVec      = tr->getVec<TLorentzVector> ("genDecayLVec");
+    genDecayIdxVec    = tr->getVec<int>            ("genDecayIdxVec");
+    genDecayPdgIdVec  = tr->getVec<int>            ("genDecayPdgIdVec");
+    genDecayMomIdxVec = tr->getVec<int>            ("genDecayMomIdxVec");
+  }
+  catch(std::string &var)
+  {
+    genDecayLVec.clear();
+    genDecayIdxVec.clear();    
+    genDecayPdgIdVec.clear();  
+    genDecayMomIdxVec.clear(); 
+    return 0;
+  }
+
   vTops.clear();
   int Nhad = 0;
   for (unsigned int i = 0; i < genDecayMomIdxVec.size(); ++i)

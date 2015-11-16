@@ -376,12 +376,22 @@ std::map<std::string, bool> STISR::JetOrgAna(int NCut, std::string name, TLorent
       //FindVectorIdX<std::vector<std::string>, std::string>(JetType, "All"));
 
   // Check origin of leading jet in Gen
-  std::vector<TLorentzVector> genDecayLVec     = tr->getVec<TLorentzVector> ("genDecayLVec");
+  std::vector<TLorentzVector> genDecayLVec;
   std::vector<TLorentzVector> tempTop;
   std::vector<TLorentzVector> tempW;
   std::vector<TLorentzVector> tempb;
   std::vector<TLorentzVector> tempLep;
   std::vector<TLorentzVector> temphad;
+  try
+  {
+    genDecayLVec = tr->getVec<TLorentzVector> ("genDecayLVec"); 
+  }
+  catch (std::string &var)
+  {
+    return matched;
+  }
+     
+
   for(unsigned int i=0; i < topAna->vTops.size(); ++i)
   {
     TopDecay gentop = topAna->vTops.at(i);

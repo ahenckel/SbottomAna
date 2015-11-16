@@ -31,6 +31,11 @@ TTZ3Lep::TTZ3Lep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
     jetVecLabel = "prodJetsNoMu_jetsLVec";
     CSVVecLabel = "recoJetsBtag_0_MuCleaned";
   }
+  if (spec_ == "ZRec")
+  {
+    jetVecLabel = "jetsLVecLepCleaned";
+    CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+  }
 }  // -----  end of method TTZ3Lep::TTZ3Lep  (constructor)  -----
 
 //----------------------------------------------------------------------------
@@ -75,6 +80,7 @@ bool TTZ3Lep::BookHistograms()
   BookTLVHistos("3rdMuon");
   BookTLVHistos("3rdEle");
   his->AddTH1C("JBT", "JBT", "JBT", "Events", 400, 0, 400);
+  his->AddTH2C("JBTVsZPT", "JBTVsZPT", "ZPT", "JBT", 20, 0, 1000, 400, 0, 400);
   return true;
 }       // -----  end of function TTZ3Lep::BookHistograms  -----
 
@@ -169,11 +175,14 @@ bool TTZ3Lep::FillCut()
 
     his->FillTH1("CutFlow", int(i)); 
 
-    if (tr->getVec<TLorentzVector>("recoZVec").size() > 0)
-      FillTLVHistos(i, "RecoZ", tr->getVec<TLorentzVector>("recoZVec").at(0));
 
     int JBTcount = tr->getVar<int>(Label["nTopCandSortedCnt"]) * 100 + tr->getVar<int>(Label["cntCSVS"]) * 10 + tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size();
     his->FillTH1(i, "JBT", JBTcount);
+    if (tr->getVec<TLorentzVector>("recoZVec").size() > 0)
+    {
+      FillTLVHistos(i, "RecoZ", tr->getVec<TLorentzVector>("recoZVec").at(0));
+      his->FillTH2(i, "JBTVsZPT", tr->getVec<TLorentzVector>("recoZVec").at(0).Pt(), JBTcount);
+    }
 
     ComAna::FillCut(i);
     Check3rdLep(i);

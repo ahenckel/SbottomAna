@@ -31,11 +31,11 @@
 #include "SusyAnaTools/Tools/baselineDef.h"
 
 
-inline void passBaselineTTZ(NTupleReader &tr)
+inline void passBaselineZRec(NTupleReader &tr)
 {
-  BaselineVessel blv("TTZ");
-  blv.jetVecLabel = "prodJetsNoMu_jetsLVec";
-  blv.CSVVecLabel = "recoJetsBtag_0_MuCleaned";
+  BaselineVessel blv("ZRec");
+  blv.jetVecLabel = "jetsLVecLepCleaned";
+  blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
   blv.prepareTopTagger();
   blv.passBaseline(tr);
   blv.GetnTops(&tr);

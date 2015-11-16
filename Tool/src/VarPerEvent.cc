@@ -81,12 +81,9 @@ bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
 //----------------------------------------------------------------------------
 //  Getting the input from the NtuplerReader
 //----------------------------------------------------------------------------
-  std::vector<int>            genDecayPdgIdVec;
-  std::vector<TLorentzVector> genDecayLVec;
   std::vector<TLorentzVector> muonsLVec;
   std::vector<double>         muonsRelIso;
   std::vector<double>         muonsMiniIso;
-  std::vector<int>            W_emuVec;
   std::vector<double>         muonsCharge;
   std::vector<TLorentzVector> jetsLVec;
   std::vector<double>         recoJetschargedEmEnergyFraction;
@@ -98,12 +95,9 @@ bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
 
   try
   {
-    genDecayPdgIdVec                    = tr->getVec<int>("genDecayPdgIdVec");
-    genDecayLVec                        = tr->getVec<TLorentzVector>("genDecayLVec");
     muonsLVec                           = tr->getVec<TLorentzVector>("muonsLVec");
     muonsRelIso                         = tr->getVec<double>("muonsRelIso");
     muonsMiniIso                        = tr->getVec<double>("muonsMiniIso");
-    W_emuVec                            = tr->getVec<int>("W_emuVec");
     muonsCharge                         = tr->getVec<double>("muonsCharge");
     jetsLVec                            = tr->getVec<TLorentzVector>("jetsLVec");
     recoJetschargedEmEnergyFraction     = tr->getVec<double>("recoJetschargedEmEnergyFraction");
@@ -131,18 +125,6 @@ bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
 //----------------------------------------------------------------------------
 //  Output 
 //----------------------------------------------------------------------------
-
-  std::vector<const TLorentzVector*>* genMatchIsoMuInAcc = new std::vector<const TLorentzVector*>();
-  std::vector<const TLorentzVector*>* genMatchMuInAcc = new std::vector<const TLorentzVector*>();
-  std::vector<double>* genMatchMuInAccRes = new std::vector<double>();
-  std::vector<const TLorentzVector*>* genMuInAcc = new std::vector<const TLorentzVector*>();
-  std::vector<const TLorentzVector*>* genMu = new std::vector<const TLorentzVector*>();
-  std::vector<double>* genMatchIsoMuInAccAct = new std::vector<double>();
-  std::vector<double>* genMatchMuInAccAct = new std::vector<double>();
-  std::vector<double>* genMuInAccAct = new std::vector<double>();
-  std::vector<double>* genMuAct = new std::vector<double>();
-  std::vector<const TLorentzVector*>* genZ = new std::vector<const TLorentzVector*>();
-
   std::vector<TLorentzVector>* cutMuVec = new std::vector<TLorentzVector>(); //Muons pass pt, Iso and trigger requirement
   std::vector<double>* cutMuCharge = new std::vector<double>();
   std::vector<double>* cutMuActivity = new std::vector<double>();
@@ -194,91 +176,8 @@ bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
     }
   }
 
-  //**************************************************************************//
-  //                                 Gen Study                                //
-  //**************************************************************************//
-  double genHt = 0.0;
-  const double minMuPt = 20.0, highMuPt = 45.0;
-  double nuPt1 = -999.9, nuPt2 = -999.9;
-
-  for(unsigned int i = 0; i < genDecayPdgIdVec.size() && i < genDecayLVec.size(); ++i)
-  {
-    if((abs(genDecayPdgIdVec[i]) != 0 &&  abs(genDecayPdgIdVec[i]) < 6) ||
-        (abs(genDecayPdgIdVec[i]) > 100 && abs(genDecayPdgIdVec[i]) < 10000)) 
-      genHt += genDecayLVec[i].Pt();
-
-    if(genDecayPdgIdVec[i] ==  13) nuPt1 = genDecayLVec[i].Pt();
-    if(genDecayPdgIdVec[i] == -13) nuPt2 = genDecayLVec[i].Pt();
-
-    if(abs(genDecayPdgIdVec[i]) == 13)
-    {
-      genMu->push_back(&genDecayLVec[i]);
-      genMuAct->push_back(AnaFunctions::getMuonActivity(genDecayLVec[i], jetsLVec, recoJetschargedHadronEnergyFraction, recoJetschargedEmEnergyFraction, AnaConsts::muonsAct));
-      if(AnaFunctions::passMuonAccOnly(genDecayLVec[i], AnaConsts::muonsMiniIsoArr) && genDecayLVec[i].Pt() > minMuPt)
-      {
-        genMuInAcc->push_back(&genDecayLVec[i]);
-        genMuInAccAct->push_back(genMuAct->back());
-        double dRMin = 999.9;
-        double matchPt = -999.9;
-        for(unsigned int j = 0; j < cutMuVecRecoOnly.size(); ++j)
-        {
-          double dR = ROOT::Math::VectorUtil::DeltaR(genDecayLVec[i], cutMuVecRecoOnly[j]);
-          if(dR < dRMin)
-          {
-            dRMin = dR;
-            matchPt = cutMuVecRecoOnly[j].Pt();
-          }
-        }
-        if(dRMin < 0.02)
-        {
-          genMatchMuInAcc->push_back(&genDecayLVec[i]);
-          genMatchMuInAccAct->push_back(genMuAct->back());
-          genMatchMuInAccRes->push_back((genDecayLVec[i].Pt() - matchPt)/genDecayLVec[i].Pt());
-        }
-
-        dRMin = 999.9;
-        for(unsigned int j = 0; j < cutMuVec->size(); ++j)
-        {
-          double dR = ROOT::Math::VectorUtil::DeltaR(genDecayLVec[i], (*cutMuVec)[j]);
-          if(dR < dRMin)
-          {
-            dRMin = dR;
-          }
-        }
-        if(dRMin < 0.02)
-        {
-          genMatchIsoMuInAcc->push_back(&genDecayLVec[i]);
-          genMatchIsoMuInAccAct->push_back(genMuAct->back());
-        }
-      }
-    }
-  }
-
-  double genZPt = -999.9, genZEta = -999.9, genZmass = -999.9, genZPhi;
-  int nZ = 0;
-  TLorentzVector genZ1;
-  for(unsigned int j = 0; j <  genDecayPdgIdVec.size(); ++j)
-  {
-    if(abs(genDecayPdgIdVec[j]) == 23)
-    {
-      nZ++;
-      genZ->push_back(&genDecayLVec[j]);
-      genZ1 = genDecayLVec[j];
-      genZPt = genDecayLVec[j].Pt();
-      genZEta = genDecayLVec[j].Eta();
-      genZPhi = genDecayLVec[j].Phi();
-      genZmass = genDecayLVec[j].M();
-    }
-  }
 
 
-  int pdgIdZDec = 0;
-  if(W_emuVec.size() == 0) pdgIdZDec = 15;
-  else if(W_emuVec.size() == 2)
-  {
-    if(abs(genDecayPdgIdVec[W_emuVec[0]]) == 11) pdgIdZDec = 11;
-    else if(abs(genDecayPdgIdVec[W_emuVec[0]]) == 13) pdgIdZDec = 13;
-  }
   bool passDiMuTrig  = nTriggerMuons >= 2;
 
   const double zMassMin = 81.0;
@@ -286,6 +185,7 @@ bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
   const double zMassMax = 101.0;
 
   double zMassCurrent = 1.0e300;
+  const double minMuPt = 20.0, highMuPt = 45.0;
   //double zMassCurrent = 1.0e300, zEff = 1.0e100, zAcc = 1.0e100;
   TLorentzVector bestRecoZ(0, 0, 0, 0);
   int sumCharge = 0;
@@ -343,42 +243,14 @@ bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
   //if(genZPt > 600 && mindPhiMetJ < 0.5) std::cout << "BONJOUR!!! \t" << genZPt << "\t" << mindPhiMetJ << "\t" << run << "\t" << lumi << "\t" << event << std::endl;
 
   double bestRecoZPt = bestRecoZ.Pt();
-  double cleanMetPt = cleanMet.Pt();
-  //double cleanMet2Pt = cleanMet2.Pt();
   tr->registerDerivedVar("bestRecoZPt", bestRecoZPt);
   tr->registerDerivedVar("bestRecoZM", bestRecoZ.M());
-  tr->registerDerivedVar("cleanMetPt", cleanMetPt);
-  tr->registerDerivedVar("cleanMetPhi", cleanMet.Phi());
-  //tr->registerDerivedVar("cleanMet2Pt", cleanMet2Pt);
-  tr->registerDerivedVar("genHt", genHt);
   tr->registerDerivedVar("cutMuPt1", cutMuPt1);
   tr->registerDerivedVar("cutMuPt2", cutMuPt2);
-  //tr->registerDerivedVar("mindPhiMetJ", mindPhiMetJ);
 
-  tr->registerDerivedVar("ZPtRes", (bestRecoZPt - genZPt)/genZPt);
-  tr->registerDerivedVar("ZEtaRes", bestRecoZ.Eta() - genZEta);
-  tr->registerDerivedVar("ZPhiRes", bestRecoZ.Phi() - genZPhi);
-  tr->registerDerivedVar("ZMRes", (bestRecoZ.M() - genZmass)/genZmass);
 
   tr->registerDerivedVec("cutMuVec", cutMuVec);
   tr->registerDerivedVec("cutMuActivity", cutMuActivity);
-  tr->registerDerivedVec("genMu", genMu);
-  tr->registerDerivedVec("genZ", genZ);
-  tr->registerDerivedVar("ngenMu", static_cast<double>(genMu->size()));
-  tr->registerDerivedVec("genMuInAcc", genMuInAcc);
-  tr->registerDerivedVec("genMuAct", genMuAct);
-  tr->registerDerivedVar("ngenMuInAcc", static_cast<double>(genMuInAcc->size()));
-  tr->registerDerivedVec("genMuInAccAct", genMuInAccAct);
-  tr->registerDerivedVec("genMatchMuInAcc", genMatchMuInAcc);
-  tr->registerDerivedVec("genMatchMuInAccRes", genMatchMuInAccRes);
-  tr->registerDerivedVec("genMatchIsoMuInAcc", genMatchIsoMuInAcc);
-  tr->registerDerivedVar("ngenMatchMuInAcc", static_cast<double>(genMatchMuInAcc->size()));
-  tr->registerDerivedVec("genMatchMuInAccAct", genMatchMuInAccAct);
-  tr->registerDerivedVec("genMatchIsoMuInAccAct", genMatchIsoMuInAccAct);
-  tr->registerDerivedVar("genZPt", genZPt);
-  tr->registerDerivedVar("genZEta", genZEta);
-  tr->registerDerivedVar("genZmass", genZmass);
-  tr->registerDerivedVar("pdgIdZDec", pdgIdZDec);
   tr->registerDerivedVar("passMuZinvSel", passMuZinvSel);
   tr->registerDerivedVar("passDiMuIsoTrig", passDiMuTrig);
   tr->registerDerivedVar("passSingleMu45", muTrigMu45);
@@ -582,7 +454,158 @@ bool VarPerEvent::GetRecoZ() const
 
   GetMuInfo(recoZVec, ZLepIdx);
   GetEleZ(recoZVec, ZLepIdx);
+
+  // Setting the clean MET
+  TLorentzVector metV(0, 0, 0, 0);
+  metV.SetPtEtaPhiM(tr->getVar<double>("met"), 0.0, tr->getVar<double>("metphi"), 0.0);
+  TLorentzVector cleanMet(metV);
+  for(unsigned int i=0; i < recoZVec->size(); ++i)
+  {
+    TLorentzVector bestRecoZ = recoZVec->at(i);
+    TLorentzVector metZ(0, 0,0,0);
+    metZ.SetPtEtaPhiM(bestRecoZ.Pt(), 0.0, bestRecoZ.Phi(), 0.0);
+    cleanMet += metZ;
+  }
+
+  tr->registerDerivedVar("cleanMetPt", cleanMet.Pt());
+  tr->registerDerivedVar("cleanMetPhi", cleanMet.Phi());
   tr->registerDerivedVec("recoZVec", recoZVec);
   tr->registerDerivedVec("ZLepIdx", ZLepIdx);
   return true;
 }       // -----  end of function VarPerEvent::GetRecoZ  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  VarPerEvent::GetGenZ
+//  Description:  
+// ===========================================================================
+//bool VarPerEvent::GetGenZ() const
+//{
+  //std::vector<int>            genDecayPdgIdVec;
+  //std::vector<TLorentzVector> genDecayLVec;
+  //std::vector<TLorentzVector> jetsLVec;
+
+  //try
+  //{
+    //genDecayPdgIdVec                    = tr->getVec<int>("genDecayPdgIdVec");
+    //genDecayLVec                        = tr->getVec<TLorentzVector>("genDecayLVec");
+    //jetsLVec                            = tr->getVec<TLorentzVector>("jetsLVec");
+  //}
+  //catch (std::string var)
+  //{
+    //std::cout << "Missing inputs for VarPerEvent::GetMuInfo" << std::endl;
+    //return false;
+  //}
+  
+  //std::vector<const TLorentzVector*>* genMatchIsoMuInAcc = new std::vector<const TLorentzVector*>();
+  //std::vector<const TLorentzVector*>* genMatchMuInAcc = new std::vector<const TLorentzVector*>();
+  //std::vector<double>* genMatchMuInAccRes = new std::vector<double>();
+  //std::vector<const TLorentzVector*>* genMuInAcc = new std::vector<const TLorentzVector*>();
+  //std::vector<const TLorentzVector*>* genMu = new std::vector<const TLorentzVector*>();
+  //std::vector<double>* genMatchIsoMuInAccAct = new std::vector<double>();
+  //std::vector<double>* genMatchMuInAccAct = new std::vector<double>();
+  //std::vector<double>* genMuInAccAct = new std::vector<double>();
+  //std::vector<const TLorentzVector*>* genZ = new std::vector<const TLorentzVector*>();
+
+  ///[>************************************************************************<]/
+  ////                                 Gen Study                                //
+  ///[>************************************************************************<]/
+  //double genHt = 0.0;
+  //double nuPt1 = -999.9, nuPt2 = -999.9;
+  //const double minMuPt = 20.0, highMuPt = 45.0;
+
+  //for(unsigned int i = 0; i < genDecayPdgIdVec.size() && i < genDecayLVec.size(); ++i)
+  //{
+    //if((abs(genDecayPdgIdVec[i]) != 0 &&  abs(genDecayPdgIdVec[i]) < 6) ||
+        //(abs(genDecayPdgIdVec[i]) > 100 && abs(genDecayPdgIdVec[i]) < 10000)) 
+      //genHt += genDecayLVec[i].Pt();
+
+    //if(genDecayPdgIdVec[i] ==  13) nuPt1 = genDecayLVec[i].Pt();
+    //if(genDecayPdgIdVec[i] == -13) nuPt2 = genDecayLVec[i].Pt();
+
+    //if(abs(genDecayPdgIdVec[i]) == 13)
+    //{
+      //genMu->push_back(&genDecayLVec[i]);
+      //if(AnaFunctions::passMuonAccOnly(genDecayLVec[i], AnaConsts::muonsMiniIsoArr) && genDecayLVec[i].Pt() > minMuPt)
+      //{
+        //genMuInAcc->push_back(&genDecayLVec[i]);
+        //double dRMin = 999.9;
+        //double matchPt = -999.9;
+        //for(unsigned int j = 0; j < cutMuVecRecoOnly.size(); ++j)
+        //{
+          //double dR = ROOT::Math::VectorUtil::DeltaR(genDecayLVec[i], cutMuVecRecoOnly[j]);
+          //if(dR < dRMin)
+          //{
+            //dRMin = dR;
+            //matchPt = cutMuVecRecoOnly[j].Pt();
+          //}
+        //}
+        //if(dRMin < 0.02)
+        //{
+          //genMatchMuInAcc->push_back(&genDecayLVec[i]);
+          //genMatchMuInAccRes->push_back((genDecayLVec[i].Pt() - matchPt)/genDecayLVec[i].Pt());
+        //}
+
+        //dRMin = 999.9;
+        //for(unsigned int j = 0; j < cutMuVec->size(); ++j)
+        //{
+          //double dR = ROOT::Math::VectorUtil::DeltaR(genDecayLVec[i], (*cutMuVec)[j]);
+          //if(dR < dRMin)
+          //{
+            //dRMin = dR;
+          //}
+        //}
+        //if(dRMin < 0.02)
+        //{
+          //genMatchIsoMuInAcc->push_back(&genDecayLVec[i]);
+        //}
+      //}
+    //}
+  //}
+
+  //double genZPt = -999.9, genZEta = -999.9, genZmass = -999.9, genZPhi;
+  //int nZ = 0;
+  //TLorentzVector genZ1;
+  //for(unsigned int j = 0; j <  genDecayPdgIdVec.size(); ++j)
+  //{
+    //if(abs(genDecayPdgIdVec[j]) == 23)
+    //{
+      //nZ++;
+      //genZ->push_back(&genDecayLVec[j]);
+      //genZ1 = genDecayLVec[j];
+      //genZPt = genDecayLVec[j].Pt();
+      //genZEta = genDecayLVec[j].Eta();
+      //genZPhi = genDecayLVec[j].Phi();
+      //genZmass = genDecayLVec[j].M();
+    //}
+  //}
+  //int pdgIdZDec = 0;
+  //if(W_emuVec.size() == 0) pdgIdZDec = 15;
+  //else if(W_emuVec.size() == 2)
+  //{
+    //if(abs(genDecayPdgIdVec[W_emuVec[0]]) == 11) pdgIdZDec = 11;
+    //else if(abs(genDecayPdgIdVec[W_emuVec[0]]) == 13) pdgIdZDec = 13;
+  //}
+
+  //tr->registerDerivedVar("ZPtRes", (bestRecoZPt - genZPt)/genZPt);
+  //tr->registerDerivedVar("genHt", genHt);
+  //tr->registerDerivedVar("ZEtaRes", bestRecoZ.Eta() - genZEta);
+  //tr->registerDerivedVar("ZPhiRes", bestRecoZ.Phi() - genZPhi);
+  //tr->registerDerivedVar("ZMRes", (bestRecoZ.M() - genZmass)/genZmass);
+  //tr->registerDerivedVec("genMu", genMu);
+  //tr->registerDerivedVec("genZ", genZ);
+  //tr->registerDerivedVar("ngenMu", static_cast<double>(genMu->size()));
+  //tr->registerDerivedVec("genMuInAcc", genMuInAcc);
+  //tr->registerDerivedVar("ngenMuInAcc", static_cast<double>(genMuInAcc->size()));
+  //tr->registerDerivedVec("genMuInAccAct", genMuInAccAct);
+  //tr->registerDerivedVec("genMatchMuInAcc", genMatchMuInAcc);
+  //tr->registerDerivedVec("genMatchMuInAccRes", genMatchMuInAccRes);
+  //tr->registerDerivedVec("genMatchIsoMuInAcc", genMatchIsoMuInAcc);
+  //tr->registerDerivedVar("ngenMatchMuInAcc", static_cast<double>(genMatchMuInAcc->size()));
+  //tr->registerDerivedVec("genMatchMuInAccAct", genMatchMuInAccAct);
+  //tr->registerDerivedVec("genMatchIsoMuInAccAct", genMatchIsoMuInAccAct);
+  //tr->registerDerivedVar("genZPt", genZPt);
+  //tr->registerDerivedVar("genZEta", genZEta);
+  //tr->registerDerivedVar("genZmass", genZmass);
+  //tr->registerDerivedVar("pdgIdZDec", pdgIdZDec);
+  //return true;
+//}       // -----  end of function VarPerEvent::GetGenZ  -----
