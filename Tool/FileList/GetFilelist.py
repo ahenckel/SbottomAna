@@ -217,13 +217,62 @@ def GetList():
 
 
 def GetLPClist():
+    if os.environ['CMSSW_BASE'] == "":
+        return False
+
+    import sys
     import shutil
-    for key, value in LPCNameDir.items():
-        filename = NtupleDir +"/" + value
-        if not os.path.isfile(filename):
-            continue
-        print(filename)
-        shutil.copyfile(filename, key+".list")
+    sys.path.append("%s/src/SusyAnaTools/Tools/condor/" % os.environ["CMSSW_BASE"])
+    from samples import SampleCollection
+    sc = SampleCollection()
+
+    datasets = [
+        "TTbar"                   ,
+        "TTbarSingleLep"          ,
+        "TTbarDiLep"              ,
+        "TTbarHT"                 ,
+        "TTbarNoHad"              ,
+        "TTbarAll"                ,
+        "TTbarExt"                ,
+        "WJetsToLNu_LESS"         ,
+        "WJetsToLNu"              ,
+        "ZJetsToNuNu"             ,
+        "DYJetsToLL"              ,
+        "IncDY"                   ,
+        "QCD"                     ,
+        "tW"                      ,
+        "TTZ"                     ,
+        "TTW"                     ,
+        "Data_SingleMuon50ns"     ,
+        "Data_SingleMuon25ns"     ,
+        "Data_SingleElectron50ns" ,
+        "Data_SingleElectron25ns" ,
+        "Data_DoubleMuon50ns"     ,
+        "Data_DoubleMuon25ns"     ,
+        "Data_DoubleEG50ns"       ,
+        "Data_DoubleEG25ns"       ,
+        "Data_HTMHT50ns"          ,
+        "Data_HTMHT25ns"
+    ]
+
+
+    for ds in datasets:
+        ds = ds.strip()
+        print(ds)
+
+        for s, n in sc.sampleList(ds):
+            if not os.path.isfile(s):
+                continue
+            shutil.copyfile(s, n+".list")
+
+
+    # import shutil
+    # for key, value in LPCNameDir.items():
+        # filename = NtupleDir +"/" + value
+        # if not os.path.isfile(filename):
+            # continue
+        # print(filename)
+        # shutil.copyfile(filename, key+".list")
 
 
     # for key, value in LPCNameDir.items():
