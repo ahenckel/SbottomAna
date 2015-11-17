@@ -18,6 +18,9 @@
 #define  MY_ROOTTOOLS_INC
 
 
+#include <unistd.h>
+#include <ios>
+#include <string>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -47,6 +50,7 @@ std::vector<TLorentzVector> GetGenParticles(const std::vector<int> pdgid, const 
 bool PrintTLorentz(int event, std::string name, std::vector<TLorentzVector> obj);
 bool PrintTopEvent( NTupleReader &tr, std::vector<TopDecay> &vTops);
 
+void process_mem_usage(double& vm_usage, double& resident_set);
 bool LTVMatch(TLorentzVector &V1, TLorentzVector V2, double dR=0.3);
 
 //template<typename T, typename V> int FindVectorIdX(const T &TeV, const V &t);

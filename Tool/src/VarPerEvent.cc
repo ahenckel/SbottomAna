@@ -254,14 +254,14 @@ bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
   tr->registerDerivedVar("bestRecoZM"+spec, bestRecoZ.M());
   tr->registerDerivedVar("cutMuPt1"+spec, cutMuPt1);
   tr->registerDerivedVar("cutMuPt2"+spec, cutMuPt2);
-
-
   tr->registerDerivedVec("cutMuVec"+spec, cutMuVec);
+  tr->registerDerivedVec("cutMuCharge"+spec, cutMuCharge);
   tr->registerDerivedVec("cutMuActivity"+spec, cutMuActivity);
   tr->registerDerivedVar("passMuZinvSel"+spec, passMuZinvSel);
   tr->registerDerivedVar("passDiMuIsoTrig"+spec, passDiMuTrig);
   tr->registerDerivedVar("passSingleMu45"+spec, muTrigMu45);
 
+  delete tr3;
   return true;
 }       // -----  end of function VarPerEvent::GetMuInfo  -----
 
@@ -400,7 +400,6 @@ bool VarPerEvent::GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZL
   //Muons pass pt, Iso and trigger requirement
   std::vector<TLorentzVector>* cutEleVec = new std::vector<TLorentzVector>(); 
   std::vector<double>* cutEleCharge = new std::vector<double>();
-  std::vector<double>* cutEleActivity = new std::vector<double>();
 
   for(unsigned int i = 0; i < elesLVec.size(); ++i)
   {
@@ -455,7 +454,10 @@ bool VarPerEvent::GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZL
     recoZVec->push_back(bestRecoZ);
     ZLepIdx->insert(std::make_pair( recoZVec->size(), elepair));
   }
+  
   tr->registerDerivedVec("cutEleVec"+spec, cutEleVec);
+  tr->registerDerivedVec("cutEleCharge"+spec, cutEleCharge);
+
   return true;
 }       // -----  end of function VarPerEvent::GetEleZ  -----
 // ===  FUNCTION  ============================================================

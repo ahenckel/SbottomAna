@@ -146,11 +146,15 @@ int main(int argc, char* argv[])
   //                            Start Event Looping                           //
   //**************************************************************************//
   std::cout << "First loop begin: " << std::endl;
+  double vm, rss;
   while(tr.getNextEvent())
   {
     //if (tr.getEvtNum() > 10000) break;
     if (tr.getEvtNum() % 20000 == 0)
-      std::cout << tr.getEvtNum() << "\t" << ((clock() - t0) / 1000000.0) << std::endl;
+    {
+      process_mem_usage(vm, rss);
+      std::cout << tr.getEvtNum() << "\t" << ((clock() - t0) / 1000000.0) <<"\tVM:" << vm <<"\tRSS:" << rss<< std::endl;
+    }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Set Event Weight ~~~~~
     double stored_weight = -999;
