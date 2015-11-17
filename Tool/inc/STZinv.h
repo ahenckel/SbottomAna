@@ -29,6 +29,7 @@
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
 #include "SusyAnaTools/Tools/baselineDef.h"
+#include "SusyAnaTools/Tools/searchBins.h"
 
 // ===========================================================================
 //        Class:  STZinv
@@ -59,7 +60,7 @@ class STZinv : public ComAna
     bool CheckCut();
     bool BookHistograms();
     bool FillCut();
-
+    bool FillSearchBins(int NCut);
     // ====================  DATA MEMBERS  ===============================
 
   private:

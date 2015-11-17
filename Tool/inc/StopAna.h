@@ -28,6 +28,7 @@
 #include "RootTools.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
+#include "SusyAnaTools/Tools/searchBins.h"
 
 // ===========================================================================
 //        Class:  StopAna

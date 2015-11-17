@@ -25,6 +25,13 @@ STZinv::STZinv (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &Out
 : ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
+  if (spec == "Zinv")
+  {
+    jetVecLabel = "jetsLVecLepCleaned";
+    CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+    METLabel = "cleanMetPtZinv";
+    METPhiLabel = "cleanMetPhiZinv";
+  }
 }  // -----  end of method STZinv::STZinv  (constructor)  -----
 
 //----------------------------------------------------------------------------
@@ -66,6 +73,7 @@ bool STZinv::BookHistograms()
 {
   ComAna::BookHistograms();
   BookTLVHistos("RecoZ");
+  his->AddTH1C("SearchBins", "Search Bins", 50, 0, 50);
   his->AddTH1C("JBT", "JBT", "JBT", "Events", 400, 0, 400);
   return true;
 
@@ -83,27 +91,31 @@ bool STZinv::InitCutOrder(std::string ana)
 
   //Add name and order of the cutflow
   CutOrder.push_back("NoCut");
-  CutOrder.push_back("Filter");
   CutOrder.push_back("Trigger");
   CutOrder.push_back("HasZ");
   CutOrder.push_back("2Leps");
   CutOrder.push_back("nJets");
+  CutOrder.push_back("dPhis");
   CutOrder.push_back("BJets");
+  CutOrder.push_back("MET");
+  CutOrder.push_back("MT2");
+  CutOrder.push_back("HT");
   CutOrder.push_back("Tagger");
-  CutOrder.push_back("MET70");
-  CutOrder.push_back("BinTop");
+  CutOrder.push_back("Filter");
 
   //Set the cutbit of each cut
   CutMap["NoCut"]   = "00000000000000000";
-  CutMap["Filter"]  = "00000000000000001";
-  CutMap["Trigger"] = "00000000100000001";
-  CutMap["HasZ"]    = "00000000100000011";
-  CutMap["2Leps"]   = "00000000100000111";
-  CutMap["nJets"]   = "00000000100001111";
-  CutMap["BJets"]   = "00000000100011111";
-  CutMap["Tagger"]  = "00000000100111111";
-  CutMap["MET70"]   = "00000000101111111";
-  CutMap["BinTop"]  = "00000000111111111";
+  CutMap["Trigger"] = "00000000000000001";
+  CutMap["HasZ"]    = "00000000000000011";
+  CutMap["2Leps"]   = "00000000000000111";
+  CutMap["nJets"]   = "00000000000001111";
+  CutMap["dPhis"]   = "00000000000011111";
+  CutMap["BJets"]   = "00000000000111111";
+  CutMap["MET"]     = "00000000001111111";
+  CutMap["MT2"]     = "00000000011111111";
+  CutMap["HT"]      = "00000000111111111";
+  CutMap["Tagger"]  = "00000001111111111";
+  CutMap["Filter"]  = "00000011111111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -117,20 +129,22 @@ bool STZinv::InitCutOrder(std::string ana)
 // ===========================================================================
 bool STZinv::CheckCut()
 {
-  
-  cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
+  cutbit.reset();
+  cutbit.set(0 , tr->getVar<bool>(Label["PassDiMuonTrigger"]) || tr->getVar<bool>(Label["PassDiEleTrigger"]));
 
   cutbit.set(1 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
 
-  cutbit.set(2 ,  tr->getVar<int>("nMuons_Base") + tr->getVar<int>("nElectrons_Base") == 2 );
+  cutbit.set(2 ,  tr->getVar<int>(Label["nMuons_Base"]) + tr->getVar<int>(Label["nElectrons_Base"]) == 2 );
 
-  cutbit.set(3 , tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size() >= 4);
+  cutbit.set(3 , tr->getVar<bool>(Label["passnJets"]));
+  cutbit.set(4 , tr->getVar<bool>(Label["passdPhis"]));
+  cutbit.set(5 , tr->getVar<bool>(Label["passBJets"]));
+  cutbit.set(6 , tr->getVar<bool>(Label["passMET"]));
+  cutbit.set(7 , tr->getVar<bool>(Label["passMT2"]));
+  cutbit.set(8 , tr->getVar<bool>(Label["passHT"]));
+  cutbit.set(9 , tr->getVar<bool>(Label["passTagger"]));
+  cutbit.set(10, tr->getVar<bool>(Label["passNoiseEventFilter"]));
 
-  cutbit.set(4 , tr->getVar<int>(Label["cntCSVS"]) >= 1);
-  cutbit.set(5 , tr->getVar<int>(Label["nTopCandSortedCnt"]) == 2);
-  cutbit.set(6 , tr->getVar<double>(METLabel) < 70);
-
-  cutbit.set(8 , tr->getVar<bool>(Label["PassDiMuonTrigger"]) || tr->getVar<bool>(Label["PassDiEleTrigger"]));
   return true;
 }       // -----  end of function STZinv::CheckCut  -----
 
@@ -155,6 +169,7 @@ bool STZinv::FillCut()
 
     his->FillTH1("CutFlow", int(i)); 
     ComAna::FillCut(i);
+    FillSearchBins(i);
 
     if (i+1 == CutOrder.size()) 
     {
@@ -164,3 +179,18 @@ bool STZinv::FillCut()
 
   return passcuts;
 }       // -----  end of function STZinv::FillCut  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  STZinv::FillSearchBins
+//  Description:  
+// ===========================================================================
+bool STZinv::FillSearchBins(int NCut)
+{
+  int searchbin_id = find_Binning_Index( tr->getVar<int>(Label["cntCSVS"]), tr->getVar<int>(Label["nTopCandSortedCnt"]), 
+      tr->getVar<double>(Label["best_had_brJet_MT2"]), tr->getVar<double>(METLabel));
+  if( searchbin_id >= 0 )
+  {
+    his->FillTH1(NCut, "SearchBins", searchbin_id);
+  }
+  return true;
+}       // -----  end of function STZinv::FillSearchBins  -----

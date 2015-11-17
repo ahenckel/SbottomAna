@@ -16,9 +16,6 @@
 
 #include "StopAna.h"
 
-// Have to include searchBins.h here, to avoid duplicate definition in main...
-#include "SusyAnaTools/Tools/searchBins.h"
-
 //----------------------------------------------------------------------------
 //       Class:  StopAna
 //      Method:  StopAna
