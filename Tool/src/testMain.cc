@@ -39,6 +39,7 @@
 #include "SBDiJet.h"
 #include "SBISR.h"
 #include "STISR.h"
+#include "STZinv.h"
 #include "STRM.h"
 #include "PassCut.h"
 #include "SBMulti.h"
@@ -116,8 +117,8 @@ int main(int argc, char* argv[])
   size_t t0 = clock();
   NTupleReader tr(fChain);
   tr.registerFunction(&passBaselineFunc);
-  tr.registerFunction(&passBaselineZRec);
-  tr.registerFunction(&RegisterVarPerEvent);
+  tr.registerFunction(&passBaselineTTZ);
+  tr.registerFunction(&passBaselineZinv);
 
   //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
 
@@ -125,11 +126,12 @@ int main(int argc, char* argv[])
   //                           Prepare the analysis                           //
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
-  //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
   //AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
   //AnaMap["STRM"] = new STRM("STRM", &tr, OutFile);
-  AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile, "ZRec");
-  AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "ZRec");
+  AnaMap["STZinv"] = new STZinv("STZinv", &tr, OutFile,"Zinv");
+  AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile, "TTZ");
+  AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "TTZ");
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
   //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
   //AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);

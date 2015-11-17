@@ -51,7 +51,7 @@ class TTZ3Lep : public ComAna
     //bool WriteHistogram();
     bool FillCut();
 
-    bool HasZ() const;
+    bool HasZ();
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================

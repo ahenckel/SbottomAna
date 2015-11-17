@@ -30,17 +30,6 @@
 #include "SusyAnaTools/Tools/NTupleReader.h"
 #include "SusyAnaTools/Tools/baselineDef.h"
 
-
-inline void passBaselineZRec(NTupleReader &tr)
-{
-  BaselineVessel blv("ZRec");
-  blv.jetVecLabel = "jetsLVecLepCleaned";
-  blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
-  blv.prepareTopTagger();
-  blv.passBaseline(tr);
-  blv.GetnTops(&tr);
-}
-
 // ===========================================================================
 //        Class:  TTZDiLep
 //  Description:  S

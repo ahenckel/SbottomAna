@@ -46,6 +46,7 @@ class VarPerEvent
     // ====================  ACCESSORS     ===============================
     bool RunPerEvent() const;
 
+    bool GetRecoZ(std::string spec) const;
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================
@@ -62,11 +63,10 @@ class VarPerEvent
 
   private:
     // ====================  METHODS       ===============================
-    bool PassDiMuonTrigger() const;
-    bool PassDiEleTrigger() const;
-    bool GetRecoZ() const;
-    bool GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx) const;
-    bool GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx) const;
+    bool PassDiMuonTrigger(std::string spec) const;
+    bool PassDiEleTrigger(std::string spec) const;
+    bool GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx, std::string spec) const;
+    bool GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx, std::string spec) const;
 
     // ====================  DATA MEMBERS  ===============================
     NTupleReader *tr;

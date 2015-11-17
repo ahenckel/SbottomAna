@@ -63,10 +63,6 @@ VarPerEvent::operator = ( const VarPerEvent &other )
 // ===========================================================================
 bool VarPerEvent::RunPerEvent() const
 {
-  GetRecoZ();
-  PassDiMuonTrigger();
-  PassDiEleTrigger();
-
   return true;
 }       // -----  end of function VarPerEvent::RunPerEvent  -----
 
@@ -75,7 +71,7 @@ bool VarPerEvent::RunPerEvent() const
 //  Description:  Copy from Zinvisible method for muon selection and Z reco.
 //  https://github.com/susy2015/ZInvisible/blob/master/Tools/derivedTupleVariables.h#L196
 // ===========================================================================
-bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx) const
+bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx, std::string spec) const
 {
 
 //----------------------------------------------------------------------------
@@ -180,9 +176,19 @@ bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
 
   bool passDiMuTrig  = nTriggerMuons >= 2;
 
-  const double zMassMin = 81.0;
   const double zMass    = 91.0;
-  const double zMassMax = 101.0;
+  double zMassMin = 0.0;
+  double zMassMax = 0.0;
+  if (spec == "TTZ")
+  {
+    zMassMin = 81.0;
+    zMassMax = 101.0;
+  }
+  if (spec == "Zinv")
+  {
+    zMassMin = 71.0;
+    zMassMax = 111.0;
+  }
 
   double zMassCurrent = 1.0e300;
   const double minMuPt = 20.0, highMuPt = 45.0;
@@ -208,7 +214,8 @@ bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
       }
     }
   }
-  if (bestRecoZ.Pt() != 0 && sumCharge == 0)
+
+  if (bestRecoZ.Pt() != 0 && sumCharge == 0 && (bestRecoZ.M() > zMassMin) && (bestRecoZ.M() < zMassMax))
   {
     recoZVec->push_back(bestRecoZ);
     ZLepIdx->insert(std::make_pair( recoZVec->size(), mupair));
@@ -243,17 +250,17 @@ bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
   //if(genZPt > 600 && mindPhiMetJ < 0.5) std::cout << "BONJOUR!!! \t" << genZPt << "\t" << mindPhiMetJ << "\t" << run << "\t" << lumi << "\t" << event << std::endl;
 
   double bestRecoZPt = bestRecoZ.Pt();
-  tr->registerDerivedVar("bestRecoZPt", bestRecoZPt);
-  tr->registerDerivedVar("bestRecoZM", bestRecoZ.M());
-  tr->registerDerivedVar("cutMuPt1", cutMuPt1);
-  tr->registerDerivedVar("cutMuPt2", cutMuPt2);
+  tr->registerDerivedVar("bestRecoZPt"+spec, bestRecoZPt);
+  tr->registerDerivedVar("bestRecoZM"+spec, bestRecoZ.M());
+  tr->registerDerivedVar("cutMuPt1"+spec, cutMuPt1);
+  tr->registerDerivedVar("cutMuPt2"+spec, cutMuPt2);
 
 
-  tr->registerDerivedVec("cutMuVec", cutMuVec);
-  tr->registerDerivedVec("cutMuActivity", cutMuActivity);
-  tr->registerDerivedVar("passMuZinvSel", passMuZinvSel);
-  tr->registerDerivedVar("passDiMuIsoTrig", passDiMuTrig);
-  tr->registerDerivedVar("passSingleMu45", muTrigMu45);
+  tr->registerDerivedVec("cutMuVec"+spec, cutMuVec);
+  tr->registerDerivedVec("cutMuActivity"+spec, cutMuActivity);
+  tr->registerDerivedVar("passMuZinvSel"+spec, passMuZinvSel);
+  tr->registerDerivedVar("passDiMuIsoTrig"+spec, passDiMuTrig);
+  tr->registerDerivedVar("passSingleMu45"+spec, muTrigMu45);
 
   return true;
 }       // -----  end of function VarPerEvent::GetMuInfo  -----
@@ -330,14 +337,14 @@ bool VarPerEvent::GetJetsNoMu() const
 //         Name:  VarPerEvent::PassDiMuonTrigger
 //  Description:  /* cursor */
 // ===========================================================================
-bool VarPerEvent::PassDiMuonTrigger() const
+bool VarPerEvent::PassDiMuonTrigger(std::string spec) const
 {
-  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec");
+  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec"+spec);
   assert(cutMuVec.size() == tr->getVar<int>("nMuons_Base"));
   const double minMuPt = 20.0;
   const double highMuPt = 45.0;
   bool pass = (cutMuVec.size() >= 2 && (cutMuVec)[0].Pt() > highMuPt && (cutMuVec)[1].Pt() > minMuPt);
-  tr->registerDerivedVar("PassDiMuonTrigger", pass);
+  tr->registerDerivedVar("PassDiMuonTrigger"+spec, pass);
   return pass;
 }       // -----  end of function VarPerEvent::PassDiMuonTrigger  -----
 
@@ -345,15 +352,14 @@ bool VarPerEvent::PassDiMuonTrigger() const
 //         Name:  VarPerEvent::PassDiEleTrigger
 //  Description:  
 // ===========================================================================
-bool VarPerEvent::PassDiEleTrigger() const
+bool VarPerEvent::PassDiEleTrigger(std::string spec) const
 {
-  
-  const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>("cutEleVec");
+  const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>("cutEleVec"+spec);
   assert(cutEleVec.size() == tr->getVar<int>("nElectrons_Base"));
   const double minElePt = 30.0;
   const double highElePt = 30.0;
   bool pass = (cutEleVec.size() >= 2 && (cutEleVec)[0].Pt() > highElePt && (cutEleVec)[1].Pt() > minElePt);
-  tr->registerDerivedVar("PassDiEleTrigger", pass);
+  tr->registerDerivedVar("PassDiEleTrigger"+spec, pass);
   return true;
 }       // -----  end of function VarPerEvent::PassDiEleTrigger  -----
 
@@ -361,7 +367,7 @@ bool VarPerEvent::PassDiEleTrigger() const
 //         Name:  VarPerEvent::GetEleZ
 //  Description:  
 // ===========================================================================
-bool VarPerEvent::GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx) const
+bool VarPerEvent::GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx, std::string spec) const
 {
   
   std::vector<TLorentzVector> elesLVec;
@@ -406,10 +412,20 @@ bool VarPerEvent::GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZL
     }
   }
 
-  const double zMassMin = 81.0;
   const double zMass    = 91.0;
-  const double zMassMax = 101.0;
   const double minElePt = 30.0, highElePt = 30.0;
+  double zMassMin = 0.0;
+  double zMassMax = 0.0;
+  if (spec == "TTZ")
+  {
+    zMassMin = 81.0;
+    zMassMax = 101.0;
+  }
+  if (spec == "Zinv")
+  {
+    zMassMin = 71.0;
+    zMassMax = 111.0;
+  }
 
   double zMassCurrent = 1.0e300;
   //double zMassCurrent = 1.0e300, zEff = 1.0e100, zAcc = 1.0e100;
@@ -434,26 +450,28 @@ bool VarPerEvent::GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZL
       }
     }
   }
-  if (bestRecoZ.Pt() != 0 && sumCharge == 0)
+  if (bestRecoZ.Pt() != 0 && sumCharge == 0 && (bestRecoZ.M() > zMassMin) && (bestRecoZ.M() < zMassMax))
   {
     recoZVec->push_back(bestRecoZ);
     ZLepIdx->insert(std::make_pair( recoZVec->size(), elepair));
   }
-  tr->registerDerivedVec("cutEleVec", cutEleVec);
+  tr->registerDerivedVec("cutEleVec"+spec, cutEleVec);
   return true;
 }       // -----  end of function VarPerEvent::GetEleZ  -----
 // ===  FUNCTION  ============================================================
 //         Name:  VarPerEvent::GetRecoZ
 //  Description:  
 // ===========================================================================
-bool VarPerEvent::GetRecoZ() const
+bool VarPerEvent::GetRecoZ(std::string spec) const
 {
   std::vector<TLorentzVector>* recoZVec = new std::vector<TLorentzVector>();
   std::map<unsigned int, std::pair<unsigned int, unsigned int> > *ZLepIdx = 
     new std::map<unsigned int, std::pair<unsigned int, unsigned int> >();
 
-  GetMuInfo(recoZVec, ZLepIdx);
-  GetEleZ(recoZVec, ZLepIdx);
+  GetMuInfo(recoZVec, ZLepIdx, spec);
+  GetEleZ(recoZVec, ZLepIdx, spec);
+  PassDiMuonTrigger(spec);
+  PassDiEleTrigger(spec);
 
   // Setting the clean MET
   TLorentzVector metV(0, 0, 0, 0);
@@ -467,10 +485,10 @@ bool VarPerEvent::GetRecoZ() const
     cleanMet += metZ;
   }
 
-  tr->registerDerivedVar("cleanMetPt", cleanMet.Pt());
-  tr->registerDerivedVar("cleanMetPhi", cleanMet.Phi());
-  tr->registerDerivedVec("recoZVec", recoZVec);
-  tr->registerDerivedVec("ZLepIdx", ZLepIdx);
+  tr->registerDerivedVar("cleanMetPt"+spec, cleanMet.Pt());
+  tr->registerDerivedVar("cleanMetPhi"+spec, cleanMet.Phi());
+  tr->registerDerivedVec("recoZVec"+spec, recoZVec);
+  tr->registerDerivedVec("ZLepIdx"+spec, ZLepIdx);
   return true;
 }       // -----  end of function VarPerEvent::GetRecoZ  -----
 

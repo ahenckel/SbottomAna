@@ -28,11 +28,6 @@ TTZDiLep::TTZDiLep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> 
   InitCutOrder(name);
   if (spec_ == "TTZ")
   {
-    jetVecLabel = "prodJetsNoMu_jetsLVec";
-    CSVVecLabel = "recoJetsBtag_0_MuCleaned";
-  }
-  if (spec_ == "ZRec")
-  {
     jetVecLabel = "jetsLVecLepCleaned";
     CSVVecLabel = "recoJetsBtag_0_LepCleaned";
   }
@@ -134,9 +129,9 @@ bool TTZDiLep::CheckCut()
   
   cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
 
-  cutbit.set(1 , tr->getVec<TLorentzVector>("recoZVec").size() == 1);
+  cutbit.set(1 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
 
-  cutbit.set(2 ,  tr->getVar<int>("nMuons_Base") + tr->getVar<int>("nElectrons_Base") == 2 );
+  cutbit.set(2 ,  tr->getVar<int>(Label["nMuons_Base"]) + tr->getVar<int>(Label["nElectrons_Base"]) == 2 );
 
   cutbit.set(3 , tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size() >= 4);
 
@@ -147,7 +142,7 @@ bool TTZDiLep::CheckCut()
   std::vector<int> vbinTop = BJetTopAsso();
   cutbit.set(7 , vbinTop.size() > 0);
 
-  cutbit.set(8 , tr->getVar<bool>("PassDiMuonTrigger") || tr->getVar<bool>("PassDiEleTrigger"));
+  cutbit.set(8 , tr->getVar<bool>(Label["PassDiMuonTrigger"]) || tr->getVar<bool>(Label["PassDiEleTrigger"]));
   return true;
 }       // -----  end of function TTZDiLep::CheckCut  -----
 
@@ -176,10 +171,10 @@ bool TTZDiLep::FillCut()
 
     int JBTcount = tr->getVar<int>(Label["nTopCandSortedCnt"]) * 100 + tr->getVar<int>(Label["cntCSVS"]) * 10 + tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size();
     his->FillTH1(i, "JBT", JBTcount);
-    if (tr->getVec<TLorentzVector>("recoZVec").size() > 0)
+    if (tr->getVec<TLorentzVector>(Label["recoZVec"]).size() > 0)
     {
-      FillTLVHistos(i, "RecoZ", tr->getVec<TLorentzVector>("recoZVec").at(0));
-      his->FillTH2(i, "JBTVsZPT", tr->getVec<TLorentzVector>("recoZVec").at(0).Pt(), JBTcount);
+      FillTLVHistos(i, "RecoZ", tr->getVec<TLorentzVector>(Label["recoZVec"]).at(0));
+      his->FillTH2(i, "JBTVsZPT", tr->getVec<TLorentzVector>(Label["recoZVec"]).at(0).Pt(), JBTcount);
     }
 
     if (vbinTop.empty()) 

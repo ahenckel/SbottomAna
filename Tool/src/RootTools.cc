@@ -289,3 +289,45 @@ int HasTLV(TLorentzVector &obj, std::vector<TLorentzVector> &TLVs)
   }
   return -1;
 }       // -----  end of function HasTLV  -----
+
+//**************************************************************************//
+//                            Register Functions                            //
+//**************************************************************************//
+void passBaselineTTZ(NTupleReader &tr)
+{
+  VarPerEvent var(&tr);
+  var.GetRecoZ("TTZ");
+  BaselineVessel blv("TTZ");
+  blv.jetVecLabel = "jetsLVecLepCleaned";
+  blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+  blv.prepareTopTagger();
+  blv.passBaseline(tr);
+  blv.GetnTops(&tr);
+}
+
+// ===  FUNCTION  ============================================================
+//         Name:  passBaselineZinv
+//  Description:  
+// ===========================================================================
+void passBaselineZinv(NTupleReader &tr)
+{
+  VarPerEvent var(&tr);
+  var.GetRecoZ("Zinv");
+  BaselineVessel blv("Zinv");
+  blv.jetVecLabel = "jetsLVecLepCleaned";
+  blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+  try
+  {
+    tr.getVar<double>("cleanMetPtZinv");
+  }
+  catch (std::string &var)
+  {
+    std::cout << "Missing cleanMET! Need to run VarPerEvent::GetRecoZ() first!" << std::endl;
+    throw std::runtime_error("Wrong configs of registerFunction");
+  }
+  blv.METLabel = "cleanMetPtZinv";
+  blv.METPhiLabel = "cleanMetPhiZinv";
+  blv.prepareTopTagger();
+  blv.passBaseline(tr);
+  blv.GetnTops(&tr);
+}       // -----  end of function passBaselineZinv  -----

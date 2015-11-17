@@ -20,6 +20,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 // boost
 #include "boost/tokenizer.hpp"
@@ -30,10 +31,12 @@
 
 // User
 #include "TopTaggerAna.h"
+#include "VarPerEvent.h"
 
 //SusyAnatool
 #include "SusyAnaTools/Tools/samples.h"
 #include "SusyAnaTools/Tools/NTupleReader.h"
+#include "SusyAnaTools/Tools/baselineDef.h"
 
 std::map<std::string, double> GetXS(std::string name);
 int GetCutBin( std::vector<std::string> &CutOrder , std::string name);
@@ -50,4 +53,9 @@ bool LTVMatch(TLorentzVector &V1, TLorentzVector V2, double dR=0.3);
 int FindVectorIdX(std::vector<std::string> &TeV, std::string t);
 int HasTLV(TLorentzVector &obj, std::vector<TLorentzVector> &TLVs);
 
+//**************************************************************************//
+//                            Register Functions                            //
+//**************************************************************************//
+void passBaselineTTZ(NTupleReader &tr);
+void passBaselineZinv(NTupleReader &tr);
 #endif   // ----- #ifndef MY_ROOTTOOLS_INC  -----

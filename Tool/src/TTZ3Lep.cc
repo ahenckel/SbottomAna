@@ -28,11 +28,6 @@ TTZ3Lep::TTZ3Lep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
   InitCutOrder(name);
   if (spec_ == "TTZ")
   {
-    jetVecLabel = "prodJetsNoMu_jetsLVec";
-    CSVVecLabel = "recoJetsBtag_0_MuCleaned";
-  }
-  if (spec_ == "ZRec")
-  {
     jetVecLabel = "jetsLVecLepCleaned";
     CSVVecLabel = "recoJetsBtag_0_LepCleaned";
   }
@@ -130,9 +125,9 @@ bool TTZ3Lep::CheckCut()
 
   // Check event has Z
   //cutbit.set(1 , HasZ());
-  cutbit.set(1 , tr->getVec<TLorentzVector>("recoZVec").size() == 1);
+  cutbit.set(1 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
 
-  cutbit.set(2 ,  tr->getVar<int>("nMuons_Base") + tr->getVar<int>("nElectrons_Base") == 3 );
+  cutbit.set(2 ,  tr->getVar<int>(Label["nMuons_Base"]) + tr->getVar<int>(Label["nElectrons_Base"]) == 3 );
 
   cutbit.set(3 , tr->getVar<int>(Label["cntCSVS"]) >= 1);
 
@@ -140,9 +135,7 @@ bool TTZ3Lep::CheckCut()
 
   cutbit.set(5 , tr->getVar<double>(METLabel) < 70);
 
-  cutbit.set(6 , tr->getVar<bool>("PassDiMuonTrigger") || tr->getVar<bool>("PassDiEleTrigger"));
-
-  cutbit.set(7 , tr->getVar<int>(Label["cntCSVS"]) >= 1);
+  cutbit.set(6 , tr->getVar<bool>(Label["PassDiMuonTrigger"]) || tr->getVar<bool>(Label["PassDiEleTrigger"]));
 
   return true;
 }       // -----  end of function TTZ3Lep::CheckCut  -----
@@ -178,10 +171,10 @@ bool TTZ3Lep::FillCut()
 
     int JBTcount = tr->getVar<int>(Label["nTopCandSortedCnt"]) * 100 + tr->getVar<int>(Label["cntCSVS"]) * 10 + tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size();
     his->FillTH1(i, "JBT", JBTcount);
-    if (tr->getVec<TLorentzVector>("recoZVec").size() > 0)
+    if (tr->getVec<TLorentzVector>(Label["recoZVec"]).size() > 0)
     {
-      FillTLVHistos(i, "RecoZ", tr->getVec<TLorentzVector>("recoZVec").at(0));
-      his->FillTH2(i, "JBTVsZPT", tr->getVec<TLorentzVector>("recoZVec").at(0).Pt(), JBTcount);
+      FillTLVHistos(i, "RecoZ", tr->getVec<TLorentzVector>(Label["recoZVec"]).at(0));
+      his->FillTH2(i, "JBTVsZPT", tr->getVec<TLorentzVector>(Label["recoZVec"]).at(0).Pt(), JBTcount);
     }
 
     ComAna::FillCut(i);
@@ -199,10 +192,10 @@ bool TTZ3Lep::FillCut()
 //         Name:  TTZ3Lep::HasZ
 //  Description:  
 // ===========================================================================
-bool TTZ3Lep::HasZ() const
+bool TTZ3Lep::HasZ()
 {
-  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec");
-  const std::vector<int> &cutMuCharge = tr->getVec<int>("cutMuCharge");
+  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>(Label["cutMuVec"]);
+  const std::vector<int> &cutMuCharge = tr->getVec<int>(Label["cutMuCharge"]);
   const double minMuPt = 20.0;
   const double highMuPt = 45.0;
   const double zMassMin = 71.0;
@@ -242,17 +235,17 @@ bool TTZ3Lep::HasZ() const
 // ===========================================================================
 bool TTZ3Lep::Check3rdLep(int NCut)
 {
-  if (tr->getVec<TLorentzVector>("recoZVec").size() == 0) 
+  if (tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 0) 
     return false;
 
-  if (tr->getVar<int>("nMuons_Base") + tr->getVar<int>("nElectrons_Base") != 3 ) 
+  if (tr->getVar<int>(Label["nMuons_Base"]) + tr->getVar<int>(Label["nElectrons_Base"]) != 3 ) 
     return false;
 
-  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec");
-  const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>("cutEleVec");
+  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>(Label["cutMuVec"]);
+  const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>(Label["cutEleVec"]);
 
   const std::map<unsigned int, std::pair<unsigned int, unsigned int> > ZLepIdx = 
-    tr->getMap<unsigned int, std::pair<unsigned int, unsigned int> >("ZLepIdx");
+    tr->getMap<unsigned int, std::pair<unsigned int, unsigned int> >(Label["ZLepIdx"]);
 
   std::vector<unsigned int> EleinZ;
   std::vector<unsigned int> MuinZ;
