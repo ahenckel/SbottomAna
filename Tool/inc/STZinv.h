@@ -1,0 +1,72 @@
+// ===========================================================================
+// 
+//       Filename:  STZinv.h
+// 
+//    Description:  
+// 
+//        Version:  1.0
+//        Created:  11/16/2015 11:30:57
+//       Revision:  none
+//       Compiler:  g++
+// 
+//         Author:  Zhenbin Wu (benwu), zhenbin.wu@gmail.com
+//        Company:  UIC, CMS@LPC, CDF@FNAL
+// 
+// ===========================================================================
+
+#ifndef  MY_STZINV_INC
+#define  MY_STZINV_INC
+
+// stdlib
+#include <cassert>
+
+// ROOT
+
+// User class
+#include "ComAna.h"
+#include "HistTool.hh"
+#include "RootTools.h"
+
+#include "SusyAnaTools/Tools/NTupleReader.h"
+#include "SusyAnaTools/Tools/baselineDef.h"
+
+// ===========================================================================
+//        Class:  STZinv
+//  Description:  
+// ===========================================================================
+class STZinv : public ComAna
+{
+  public:
+
+    // ====================  LIFECYCLE     ===============================
+    STZinv (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_="");                             // constructor
+    STZinv ( const STZinv &other );   // copy constructor
+    ~STZinv ();                            // destructor
+
+    // ====================  ACCESSORS     ===============================
+
+    // ====================  MUTATORS      ===============================
+
+    // ====================  OPERATORS     ===============================
+
+    STZinv& operator = ( const STZinv &other ); // assignment operator
+
+    // ====================  DATA MEMBERS  ===============================
+
+  protected:
+    // ====================  METHODS       ===============================
+    bool InitCutOrder(std::string ana);
+    bool CheckCut();
+    bool BookHistograms();
+    bool FillCut();
+
+    // ====================  DATA MEMBERS  ===============================
+
+  private:
+    // ====================  METHODS       ===============================
+
+    // ====================  DATA MEMBERS  ===============================
+
+}; // -----  end of class STZinv  -----
+
+#endif   // ----- #ifndef MY_STZINV_INC  -----
