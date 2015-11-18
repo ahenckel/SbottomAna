@@ -25,7 +25,7 @@ STZinv::STZinv (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &Out
 : ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
-  if (spec == "Zinv")
+  if (spec_ == "Zinv")
   {
     jetVecLabel = "jetsLVecLepCleaned";
     CSVVecLabel = "recoJetsBtag_0_LepCleaned";
