@@ -97,7 +97,7 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
   CutOrder.push_back("3Leps");
   CutOrder.push_back("BJets");
   CutOrder.push_back("Tagger");
-  CutOrder.push_back("MET70");
+  CutOrder.push_back("MET40");
 
   //Set the cutbit of each cut
   CutMap["NoCut"]   = "00000000000000000";
@@ -107,7 +107,7 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
   CutMap["3Leps"]   = "00000000001000111";
   CutMap["BJets"]   = "00000000001001111";
   CutMap["Tagger"]  = "00000000001011111";
-  CutMap["MET70"]   = "00000000001111111";
+  CutMap["MET40"]   = "00000000001111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -133,7 +133,7 @@ bool TTZ3Lep::CheckCut()
 
   cutbit.set(4 , tr->getVar<int>(Label["nTopCandSortedCnt"]) >= 1);
 
-  cutbit.set(5 , tr->getVar<double>(METLabel) < 70);
+  cutbit.set(5 , tr->getVar<double>(METLabel) > 40);
 
   cutbit.set(6 , tr->getVar<bool>(Label["PassDiMuonTrigger"]) || tr->getVar<bool>(Label["PassDiEleTrigger"]));
 
