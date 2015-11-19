@@ -75,6 +75,8 @@ bool STZinv::BookHistograms()
   BookTLVHistos("RecoZ");
   his->AddTH1C("SearchBins", "Search Bins", 50, 0, 50);
   his->AddTH1C("JBT", "JBT", "JBT", "Events", 400, 0, 400);
+  his->AddTH1C("ZMET",    "MET",    "#slash{E}_{T} [GeV]",      "Events" , 200, 0,  800);
+  his->AddTH1C("ZMETFake",    "METFake",    "#slash{E}_{T} [GeV]",      "Events" , 200, 0,  800);
   return true;
 
 }       // -----  end of function STZinv::BookHistograms  -----
@@ -194,3 +196,18 @@ bool STZinv::FillSearchBins(int NCut)
   }
   return true;
 }       // -----  end of function STZinv::FillSearchBins  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  STZinv::FillZMET
+//  Description:  
+// ===========================================================================
+bool STZinv::FillZMET(int NCut) const
+{
+  if (tr->getVec<TLorentzVector>("recoZVecZinv").size() > 0)
+  {
+    his->FillTH1(NCut, "ZMET", tr->getVar<double>("met"));
+    his->FillTH1(NCut, "ZMETFake", tr->getVar<double>(METLabel));
+  }
+  
+  return true;
+}       // -----  end of function STZinv::FillZMET  -----

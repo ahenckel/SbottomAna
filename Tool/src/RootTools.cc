@@ -348,7 +348,32 @@ void passBaselineTTZ(NTupleReader &tr)
   blv.prepareTopTagger();
   blv.passBaseline(tr);
   blv.GetnTops(&tr);
+  TopWithoutBVeto(tr, "TTZ");
 }
+
+// ===  FUNCTION  ============================================================
+//         Name:  TopWithoutBVeto
+//  Description:  
+// ===========================================================================
+bool TopWithoutBVeto(NTupleReader &tr, std::string spec)
+{
+  const std::vector<TLorentzVector> &jetsforTT = tr.getVec<TLorentzVector>("jetsLVec_forTagger" + spec);
+  const std::vector<double> &bjsforTT = tr.getVec<double>("recoJetsBtag_forTagger" + spec);
+  if (jetsforTT.size() < 4)
+  {
+    tr.registerDerivedVar("NTopsB"+spec, 0);
+    return false;
+  }
+  topTagger::type3TopTagger type3Ptr;
+  type3Ptr.setnJetsSel(AnaConsts::nJetsSel);
+  type3Ptr.setCSVS(AnaConsts::cutCSVS);
+  type3Ptr.runOnlyTopTaggerPart(jetsforTT, bjsforTT);
+  int nTops = type3Ptr.findnTopCands(jetsforTT, bjsforTT);
+  tr.registerDerivedVar("NTopsB"+spec, nTops);
+  return true;
+}       // -----  end of function TopWithoutBVeto  -----
+
+
 
 // ===  FUNCTION  ============================================================
 //         Name:  passBaselineZinv

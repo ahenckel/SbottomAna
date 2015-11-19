@@ -76,6 +76,7 @@ bool TTZ3Lep::BookHistograms()
   BookTLVHistos("3rdEle");
   his->AddTH1C("JBT", "JBT", "JBT", "Events", 400, 0, 400);
   his->AddTH2C("JBTVsZPT", "JBTVsZPT", "ZPT", "JBT", 20, 0, 1000, 400, 0, 400);
+  his->AddTH1C("NRecoTopsNoB" , "NRecoTopsNoB" , "No. of Reco Tops" , "Events" , 5  , 0 , 5);
   return true;
 }       // -----  end of function TTZ3Lep::BookHistograms  -----
 
@@ -178,6 +179,8 @@ bool TTZ3Lep::FillCut()
     }
 
     ComAna::FillCut(i);
+    his->FillTH1(i, "NRecoTopsNoB", tr->getVar<int>(Label["NTopsB"]));
+
     Check3rdLep(i);
     if (i+1 == CutOrder.size()) 
     {

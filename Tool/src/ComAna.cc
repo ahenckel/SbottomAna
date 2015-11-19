@@ -93,6 +93,7 @@ bool ComAna::DefineLabels(std::string spec)
   Label["ZLepIdx"]                = "ZLepIdx"                ; 
   Label["PassDiMuonTrigger"]      = "PassDiMuonTrigger"      ; 
   Label["PassDiEleTrigger"]       = "PassDiEleTrigger"       ; 
+  Label["NTopsB"]                 = "NTopsB"                 ; 
 
   if (spec != "")
   {

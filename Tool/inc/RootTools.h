@@ -61,5 +61,6 @@ int HasTLV(TLorentzVector &obj, std::vector<TLorentzVector> &TLVs);
 //                            Register Functions                            //
 //**************************************************************************//
 void passBaselineTTZ(NTupleReader &tr);
+bool TopWithoutBVeto(NTupleReader &tr, std::string spec);
 void passBaselineZinv(NTupleReader &tr);
 #endif   // ----- #ifndef MY_ROOTTOOLS_INC  -----
