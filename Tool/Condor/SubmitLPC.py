@@ -8,8 +8,7 @@ import subprocess
 import glob
 
 DelExe    = '../testMain'
-#OutDir = '/store/user/benwu/Stop/TTZ/'
-#OutDir = '/store/user/benwu/Stop/Comb/'
+OutDir = '/store/user/benwu/Stop/Comb/'
 
 tempdir = ''
 UserEMAIL = 'benwu@fnal.gov'
@@ -47,36 +46,37 @@ Process = {
     #"WJetsToLNu_HT_600toInf"            : ['',6],
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ f ~~~~~
-    #"TTbarInc"                          : ['',35],
-    #"WJetsToLNu_HT_100to200"            : ['',30],
-    #"WJetsToLNu_HT_200to400"            : ['',17],
-    #"WJetsToLNu_HT_400to600"            : ['',10],
-    #"WJetsToLNu_HT_600to800"            : ['',15],
-    #"WJetsToLNu_HT_800to1200"           : ['',11],
-    #"WJetsToLNu_HT_1200to2500"          : ['',7],
-    #"WJetsToLNu_HT_2500toInf"           : ['',7],
+    "WJetsToLNu_HT_100to200"            : ['',30],
+    "WJetsToLNu_HT_200to400"            : ['',17],
+    "WJetsToLNu_HT_400to600"            : ['',10],
+    "WJetsToLNu_HT_600to800"            : ['',15],
+    "WJetsToLNu_HT_800to1200"           : ['',11],
+    "WJetsToLNu_HT_1200to2500"          : ['',7],
+    "WJetsToLNu_HT_2500toInf"           : ['',7],
+    "DYJetsToLL_HT_600toInf"            : ['',10],
+    "DYJetsToLL_HT_400to600"            : ['',10],
+    "DYJetsToLL_HT_200to400"            : ['',10],
+    "DYJetsToLL_HT_100to200"            : ['',10],
+    "ZJetsToNuNu_HT_600toInf"           : ['',10],
+    "ZJetsToNuNu_HT_400to600"           : ['',7],
+    "ZJetsToNuNu_HT_200to400"           : ['',40],
+    "ZJetsToNuNu_HT_100to200"           : ['',40],
+    "tW_top"                            : ['',4],
+    "tW_antitop"                        : ['',4],
+    "TTbarInc"                          : ['',35],
+    "TTbarDiLep"                        : ['',60],
+    "TTZToLLNuNu"                       : ['',4],
+    "TTZToQQ"                           : ['',4],
+    "TTWJetsToLNu"                      : ['',4],
+    "TTWJetsToQQ"                       : ['',7],
+    "TTbar_HT-600to800"                 : ['',20],
+    "TTbar_HT-800to1200"                : ['',4],
+    "TTbar_HT-1200to2500"               : ['',4],
+    "TTbar_HT-2500toInf"                : ['',4],
 
-    #"ZJetsToNuNu_HT_600toInf"           : ['',10],
-    #"ZJetsToNuNu_HT_400to600"           : ['',7],
-    #"ZJetsToNuNu_HT_200to400"           : ['',20],
-    #"ZJetsToNuNu_HT_100to200"           : ['',20],
-
-    #"TTZToLLNuNu"                       : ['',4],
-    #"TTZToQQ"                           : ['',4],
-    #"TTWJetsToLNu"                      : ['',4],
-    #"TTWJetsToQQ"                       : ['',7],
-    #"DYJetsToLL_HT_600toInf"            : ['../FileList/TopProj-DYJetsToLL_HT_600toInf.list',10],
-    #"DYJetsToLL_HT_400to600"            : ['../FileList/TopProj-DYJetsToLL_HT_400to600.list',10],
-    #"DYJetsToLL_HT_200to400"            : ['../FileList/TopProj-DYJetsToLL_HT_200to400.list',10],
-    #"DYJetsToLL_HT_100to200"            : ['../FileList/TopProj-DYJetsToLL_HT_100to200.list',10],
-
-    #"TTbar_HT-600to800"                 : ['',20],
-    #"TTbar_HT-800to1200"                : ['',4],
-    #"TTbar_HT-1200to2500"               : ['',4],
-    #"TTbar_HT-2500toInf"                : ['',4],
     #"Signal_T2tt_mStop425_mLSP325"      : ['',1],
     #"Signal_T2tt_mStop500_mLSP325"      : ['',1],
-    "Signal_T2tt_mStop650_mLSP325"      : ['',1],
+    #"Signal_T2tt_mStop650_mLSP325"      : ['',1],
     #"Signal_T2tt_mStop850_mLSP100"      : ['',1],
     #"QCD_HT100to200"                    : ['',100],
     #"QCD_HT200to300"                    : ['',50],
