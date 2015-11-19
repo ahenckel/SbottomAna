@@ -132,7 +132,7 @@ bool TTZ3Lep::CheckCut()
 
   cutbit.set(3 , tr->getVar<int>(Label["cntCSVS"]) >= 1);
 
-  cutbit.set(4 , tr->getVar<int>(Label["nTopCandSortedCnt"]) >= 1);
+  cutbit.set(4 , tr->getVar<int>(Label["NTopsB"]) >= 1);
 
   cutbit.set(5 , tr->getVar<double>(METLabel) > 40);
 

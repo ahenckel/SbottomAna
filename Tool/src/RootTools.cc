@@ -361,7 +361,7 @@ bool TopWithoutBVeto(NTupleReader &tr, std::string spec)
   const std::vector<double> &bjsforTT = tr.getVec<double>("recoJetsBtag_forTagger" + spec);
   if (jetsforTT.size() < 4)
   {
-    tr.registerDerivedVar("NTopsB"+spec, 0);
+    tr.registerDerivedVar("NTopsB"+spec, -1);
     return false;
   }
   topTagger::type3TopTagger type3Ptr;
