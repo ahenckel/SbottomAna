@@ -156,7 +156,9 @@ import subprocess
 import multiprocessing
 
 def MergeFile(prod):
+    print "Processing %s" % prod
     g = glob.glob("%s*.root" % prod)
+    logfile = open("%s.log" % prod, 'w')
     sub = re.compile(r'^%s_\d+\.root$' % prod)
     allfile = set()
     goodfile = set()
@@ -166,11 +168,17 @@ def MergeFile(prod):
             if os.path.getsize(f) != 0:
                 goodfile.add(f)
     run = "hadd -f %s.root " % prod
-    mv = "mv "
     run += " ".join(goodfile)
+    process = subprocess.Popen(run, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = process.communicate()
+    logfile.write(out)
+    logfile.write(err)
+    logfile.close()
+
+    mv = "mv "
     mv += " ".join(allfile)
+    mv += " %s.log" % prod
     mv += " backup"
-    subprocess.call(run, shell=True)
     subprocess.call(mv, shell=True)
 
 if __name__ == "__main__":
