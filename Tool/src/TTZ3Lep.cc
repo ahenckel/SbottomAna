@@ -148,7 +148,7 @@ bool TTZ3Lep::CheckCut()
 
   cutbit.set(5 , tr->getVar<double>(METLabel) > 40);
 
-  cutbit.set(6 , tr->getVar<bool>(Label["PassDiMuonTrigger"]) || tr->getVar<bool>(Label["PassDiEleTrigger"]));
+  cutbit.set(6 , PassTrigger());
 
   cutbit.set(7 , tr->getVar<int>(Label["cntCSVS"]) == 2);
 

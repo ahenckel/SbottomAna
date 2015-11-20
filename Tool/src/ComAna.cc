@@ -518,3 +518,42 @@ bool ComAna::IsData()
   isData = tr->getVar<int>("run")!= 1? true : false;
   return isData;
 }       // -----  end of function ComAna::IsData  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::PassTrigger
+//  Description:  
+// ===========================================================================
+bool ComAna::PassTrigger()
+{
+  if (isData)
+  {
+    std::map<std::string, unsigned int> HLTIdx;
+    const std::vector<std::string> &triggerName = tr->getVec<std::string>("TriggerNames");
+    const std::vector<int> &triggerPass = tr->getVec<int>("PassTrigger");
+    assert(triggerName.size() == triggerPass.size());
+    // Get trigger index
+    for(auto &hlt : HLTstr)
+    {
+      auto found = std::find(triggerName.begin(), triggerName.end(), hlt);
+      HLTIdx[hlt] = found - triggerName.begin();
+    }
+    
+    bool pass=false;
+    for(auto &hlt : HLTIdx)
+    {
+      //std::cout << pass << " " << hlt.first<< " " << triggerPass.at(hlt.second)<< std::endl;
+      pass = pass || triggerPass.at(hlt.second);
+    }
+    return pass;
+  } else{
+    bool pass=false;
+    for(auto &mctrig : MCTrigstr)
+    {
+      pass = pass || tr->getVar<bool>(mctrig);
+
+    }
+    return pass;
+  }
+
+  return false;
+}       // -----  end of function ComAna::PassTrigger  -----

@@ -17,10 +17,10 @@
 #ifndef  MY_ROOTTOOLS_INC
 #define  MY_ROOTTOOLS_INC
 
-
 #include <unistd.h>
 #include <ios>
 #include <string>
+#include <bitset>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>

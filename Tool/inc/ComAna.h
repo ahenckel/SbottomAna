@@ -71,6 +71,7 @@ class ComAna
     bool Fill2TLVHistos(int NCut, std::string name, TLorentzVector LV1, TLorentzVector LV2);
 
     bool DefineLabels(std::string spec);
+    bool PassTrigger();
     bool IsData();
     // ====================  DATA MEMBERS  ===============================
     std::vector<std::string> CutOrder;
