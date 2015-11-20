@@ -46,7 +46,7 @@ class VarPerEvent
     // ====================  ACCESSORS     ===============================
     bool RunPerEvent() const;
 
-    bool GetRecoZ(std::string spec) const;
+    bool GetRecoZ(std::string spec, std::string lepbit_="11") const;
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================

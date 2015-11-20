@@ -464,16 +464,24 @@ bool VarPerEvent::GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZL
 //         Name:  VarPerEvent::GetRecoZ
 //  Description:  
 // ===========================================================================
-bool VarPerEvent::GetRecoZ(std::string spec) const
+bool VarPerEvent::GetRecoZ(std::string spec, std::string lepbit_) const
 {
   std::vector<TLorentzVector>* recoZVec = new std::vector<TLorentzVector>();
   std::map<unsigned int, std::pair<unsigned int, unsigned int> > *ZLepIdx = 
     new std::map<unsigned int, std::pair<unsigned int, unsigned int> >();
 
-  GetMuInfo(recoZVec, ZLepIdx, spec);
-  GetEleZ(recoZVec, ZLepIdx, spec);
-  PassDiMuonTrigger(spec);
-  PassDiEleTrigger(spec);
+  std::bitset<2> lepbit(lepbit_);
+
+  if (lepbit.test(0))
+  {
+    GetMuInfo(recoZVec, ZLepIdx, spec);
+    PassDiMuonTrigger(spec);
+  }
+  if (lepbit.test(1))
+  {
+    GetEleZ(recoZVec, ZLepIdx, spec);
+    PassDiEleTrigger(spec);
+  }
 
   // Setting the clean MET
   TLorentzVector metV(0, 0, 0, 0);

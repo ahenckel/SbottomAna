@@ -26,10 +26,20 @@ TTZ3Lep::TTZ3Lep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
 : ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
-  if (spec_ == "TTZ")
+  if (spec.find("TTZ") != std::string::npos)
   {
     jetVecLabel = "jetsLVecLepCleaned";
     CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+    if (spec.find("M") != std::string::npos)
+    {
+      HLTstr.push_back("HLT_Mu45_eta2p1_v2");
+      MCTrigstr.push_back(Label["PassDiMuonTrigger"]);
+    }
+    if (spec.find("E") != std::string::npos)
+    {
+      HLTstr.push_back("HLT_Mu45_eta2p1_v2");
+      MCTrigstr.push_back(Label["PassDiEleTrigger"]);
+    }
   }
 }  // -----  end of method TTZ3Lep::TTZ3Lep  (constructor)  -----
 

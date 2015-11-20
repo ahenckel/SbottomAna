@@ -25,12 +25,23 @@ STZinv::STZinv (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &Out
 : ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
-  if (spec_ == "Zinv")
+  if (spec.find("Zinv") != std::string::npos)
   {
+
     jetVecLabel = "jetsLVecLepCleaned";
     CSVVecLabel = "recoJetsBtag_0_LepCleaned";
-    METLabel = "cleanMetPtZinv";
-    METPhiLabel = "cleanMetPhiZinv";
+    METLabel = "cleanMetPt" + spec_;
+    METPhiLabel = "cleanMetPhi" + spec_;
+    if (spec.find("M") != std::string::npos)
+    {
+      HLTstr.push_back("HLT_Mu45_eta2p1_v2");
+      MCTrigstr.push_back(Label["PassDiMuonTrigger"]);
+    }
+    if (spec.find("E") != std::string::npos)
+    {
+      HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v2");
+      MCTrigstr.push_back(Label["PassDiEleTrigger"]);
+    }
   }
 }  // -----  end of method STZinv::STZinv  (constructor)  -----
 
@@ -132,7 +143,7 @@ bool STZinv::InitCutOrder(std::string ana)
 bool STZinv::CheckCut()
 {
   cutbit.reset();
-  cutbit.set(0 , tr->getVar<bool>(Label["PassDiMuonTrigger"]) || tr->getVar<bool>(Label["PassDiEleTrigger"]));
+  cutbit.set(0 , PassTrigger());
 
   cutbit.set(1 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
 
@@ -208,6 +219,44 @@ bool STZinv::FillZMET(int NCut) const
     his->FillTH1(NCut, "ZMET", tr->getVar<double>("met"));
     his->FillTH1(NCut, "ZMETFake", tr->getVar<double>(METLabel));
   }
-  
   return true;
 }       // -----  end of function STZinv::FillZMET  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  STZinv::PassTrigger
+//  Description:  
+// ===========================================================================
+bool STZinv::PassTrigger()
+{
+  if (isData)
+  {
+    std::map<std::string, unsigned int> HLTIdx;
+    const std::vector<std::string> &triggerName = tr->getVec<std::string>("TriggerNames");
+    const std::vector<int> &triggerPass = tr->getVec<int>("PassTrigger");
+    assert(triggerName.size() == triggerPass.size());
+    // Get trigger index
+    for(auto &hlt : HLTstr)
+    {
+      auto found = std::find(triggerName.begin(), triggerName.end(), hlt);
+      HLTIdx[hlt] = found - triggerName.begin();
+    }
+    
+    bool pass=false;
+    for(auto &hlt : HLTIdx)
+    {
+      //std::cout << pass << " " << hlt.first<< " " << triggerPass.at(hlt.second)<< std::endl;
+      pass = pass || triggerPass.at(hlt.second);
+    }
+    return pass;
+  } else{
+    bool pass=false;
+    for(auto &mctrig : MCTrigstr)
+    {
+      pass = pass || tr->getVar<bool>(mctrig);
+
+    }
+    return pass;
+  }
+
+  return false;
+}       // -----  end of function STZinv::PassTrigger  -----

@@ -19,6 +19,7 @@
 
 // stdlib
 #include <cassert>
+#include <algorithm>
 
 // ROOT
 
@@ -63,6 +64,7 @@ class STZinv : public ComAna
     bool FillSearchBins(int NCut);
     // ====================  DATA MEMBERS  ===============================
     bool FillZMET(int NCut) const;
+    bool PassTrigger();
 
   private:
     // ====================  METHODS       ===============================

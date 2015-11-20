@@ -71,6 +71,7 @@ class ComAna
     bool Fill2TLVHistos(int NCut, std::string name, TLorentzVector LV1, TLorentzVector LV2);
 
     bool DefineLabels(std::string spec);
+    bool IsData();
     // ====================  DATA MEMBERS  ===============================
     std::vector<std::string> CutOrder;
     std::bitset<NBITS> cutbit;
@@ -84,11 +85,14 @@ class ComAna
     TLorentzVector Jet4;
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input Labels ~~~~~
+    bool isData;
     std::string spec;
     std::string jetVecLabel;
     std::string CSVVecLabel;
     std::string METLabel   ;
     std::string METPhiLabel;
+    std::vector<std::string> HLTstr;
+    std::vector<std::string> MCTrigstr;
     // Label defined in derived, which changed by spec name
     std::map<std::string, std::string> Label;
 

@@ -24,10 +24,11 @@
 // Description:  constructor
 //----------------------------------------------------------------------------
 ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec):
-  tr(tr_)
+  isData(false), tr(tr_)
 {
   his = new HistTool(OutFile, "Cut", name);
   DefineLabels(spec);
+  IsData();
 }  // -----  end of method ComAna::ComAna  (constructor)  -----
 
 // ===  FUNCTION  ============================================================
@@ -506,3 +507,14 @@ bool ComAna::SaveCutHist(bool choice) const
   return choice;
 }       // -----  end of function ComAna::SaveCutHist  -----
 
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::IsData
+//  Description:  Method to determine Data samples
+//  11/19/2015 -> using genHT for now, which is not store in V3 Data
+// ===========================================================================
+bool ComAna::IsData()
+{
+  isData = tr->getVar<int>("run")!= 1? true : false;
+  return isData;
+}       // -----  end of function ComAna::IsData  -----

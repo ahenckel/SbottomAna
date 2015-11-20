@@ -117,8 +117,11 @@ int main(int argc, char* argv[])
   size_t t0 = clock();
   NTupleReader tr(fChain);
   tr.registerFunction(&passBaselineFunc);
-  tr.registerFunction(&passBaselineTTZ);
-  tr.registerFunction(&passBaselineZinv);
+  //tr.registerFunction(&passBaselineTTZ);
+  tr.registerFunction(boost::bind(passBaselineZinv, _1, "01"));
+  tr.registerFunction(boost::bind(passBaselineZinv, _1, "10"));
+  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01"));
+  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10"));
 
   //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
 
@@ -126,12 +129,15 @@ int main(int argc, char* argv[])
   //                           Prepare the analysis                           //
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
-  AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
   //AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
   //AnaMap["STRM"] = new STRM("STRM", &tr, OutFile);
-  AnaMap["STZinv"] = new STZinv("STZinv", &tr, OutFile,"Zinv");
-  AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile, "TTZ");
-  AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "TTZ");
+  AnaMap["STZinvM"] = new STZinv("STZinvM", &tr, OutFile,"ZinvM");
+  AnaMap["STZinvE"] = new STZinv("STZinvM", &tr, OutFile,"ZinvE");
+  //AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile, "TTZ");
+  //AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "TTZ");
+  AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
+  AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
   //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
   //AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
@@ -156,6 +162,8 @@ int main(int argc, char* argv[])
       std::cout << tr.getEvtNum() << "\t" << ((clock() - t0) / 1000000.0) <<"\tVM:" << vm <<"\tRSS:" << rss<< std::endl;
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ testing Zone ~~~~~
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Set Event Weight ~~~~~
     double stored_weight = -999;
     try {
@@ -164,6 +172,8 @@ int main(int argc, char* argv[])
     }
     if (stored_weight == -999) stored_weight = 1;
     int evtWeight = stored_weight >= 0 ? 1 : -1;
+    if (tr.getVar<int>("run") != 1) // Set weight to 1 for Data
+      evtWeight = 1;
     his->FillTH1("NEvent", 1, evtWeight);
     his->FillTH1("Weight", stored_weight);
 
@@ -174,23 +184,6 @@ int main(int argc, char* argv[])
       it.second->FillCut();
     }
 
-    //AnaMap["STISR"] -> FillCut();
-    //bool passcuts = false;
-    //bool passDJ =  AnaMap["SBDJ"]->FillCut();
-    //bool passISR = AnaMap["SBISR"]->FillCut();
-    //bool passMulti = AnaMap["SBMulti"]->FillCut();
-    //his->FillTH1("TestBit", 0);
-    //if (passDJ) his->FillTH1("TestBit", 1);
-    //if (passISR) his->FillTH1("TestBit", 2);
-    //if (passDJ && passISR) his->FillTH1("TestBit", 3);
-    //if (passDJ || passISR) his->FillTH1("TestBit", 4);
-    //if (passMulti) his->FillTH1("TestBit", 5);
-    ////passcuts = AnaMap["SBDJ"]->FillCut() || passcuts ;
-    ////passcuts = AnaMap["SBISR"]->FillCut() || passcuts;
-    //if (! (passDJ || passISR))
-    //{
-      //AnaMap["PassCut"]->FillCut();
-    //}
   }
 
 //----------------------------------------------------------------------------

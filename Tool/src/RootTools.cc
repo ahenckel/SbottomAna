@@ -338,17 +338,20 @@ int HasTLV(TLorentzVector &obj, std::vector<TLorentzVector> &TLVs)
 //**************************************************************************//
 //                            Register Functions                            //
 //**************************************************************************//
-void passBaselineTTZ(NTupleReader &tr)
+void passBaselineTTZ(NTupleReader &tr, std::string leps)
 {
+  std::stringstream ss;
+  ss <<"TTZ" << ChooseLepPath(leps);
+
   VarPerEvent var(&tr);
-  var.GetRecoZ("TTZ");
-  BaselineVessel blv("TTZ");
+  var.GetRecoZ(ss.str(), leps);
+  BaselineVessel blv(ss.str());
   blv.jetVecLabel = "jetsLVecLepCleaned";
   blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
   blv.prepareTopTagger();
   blv.passBaseline(tr);
   blv.GetnTops(&tr);
-  TopWithoutBVeto(tr, "TTZ");
+  TopWithoutBVeto(tr, ss.str());
 }
 
 // ===  FUNCTION  ============================================================
@@ -365,6 +368,7 @@ bool TopWithoutBVeto(NTupleReader &tr, std::string spec)
     return false;
   }
   topTagger::type3TopTagger type3Ptr;
+  type3Ptr.setdobTagCheck(false);
   type3Ptr.setnJetsSel(AnaConsts::nJetsSel);
   type3Ptr.setCSVS(AnaConsts::cutCSVS);
   type3Ptr.runOnlyTopTaggerPart(jetsforTT, bjsforTT);
@@ -379,25 +383,40 @@ bool TopWithoutBVeto(NTupleReader &tr, std::string spec)
 //         Name:  passBaselineZinv
 //  Description:  
 // ===========================================================================
-void passBaselineZinv(NTupleReader &tr)
+void passBaselineZinv(NTupleReader &tr, std::string leps)
 {
+  std::stringstream ss;
+  ss <<"Zinv" << ChooseLepPath(leps);
+
   VarPerEvent var(&tr);
-  var.GetRecoZ("Zinv");
-  BaselineVessel blv("Zinv");
+  var.GetRecoZ(ss.str(), leps);
+  BaselineVessel blv(ss.str());
   blv.jetVecLabel = "jetsLVecLepCleaned";
   blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
   try
   {
-    tr.getVar<double>("cleanMetPtZinv");
+    tr.getVar<double>("cleanMetPt" + ss.str());
   }
   catch (std::string &var)
   {
     std::cout << "Missing cleanMET! Need to run VarPerEvent::GetRecoZ() first!" << std::endl;
     throw std::runtime_error("Wrong configs of registerFunction");
   }
-  blv.METLabel = "cleanMetPtZinv";
-  blv.METPhiLabel = "cleanMetPhiZinv";
+  blv.METLabel = "cleanMetPt" + ss.str();
+  blv.METPhiLabel = "cleanMetPhi" + ss.str();
   blv.prepareTopTagger();
   blv.passBaseline(tr);
   blv.GetnTops(&tr);
 }       // -----  end of function passBaselineZinv  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ChooseLepPath
+//  Description:  /* cursor */
+// ===========================================================================
+std::string ChooseLepPath(std::string leps)
+{
+  std::bitset<2> lepbit(leps);
+  std::stringstream ss;
+  ss <<  (lepbit.test(0) ? "M":"") <<  (lepbit.test(1) ? "E":"");
+  return ss.str();
+}       // -----  end of function ChooseLepPath  -----
