@@ -82,31 +82,33 @@ bool StopAna::InitCutOrder(std::string ana)
 
   //Add name and order of the cutflow
   CutOrder.push_back("NoCut");
+  CutOrder.push_back("Filter");
+  CutOrder.push_back("nJets");
   CutOrder.push_back("MuonVeto");
   CutOrder.push_back("EleVeto");
   CutOrder.push_back("IskVeto");
-  CutOrder.push_back("nJets");
   CutOrder.push_back("dPhis");
   CutOrder.push_back("BJets");
   CutOrder.push_back("MET");
+  CutOrder.push_back("Tagger");
   CutOrder.push_back("MT2");
   CutOrder.push_back("HT");
-  CutOrder.push_back("Tagger");
-  CutOrder.push_back("Filter");
+  CutOrder.push_back("Baseline");
 
   //Set the cutbit of each cut
   CutMap["NoCut"]    = "00000000000000000";
-  CutMap["MuonVeto"] = "00000000000000001";
-  CutMap["EleVeto"]  = "00000000000000011";
-  CutMap["IskVeto"]  = "00000000000000111";
-  CutMap["nJets"]    = "00000000000001111";
-  CutMap["dPhis"]    = "00000000000011111";
-  CutMap["BJets"]    = "00000000000111111";
-  CutMap["MET"]      = "00000000001111111";
-  CutMap["MT2"]      = "00000000011111111";
-  CutMap["HT"]       = "00000000111111111";
-  CutMap["Tagger"]   = "00000001111111111";
-  CutMap["Filter"]   = "00000011111111111";
+  CutMap["Filter"]   = "00000000000000001";
+  CutMap["nJets"]    = "00000000000000011";
+  CutMap["MuonVeto"] = "00000000000000111";
+  CutMap["EleVeto"]  = "00000000000001111";
+  CutMap["IskVeto"]  = "00000000000011111";
+  CutMap["dPhis"]    = "00000000000111111";
+  CutMap["BJets"]    = "00000000001111111";
+  CutMap["MET"]      = "00000000011111111";
+  CutMap["Tagger"]   = "00000000111111111";
+  CutMap["MT2"]      = "00000001111111111";
+  CutMap["HT"]       = "00000011111111111";
+  CutMap["Baseline"] = "00000111111111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -122,17 +124,18 @@ bool StopAna::CheckCut()
 {
   cutbit.reset();
 
-  cutbit.set(0 , tr->getVar<bool>("passMuonVeto"));
-  cutbit.set(1 , tr->getVar<bool>("passEleVeto"));
-  cutbit.set(2 , tr->getVar<bool>("passIsoTrkVeto"));
-  cutbit.set(3 , tr->getVar<bool>("passnJets"));
-  cutbit.set(4 , tr->getVar<bool>("passdPhis"));
-  cutbit.set(5 , tr->getVar<bool>("passBJets"));
-  cutbit.set(6 , tr->getVar<bool>("passMET"));
-  cutbit.set(7 , tr->getVar<bool>("passMT2"));
-  cutbit.set(8 , tr->getVar<bool>("passHT"));
-  cutbit.set(9 , tr->getVar<bool>("passTagger"));
-  cutbit.set(10, tr->getVar<bool>("passNoiseEventFilter"));
+  cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
+  cutbit.set(1 , tr->getVar<bool>(Label["passnJets"]));
+  cutbit.set(2 , tr->getVar<bool>(Label["passMuonVeto"]));
+  cutbit.set(3 , tr->getVar<bool>(Label["passEleVeto"]));
+  cutbit.set(4 , tr->getVar<bool>(Label["passIsoTrkVeto"]));
+  cutbit.set(5 , tr->getVar<bool>(Label["passdPhis"]));
+  cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
+  cutbit.set(7 , tr->getVar<bool>(Label["passMET"]));
+  cutbit.set(8 , tr->getVar<bool>(Label["passTagger"]));
+  cutbit.set(9 , tr->getVar<bool>(Label["passMT2"]));
+  cutbit.set(10, tr->getVar<bool>(Label["passHT"]));
+  cutbit.set(11, tr->getVar<bool>(Label["passBaseline"]));
 
   return true;
 }       // -----  end of function StopAna::CheckCut  -----
@@ -162,7 +165,7 @@ bool StopAna::FillCut()
 
     if (i+1 == CutOrder.size()) 
     {
-      assert(tr->getVar<bool>("passBaseline"));
+      assert(tr->getVar<bool>(Label["passBaseline"]));
       his->FillTH1("NBase", 1);
       passcuts = true;
     }
@@ -176,8 +179,8 @@ bool StopAna::FillCut()
 // ===========================================================================
 bool StopAna::FillSearchBins(int NCut)
 {
-  int searchbin_id = find_Binning_Index( tr->getVar<int>("cntCSVS"), tr->getVar<int>("nTopCandSortedCnt"), 
-      tr->getVar<double>("best_had_brJet_MT2"), tr->getVar<double>("met"));
+  int searchbin_id = find_Binning_Index( tr->getVar<int>(Label["cntCSVS"]), tr->getVar<int>(Label["nTopCandSortedCnt"]), 
+      tr->getVar<double>(Label["best_had_brJet_MT2"]), tr->getVar<double>(METLabel));
   if( searchbin_id >= 0 )
   {
     his->FillTH1(NCut, "SearchBins", searchbin_id);

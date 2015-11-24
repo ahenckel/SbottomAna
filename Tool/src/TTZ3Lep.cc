@@ -258,10 +258,7 @@ bool TTZ3Lep::Check3rdLep(int NCut)
   if (tr->getVar<int>(Label["nMuons_Base"]) + tr->getVar<int>(Label["nElectrons_Base"]) != 3 ) 
     return false;
 
-  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>(Label["cutMuVec"]);
-  const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>(Label["cutEleVec"]);
-
-  const std::map<unsigned int, std::pair<unsigned int, unsigned int> > ZLepIdx = 
+  const std::map<unsigned int, std::pair<unsigned int, unsigned int> > &ZLepIdx = 
     tr->getMap<unsigned int, std::pair<unsigned int, unsigned int> >(Label["ZLepIdx"]);
 
   std::vector<unsigned int> EleinZ;
@@ -280,6 +277,25 @@ bool TTZ3Lep::Check3rdLep(int NCut)
     }
   }
 
+  std::vector<TLorentzVector> cutMuVec;
+  std::vector<TLorentzVector> cutEleVec;
+
+  try
+  {
+    cutMuVec = tr->getVec<TLorentzVector>(Label["cutMuVec"]);
+  }
+  catch (std::string &var) {
+  }
+
+  try
+  {
+    cutEleVec = tr->getVec<TLorentzVector>(Label["cutEleVec"]);
+  }
+  catch (std::string &var) {;}
+
+
+  if((cutEleVec.size() + cutMuVec.size())  - (EleinZ.size() + MuinZ.size() ) != 1)
+    return false;
   assert((cutEleVec.size() + cutMuVec.size())  - (EleinZ.size() + MuinZ.size() ) == 1);
 
   TLorentzVector thirdEle(0, 0, 0, 0);

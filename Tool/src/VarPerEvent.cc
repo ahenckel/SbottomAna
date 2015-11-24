@@ -179,12 +179,12 @@ bool VarPerEvent::GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
   const double zMass    = 91.0;
   double zMassMin = 0.0;
   double zMassMax = 0.0;
-  if (spec == "TTZ")
+  if (spec.find("TTZ") != std::string::npos)
   {
     zMassMin = 81.0;
     zMassMax = 101.0;
   }
-  if (spec == "Zinv")
+  if (spec.find("Zinv") != std::string::npos)
   {
     zMassMin = 71.0;
     zMassMax = 111.0;
@@ -415,12 +415,12 @@ bool VarPerEvent::GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZL
   const double minElePt = 30.0, highElePt = 30.0;
   double zMassMin = 0.0;
   double zMassMax = 0.0;
-  if (spec == "TTZ")
+  if (spec.find("TTZ") != std::string::npos)
   {
     zMassMin = 81.0;
     zMassMax = 101.0;
   }
-  if (spec == "Zinv")
+  if (spec.find("Zinv") != std::string::npos)
   {
     zMassMin = 71.0;
     zMassMax = 111.0;
