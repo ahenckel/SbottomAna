@@ -45,7 +45,7 @@ class ComAna
     ~ComAna ();                            // destructor
 
     // ====================  ACCESSORS     ===============================
-    bool SetEvtWeight(double weight) const;
+    bool SetEvtWeight(double weight);
     bool SaveCutHist(bool choice) const;
     virtual bool BookHistograms();
     virtual bool InitCutOrder(std::string ana);

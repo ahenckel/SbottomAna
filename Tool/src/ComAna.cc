@@ -28,7 +28,6 @@ ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &Out
 {
   his = new HistTool(OutFile, "Cut", name);
   DefineLabels(spec);
-  IsData();
 }  // -----  end of method ComAna::ComAna  (constructor)  -----
 
 // ===  FUNCTION  ============================================================
@@ -490,9 +489,10 @@ bool ComAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std
 //         Name:  ComAna::SetEvtWeight
 //  Description:  
 // ===========================================================================
-bool ComAna::SetEvtWeight(double weight) const
+bool ComAna::SetEvtWeight(double weight)
 {
    his->SetWeight(weight);
+   IsData();
   return true;
 }       // -----  end of function ComAna::SetEvtWeight  -----
 
