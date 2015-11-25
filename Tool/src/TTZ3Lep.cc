@@ -37,7 +37,8 @@ TTZ3Lep::TTZ3Lep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
     }
     if (spec_.find("E") != std::string::npos)
     {
-      HLTstr.push_back("HLT_Mu45_eta2p1_v2");
+      HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v2");
+      HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v3");
       MCTrigstr.push_back(Label["PassDiEleTrigger"]);
     }
   }

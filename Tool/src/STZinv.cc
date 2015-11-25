@@ -40,6 +40,7 @@ STZinv::STZinv (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &Out
     if (spec_.find("E") != std::string::npos)
     {
       HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v2");
+      HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v3");
       MCTrigstr.push_back(Label["PassDiEleTrigger"]);
     }
   }
@@ -105,6 +106,7 @@ bool STZinv::InitCutOrder(std::string ana)
 
   //Add name and order of the cutflow
   CutOrder.push_back("NoCut");
+  CutOrder.push_back("Filter");
   CutOrder.push_back("Trigger");
   CutOrder.push_back("HasZ");
   CutOrder.push_back("2Leps");
@@ -112,24 +114,23 @@ bool STZinv::InitCutOrder(std::string ana)
   CutOrder.push_back("dPhis");
   CutOrder.push_back("BJets");
   CutOrder.push_back("MET");
+  CutOrder.push_back("Tagger");
   CutOrder.push_back("MT2");
   CutOrder.push_back("HT");
-  CutOrder.push_back("Tagger");
-  CutOrder.push_back("Filter");
 
   //Set the cutbit of each cut
   CutMap["NoCut"]   = "00000000000000000";
-  CutMap["Trigger"] = "00000000000000001";
-  CutMap["HasZ"]    = "00000000000000011";
-  CutMap["2Leps"]   = "00000000000000111";
-  CutMap["nJets"]   = "00000000000001111";
-  CutMap["dPhis"]   = "00000000000011111";
-  CutMap["BJets"]   = "00000000000111111";
-  CutMap["MET"]     = "00000000001111111";
-  CutMap["MT2"]     = "00000000011111111";
-  CutMap["HT"]      = "00000000111111111";
-  CutMap["Tagger"]  = "00000001111111111";
-  CutMap["Filter"]  = "00000011111111111";
+  CutMap["Filter"]  = "00000000000000001";
+  CutMap["Trigger"] = "00000000000000011";
+  CutMap["HasZ"]    = "00000000000000111";
+  CutMap["2Leps"]   = "00000000000001111";
+  CutMap["nJets"]   = "00000000000011111";
+  CutMap["dPhis"]   = "00000000000111111";
+  CutMap["BJets"]   = "00000000001111111";
+  CutMap["MET"]     = "00000000011111111";
+  CutMap["Tagger"]  = "00000000111111111";
+  CutMap["MT2"]     = "00000001111111111";
+  CutMap["HT"]      = "00000011111111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -144,20 +145,17 @@ bool STZinv::InitCutOrder(std::string ana)
 bool STZinv::CheckCut()
 {
   cutbit.reset();
-  cutbit.set(0 , PassTrigger());
-
-  cutbit.set(1 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
-
-  cutbit.set(2 ,  tr->getVar<int>(Label["nMuons_Base"]) + tr->getVar<int>(Label["nElectrons_Base"]) == 2 );
-
-  cutbit.set(3 , tr->getVar<bool>(Label["passnJets"]));
-  cutbit.set(4 , tr->getVar<bool>(Label["passdPhis"]));
-  cutbit.set(5 , tr->getVar<bool>(Label["passBJets"]));
-  cutbit.set(6 , tr->getVar<bool>(Label["passMET"]));
-  cutbit.set(7 , tr->getVar<bool>(Label["passMT2"]));
-  cutbit.set(8 , tr->getVar<bool>(Label["passHT"]));
-  cutbit.set(9 , tr->getVar<bool>(Label["passTagger"]));
-  cutbit.set(10, tr->getVar<bool>(Label["passNoiseEventFilter"]));
+  cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
+  cutbit.set(1 , PassTrigger());
+  cutbit.set(2 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
+  cutbit.set(3 , tr->getVar<int>(Label["nMuons_Base"]) + tr->getVar<int>(Label["nElectrons_Base"]) == 2 );
+  cutbit.set(4 , tr->getVar<bool>(Label["passnJets"]));
+  cutbit.set(5 , tr->getVar<bool>(Label["passdPhis"]));
+  cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
+  cutbit.set(7 , tr->getVar<bool>(Label["passMET"]));
+  cutbit.set(8 , tr->getVar<bool>(Label["passTagger"]));
+  cutbit.set(9 , tr->getVar<bool>(Label["passMT2"]));
+  cutbit.set(10, tr->getVar<bool>(Label["passHT"]));
 
   return true;
 }       // -----  end of function STZinv::CheckCut  -----
