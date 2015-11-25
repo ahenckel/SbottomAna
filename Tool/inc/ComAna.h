@@ -73,6 +73,7 @@ class ComAna
     bool DefineLabels(std::string spec);
     bool PassTrigger();
     bool IsData();
+    bool CheckLeadingLeptons(int NCut);
     // ====================  DATA MEMBERS  ===============================
     std::vector<std::string> CutOrder;
     std::bitset<NBITS> cutbit;

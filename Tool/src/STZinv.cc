@@ -181,6 +181,7 @@ bool STZinv::FillCut()
 
     his->FillTH1("CutFlow", int(i)); 
     ComAna::FillCut(i);
+    ComAna::CheckLeadingLeptons(i);
     FillSearchBins(i);
 
     if (i+1 == CutOrder.size()) 

@@ -136,7 +136,8 @@ int main(int argc, char* argv[])
   AnaMap["STZinvE"] = new STZinv("STZinvE", &tr, OutFile,"ZinvE");
   AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
   AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
-  //AnaMap["TTZDiLep"] = new TTZDiLep("TTZDiLep", &tr, OutFile, "TTZ");
+  AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
+  AnaMap["TTZDiLepE"] = new TTZDiLep("TTZDiLepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "TTZ");
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
   //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
@@ -155,6 +156,12 @@ int main(int argc, char* argv[])
   double vm, rss;
   while(tr.getNextEvent())
   {
+    if (tr.IsFirstEvent() && tr.getVar<int>("run")!= 1)
+    {
+      for (auto& name: tr.getVec<std::string>("TriggerNames"))
+        std::cout << name << std::endl;
+    }
+
     //if (tr.getEvtNum() > 10000) break;
     if (tr.getEvtNum() % 20000 == 0)
     {

@@ -23,8 +23,8 @@
 //      Method:  ComAna
 // Description:  constructor
 //----------------------------------------------------------------------------
-ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec):
-  isData(false), tr(tr_)
+ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_):
+  isData(false), tr(tr_), spec(spec_)
 {
   his = new HistTool(OutFile, "Cut", name);
   DefineLabels(spec);
@@ -160,6 +160,18 @@ bool ComAna::BookHistograms()
   // Search bins
   his->AddTH1C("MT2", "MT2", "MT2", "Events",  300, 0, 1500);
   
+  // Lepton
+  if (spec.find("M") != std::string::npos)
+  {
+    BookTLVHistos("Muon1");
+    BookTLVHistos("Muon2");
+  }
+  if (spec.find("E") != std::string::npos)
+  {
+    BookTLVHistos("Ele1");
+    BookTLVHistos("Ele2");
+  }
+
   return true;
 }       // -----  end of function ComAna::BookHistograms  -----
 
@@ -561,3 +573,47 @@ bool ComAna::PassTrigger()
 
   return false;
 }       // -----  end of function ComAna::PassTrigger  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::CheckLeadingLeptons
+//  Description:  
+// ===========================================================================
+bool ComAna::CheckLeadingLeptons(int NCut)
+{
+  
+  std::vector<TLorentzVector> cutMuVec;
+  std::vector<TLorentzVector> cutEleVec;
+
+  try
+  {
+    cutMuVec = tr->getVec<TLorentzVector>(Label["cutMuVec"]);
+  }
+  catch (std::string &var) {
+  }
+
+  try
+  {
+    cutEleVec = tr->getVec<TLorentzVector>(Label["cutEleVec"]);
+  }
+  catch (std::string &var) {;}
+
+  if (cutMuVec.size() > 0)
+  {
+    FillTLVHistos(NCut, "Muon1", cutMuVec.at(0));
+  }
+  if (cutMuVec.size() > 1)
+  {
+    FillTLVHistos(NCut, "Muon2", cutMuVec.at(1));
+  }
+
+  if (cutEleVec.size() > 0)
+  {
+    FillTLVHistos(NCut, "Ele1", cutEleVec.at(0));
+  }
+
+  if (cutEleVec.size() > 1)
+  {
+    FillTLVHistos(NCut, "Ele2", cutEleVec.at(1));
+  }
+  return true;
+}       // -----  end of function ComAna::CheckLeadingLeptons  -----

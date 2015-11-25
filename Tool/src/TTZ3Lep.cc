@@ -194,6 +194,7 @@ bool TTZ3Lep::FillCut()
     }
 
     ComAna::FillCut(i);
+    ComAna::CheckLeadingLeptons(i);
     his->FillTH1(i, "NRecoTopsNoB", tr->getVar<int>(Label["NTopsB"]));
 
     Check3rdLep(i);

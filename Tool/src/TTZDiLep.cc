@@ -26,12 +26,22 @@ TTZDiLep::TTZDiLep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> 
 : ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
-  if (spec_ == "TTZ")
+  if (spec_.find("TTZ") != std::string::npos)
   {
     jetVecLabel = "jetsLVecLepCleaned";
     CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+    if (spec_.find("M") != std::string::npos)
+    {
+      HLTstr.push_back("HLT_Mu45_eta2p1_v2");
+      MCTrigstr.push_back(Label["PassDiMuonTrigger"]);
+    }
+    if (spec_.find("E") != std::string::npos)
+    {
+      HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v2");
+      HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v3");
+      MCTrigstr.push_back(Label["PassDiEleTrigger"]);
+    }
   }
-
 }  // -----  end of method TTZDiLep::TTZDiLep  (constructor)  -----
 
 //----------------------------------------------------------------------------
@@ -142,7 +152,7 @@ bool TTZDiLep::CheckCut()
   std::vector<int> vbinTop = BJetTopAsso();
   cutbit.set(7 , vbinTop.size() > 0);
 
-  cutbit.set(8 , tr->getVar<bool>(Label["PassDiMuonTrigger"]) || tr->getVar<bool>(Label["PassDiEleTrigger"]));
+  cutbit.set(8 , PassTrigger());
   return true;
 }       // -----  end of function TTZDiLep::CheckCut  -----
 
