@@ -535,7 +535,11 @@ bool ComAna::PassTrigger()
     for(auto &hlt : HLTstr)
     {
       auto found = std::find(triggerName.begin(), triggerName.end(), hlt);
-      HLTIdx[hlt] = found - triggerName.begin();
+      if (found != triggerName.end())
+      {
+        //std::cout <<  hlt <<"  "<<  found - triggerName.begin()  << std::endl;
+        HLTIdx[hlt] = found - triggerName.begin();
+      }
     }
     
     bool pass=false;
