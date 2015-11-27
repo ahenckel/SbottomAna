@@ -83,14 +83,29 @@ class PyDraw():
     def PadRedraw(self, pad, kw):
         addlatex=kw.get('addlatex', ())
         addline=kw.get('addline', ())
-        if hasattr(pad, "ratio"):
-            addlatex=kw.get('Ratioaddlatex', ())
-            addline=kw.get('Ratioaddline', ())
         norm=kw.get('norm', None)
         pad.cd()
         pad.Update()
-        pad.SetLogx(kw.get("Logx", False))
-        pad.SetLogy(kw.get("Logy", False))
+        if hasattr(pad, "ratio"):
+            addlatex=kw.get('Ratioaddlatex', ())
+            addline=kw.get('Ratioaddline', ())
+            norm="No"
+            pad.SetLogx(kw.get("RatioLogx", False))
+            pad.SetLogy(kw.get("RatioLogy", False))
+            pad.SetTickx(kw.get("RatioTickx", False))
+            pad.SetTicky(kw.get("RatioTicky", False))
+            pad.SetGridx(kw.get("RatioGridx", False))
+            pad.SetGridy(kw.get("RatioGridy", False))
+        else:
+            pad.SetLogx(kw.get("Logx", False))
+            try:
+                pad.SetLogy(kw.get("Logy", False))
+            except:
+                pad.SetLogy(False)
+            pad.SetTickx(kw.get("Tickx", False))
+            pad.SetTicky(kw.get("Ticky", False))
+            pad.SetGridx(kw.get("Gridx", False))
+            pad.SetGridy(kw.get("Gridy", False))
 
         if norm != "No":
             if norm is None or norm == "None" or norm == "Unit":
@@ -314,7 +329,6 @@ class PyDraw():
 
         if axis == "Y":
             haxis = hists[0].GetYaxis()
-            haxis.SetMoreLogLabels(kw.get("Logy", False))
         elif axis == "X":
             haxis = hists[0].GetXaxis()
             haxis.SetMoreLogLabels(kw.get("Logx", False))
@@ -331,6 +345,8 @@ class PyDraw():
             [hist.GetMinimum() for hist in hists]
             histmax = max([hist.GetMaximum() for hist in hists])
             histmin = min([hist.GetMinimum() for hist in hists])
+            # histmax = max([hist.GetBinContent(hist.GetMaximumBin()) for hist in hists])
+            # histmin = max([hist.GetBinContent(hist.GetMinimumBin()) for hist in hists])
         elif axis == "X":
             histmax = max([hist.GetXaxis().GetXmax() for hist in hists])
             histmin = min([hist.GetXaxis().GetXmin() for hist in hists])
@@ -353,10 +369,13 @@ class PyDraw():
             returnmin = None if len(templist) == 0 else min(templist)
         # Still None? Set to default
         if returnmin is None:
-            if axis == "Y" and "Logy" in kw:
-                bins = []
-                [bins.extend(list(h.y())) for h in hists]
-                returnmin = min([x for x in bins if x > 0]) / 5
+            if axis == "Y" and "%sLogy" % prefix in kw:
+                if all([isinstance(h, rootpy.plotting.hist._Hist) for h in hists]):
+                    bins = []
+                    [bins.extend(list(h.y())) for h in hists]
+                    returnmin = min([x for x in bins if x > 0]) / 5
+                else:
+                    returnmin = 0.1
             else:
                 returnmin = histmin
 
@@ -379,7 +398,7 @@ class PyDraw():
         # Still None? Set to default
         if returnmax is None:
             if axis == "Y":
-                if "Logy" in kw:
+                if "%sLogy" % prefix in kw:
                     returnmax = 50 * histmax if histmax > 0 else 0 * histmax
                 else:
                     returnmax = 1.25 * histmax if histmax > 0 else 0.8 * histmax
@@ -411,7 +430,7 @@ class PyDraw():
             hist.GetYaxis().SetTitleSize(ROOT.gStyle.GetTitleSize('Y')*2)
             hist.GetYaxis().SetLabelSize(ROOT.gStyle.GetLabelSize("Y")*2)
             hist.GetYaxis().SetTickLength(ROOT.gStyle.GetTickLength("Y"))
-            hist.GetYaxis().SetTitleOffset(ROOT.gStyle.GetTitleOffset('Y')/4)
+            hist.GetYaxis().SetTitleOffset(ROOT.gStyle.GetTitleOffset('Y')/3)
             hist.GetYaxis().SetNdivisions(110)
             hist.GetYaxis().CenterTitle()
             # hist.GetYaxis().CenterLabels()
@@ -428,8 +447,19 @@ class PyDraw():
         for entry in addlatex:
             if entry[2] == "_Cut_":
                 tmplist = list(entry)
-                tmplist[2] = "Cut : %s" % self._hists[0].cutname
+                if self._hists[0].cutname =="":
+                    return False
+                else:
+                    tmplist[2] = "Cut : %s" % self._hists[0].cutname
                 entry = tuple(tmplist)
+            elif entry[2] == "_Dir_":
+                tmplist = list(entry)
+                if self._hists[0].dirname =="":
+                    return False
+                else:
+                    tmplist[2] = self._hists[0].dirname.replace("Cut_", "")
+                entry = tuple(tmplist)
+
             if len(entry) > 3:
                 latex.SetTextColor(entry[3])
             if len(entry) > 4:
@@ -538,13 +568,13 @@ class PyDraw():
                 # rhists = self.GetRatioPlot(formular, hists, hists)
         else:
             if not isinstance(ratiohist, list):
-                ratiohist = [ratiohist]
-            rhists = self.GetRatioPlot(formular, ratiohist, hists)
+                rhists = [ratiohist]
+            # rhists = self.GetRatioPlot(formular, ratiohist, hists)
 
         for rit in range(0, len(rhists)):
             rhists[rit].SetFillColor(0)
             if rit == 0:
-                rhists[rit].Draw("hist")
+                rhists[rit].Draw("E0")
             else:
                 rhists[rit].Draw("hist same")
 
@@ -557,10 +587,7 @@ class PyDraw():
         else:
             self.DrawTLatex((0.12, 0.2, "No Ratio Plot!", 2, 0.7))
 
-        tempkw = copy.deepcopy(kw)
-        tempkw["norm"] = "No"
-        self.PadRedraw(canvas.botpad, tempkw)
-        del tempkw
+        self.PadRedraw(canvas.botpad, kw)
 
     def GetRatioPlot(self, formular, ratioObj, hists):
         rhists = []
@@ -677,9 +704,10 @@ class PyDraw():
     def GetHistForEval(self, hist):
         rehist = None
         if hist.InheritsFrom("THStack"):
-            rehist = hist.GetStack().Last().Clone()
+            rehist = rootpy.asrootpy(hist.GetStack().Last().Clone())
         else:
             rehist = hist.Clone()
+        rehist.Sumw2();
         setattr(rehist, "title", hist.title)
         return rehist
 
@@ -753,6 +781,10 @@ class PyDraw():
             # hists = [x for x in hists if "_" in x.histname]
             rehist.sort(key=lambda x: int(x.histname.split("_")[-1]))
 
+        ## Update PyDraw properties from input hists
+        alllumi = [h.lumi for h in rehist]
+        if all(alllumi[0] == item for item in alllumi):
+            self.lumi = alllumi[0]
         return rehist
 
     def MergeHistCate(self, hists):
@@ -888,6 +920,7 @@ class PyDraw():
         self.canvas.Clear()
 
         hists = []
+        ratiohists = []
         hists += stackHists
         if overlayHists is not None:
             self.UpdateLineColor(overlayHists)
@@ -897,20 +930,38 @@ class PyDraw():
             hists += ontopHists
         self.UpdateKWargs(hists, kw)
         legloc = kw.get('legloc', "topright")
-        options = kw.get('DrawOpt', '')
+        options = kw.get('DrawOpt', 'Hist')
 
         if 'RatioOpt' in kw or 'RatioHist' in kw:
             canvas = self.PrepRatioPad(loc="top")
 
         leg = self.SetLegend([hist.title for hist in hists], legloc)
+        ## Add Legend by order first
+        if overlayHists is not None:
+            for hist in overlayHists:
+                hist.SetLineColor(hist.Linecolor)
+                hist.SetLineStyle(hist.Linestyle)
+                leg.AddEntry(hist, hist.title, "p")
+                ratiohists.append(hist)
+
+        if ontopHists is not None:
+            for hist in ontopHists:
+                hist.SetLineColor(hist.Linecolor)
+                hist.SetLineStyle(hist.Linestyle)
+                hist.title += "#scale[0.8]{#color[2]{x Norm}}"
+                leg.AddEntry(hist, hist.title, "l")
+                ratiohists.append(hist)
+
         ##########################
         # Draw Stack
-        stack = ROOT.THStack("stack", "stack")
+        stack = rootpy.plotting.HistStack()
         ROOT.SetOwnership(stack, False)  # Trick to fix the crashing at the end of run
         for hist in stackHists:
             hist.SetFillColor(hist.Fillcolor)
-            hist.SetFillStyle(hist.Fillstyle)
-            hist.SetLineColor(hist.Linecolor)
+            hist.SetFillStyle(1001)
+            hist.SetLineColor(hist.Fillcolor)
+            hist.SetMarkerColor(hist.Fillcolor)
+            hist.SetMarkerStyle(hist.Markerstyle)
             stack.Add(hist)
             leg.AddEntry(hist, hist.title, "f")
         stack.Draw(options)
@@ -923,6 +974,7 @@ class PyDraw():
         stack.GetXaxis().SetTitle(hists[0].GetXaxis().GetTitle())
         stack.GetYaxis().SetTitle(hists[0].GetYaxis().GetTitle())
         hists.insert(0, stack)
+        ratiohists.append(stack)
         totalStack = stack.GetStack().Last().Integral()
 
         # Draw overlayHists
@@ -930,8 +982,7 @@ class PyDraw():
             for hist in overlayHists:
                 hist.SetLineColor(hist.Linecolor)
                 hist.SetLineStyle(hist.Linestyle)
-                hist.Draw("Hist same")
-                leg.AddEntry(hist, hist.title, "l")
+                hist.Draw("e1p same")
 
         if ontopHists is not None:
             for hist in ontopHists:
@@ -942,7 +993,7 @@ class PyDraw():
                     temphist.Scale(totalStack / temphist.Integral())
                 temphist.Draw("Hist same")
                 temphist.title += "#scale[0.8]{#color[2]{x Norm}}"
-                leg.AddEntry(temphist, temphist.title, "l")
+                ratiohists.append(hist)
 
         leg.Draw()
 
@@ -950,7 +1001,7 @@ class PyDraw():
         if 'RatioOpt' in kw or 'RatioHist' in kw:
             self.UpdateAxis(hists, kw, prefix="Ratio", loc="top")
             self.PadRedraw(canvas.toppad, kw)
-            self.DrawRatioPlot(hists, kw, canvas=canvas)
+            self.DrawRatioPlot(ratiohists, kw, canvas=canvas)
             return self.CanvasSave(canvas=canvas,
                                    outname=kw.get('outname', "output_%s" % time.strftime("%y%m%d_%H%M%S")))
         else:
