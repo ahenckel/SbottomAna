@@ -108,9 +108,9 @@ bool STZinv::InitCutOrder(std::string ana)
   CutOrder.push_back("NoCut");
   CutOrder.push_back("Filter");
   CutOrder.push_back("Trigger");
-  CutOrder.push_back("HasZ");
-  CutOrder.push_back("2Leps");
   CutOrder.push_back("nJets");
+  CutOrder.push_back("2Leps");
+  CutOrder.push_back("HasZ");
   CutOrder.push_back("dPhis");
   CutOrder.push_back("BJets");
   CutOrder.push_back("MET");
@@ -122,9 +122,9 @@ bool STZinv::InitCutOrder(std::string ana)
   CutMap["NoCut"]   = "00000000000000000";
   CutMap["Filter"]  = "00000000000000001";
   CutMap["Trigger"] = "00000000000000011";
-  CutMap["HasZ"]    = "00000000000000111";
+  CutMap["nJets"]   = "00000000000000111";
   CutMap["2Leps"]   = "00000000000001111";
-  CutMap["nJets"]   = "00000000000011111";
+  CutMap["HasZ"]    = "00000000000011111";
   CutMap["dPhis"]   = "00000000000111111";
   CutMap["BJets"]   = "00000000001111111";
   CutMap["MET"]     = "00000000011111111";
@@ -147,9 +147,9 @@ bool STZinv::CheckCut()
   cutbit.reset();
   cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
   cutbit.set(1 , PassTrigger());
-  cutbit.set(2 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
+  cutbit.set(2 , tr->getVar<bool>(Label["passnJets"]));
   cutbit.set(3 , tr->getVar<int>(Label["nMuons_Base"]) + tr->getVar<int>(Label["nElectrons_Base"]) == 2 );
-  cutbit.set(4 , tr->getVar<bool>(Label["passnJets"]));
+  cutbit.set(4 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
   cutbit.set(5 , tr->getVar<bool>(Label["passdPhis"]));
   cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
   cutbit.set(7 , tr->getVar<bool>(Label["passMET"]));
@@ -183,6 +183,11 @@ bool STZinv::FillCut()
     ComAna::FillCut(i);
     ComAna::CheckLeadingLeptons(i);
     FillSearchBins(i);
+
+    for(auto &z: tr->getVec<TLorentzVector>(Label["recoZVec"]))
+    {
+      FillTLVHistos(i, "RecoZ", z);
+    }
 
     if (i+1 == CutOrder.size()) 
     {

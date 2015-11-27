@@ -29,14 +29,31 @@ class PyHist:
         self.xs = self.file.Get(XSName).GetBinContent(2) if XSName in self.file else 0
         self.Nevent = self.file.Get(EventName).GetBinContent(2) if EventName in self.file else 0
         self.cutpat = re.compile("^(\w*)_(\d+)")
+        self.isData = self.__isData__()
+
+    def __isData__(self, XSName="XS"):
+        xshist = None
+        if XSName in self.file:
+            xshist = self.file.Get(XSName)
+        else:
+            return False
+        if xshist.GetXaxis().GetBinLabel(5) != "nEvts":
+            return False
+        nEvt = xshist.GetBinContent(5)
+        return (nEvt == 1 and self.xs == 1)
 
     def GetCutFlow(self, dirname="", Norm=None):
         if dirname == "":
             cutflowhist = self.file.Get("CutFlow")
         else:
             cutflowhist = self.file.Get("%s/CutFlow" % dirname)
+
         if Norm is None:
+            pass
+        elif Norm == "Unit":
             cutflowhist.Scale(1/cutflowhist.GetBinContent(1))
+        elif Norm == "Lumi":
+            cutflowhist.Scale(self.xs * self.lumi /cutflowhist.GetBinContent(1))
         elif Norm == "XS":
             cutflowhist.Scale(self.xs/cutflowhist.GetBinContent(1))
         else:
@@ -59,10 +76,10 @@ class PyHist:
         hist.dirname = dirname
         hist.histname = histname
 
-        if hist.Integral() != 0 and histname != "CutFlow":
-            if norm == "Lumi" and self.xs != 0 and self.Nevent != 0:
+        if hist.Integral(0, hist.GetNbinsX()+1) != 0 and histname != "CutFlow":
+            if norm == "Lumi" and self.xs != 0 and self.Nevent != 0 and not self.isData:
                 scale = float(self.lumi) * self.xs * nBase / self.Nevent
-                hist.Scale(scale/hist.Integral())
+                hist.Scale(scale/hist.Integral(0, hist.GetNbinsX()+1))
             elif norm == "Unit":
                 hist.Scale(1/hist.Integral())
 
@@ -76,8 +93,12 @@ class PyHist:
             setattr(hist, "outname", hist.histname)
         if not hasattr(hist, "Linecolor"):
             setattr(hist, "Linecolor", 1)
+        if not hasattr(hist, "Markercolor"):
+            setattr(hist, "Markercolor", 1)
         if not hasattr(hist, "Linestyle"):
             setattr(hist, "Linestyle", 1)
+        if not hasattr(hist, "Markerstyle"):
+            setattr(hist, "Markerstyle", 1)
         if not hasattr(hist, "ptype"):
             setattr(hist, "ptype", "Signal")
         if not hasattr(hist, "proname"):
@@ -101,6 +122,8 @@ class PyHist:
         else:
             setattr(hist, "striphistname", rematch.group(1))
 
+        setattr(hist, "xs", self.xs)
+        setattr(hist, "lumi", self.lumi)
         self.HistRebin(hist)
         return hist
 
@@ -174,3 +197,16 @@ class PyHist:
             cutbin = int(patmat.group(2))+1
             cutflowhist = self.file.Get("%s/CutFlow" % dirname)
             return cutflowhist.GetXaxis().GetBinLabel(cutbin)
+
+    def SetLumi(self, lumi_):
+        self.lumi = lumi_
+
+    def GetFileLumi(self, XSName="XS"):
+        xshist = None
+        if XSName in self.file:
+            xshist = self.file.Get(XSName)
+        else:
+            return 0.0
+        if xshist.GetXaxis().GetBinLabel(3) != "lumi":
+            return 0.0
+        return xshist.GetBinContent(3)

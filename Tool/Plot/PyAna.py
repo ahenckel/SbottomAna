@@ -29,13 +29,29 @@ class PyAna():
 
     def FormProcesses(self):
         for key, vdict in self.Prodmap.items():
-            tempPro = PyProcess(key, ["%s/%s" % (self.Directory, file) for file in vdict["file"]], vdict)
+            tempPro = PyProcess(key, ["%s/%s" % (self.Directory, file) for file in vdict["file"]], vdict, lumi = self.Lumi)
             if hasattr(tempPro, "ProList") and len(tempPro.ProList) != 0:
                 self.AllProds[key] = tempPro
+
+    def RemoveProcessese(self, plist_):
+        if not isinstance(plist_, list):
+            plist = [plist_]
+        else:
+            plist = plist_
+
+        for p in plist:
+            if p in self.AllProds:
+                del self.AllProds[p]
 
 # ============================================================================#
 # ----------------------------     User Access     ---------------------------#
 # ============================================================================#
+    def GetPro(self, key=""):
+        if key=="" or key not in self.AllProds:
+            return None
+        else:
+            return self.AllProds[key]
+
     def GetProNames(self, ptype=""):
         if ptype != "":
             return [signal for signal in self.AllProds.keys() if self.AllProds[signal].stype == ptype]
@@ -53,7 +69,7 @@ class PyAna():
         proname, dirname, histname = self.FormListofHist(proname_, dirname_, histname_)
 
         for hpro in proname:
-            if hpro in ["Data", "Background", "Signal"]:
+            if hpro in ["Background", "Signal"]:
                 if hpro in self.AllProds:
                     self.AllProds.pop(hpro, None)
 
@@ -62,6 +78,8 @@ class PyAna():
                 for hhist in histname:
                     # for key, value in self.AllProds.items():
                     lhist = self.AllProds[hpro].GetHist(hdist, hhist, norm, BaseName, **kw)
+                    if "lumi" in kw and kw["lumi"] != self.Lumi:
+                        lhist.Scale(kw["lumi"]/self.Lumi)
                     lhist.proname = hpro
                     hists.append(lhist)
         self.SmartLegendEntry(hists, proname, dirname, histname)
@@ -158,7 +176,7 @@ class PyAna():
             if len(histnames) != 1:
                 leglable += lhist.HistLabel + " " if hasattr(lhist, "HistLabel") else lhist.histname + " "
             if len(pronames) == 1 and len(dirnames) == 1 and len(histnames) == 1:
-                leglable += lhist.cutname
+                leglable += self.Prodmap[lhist.proname]["label"]
 
             # Output filename
             if len(pronames) == 1:
@@ -171,6 +189,11 @@ class PyAna():
             # Lagend Style
             # Can't do much here. This should be handled in PyDraw
             lhist.title = leglable.strip()
+            if lhist.title == "":
+                if lhist.proname in self.Prodmap:
+                    lhist.title= self.Prodmap[lhist.proname]["label"] + " "
+                else:
+                    lhist.title= lhist.proname + " "
             lhist.outname = outname.strip("_")
 
     def DumpContent(self, filename=".Hist"):
@@ -200,4 +223,30 @@ class PyAna():
         f.close()
 
         self.AllProds.itervalues().next().DumpContent(filename, True)
+
+    def SetLumi(self, lumi_):
+        self.Lumi = lumi_
+        for k,v in self.AllProds.iteritems():
+            v.SetLumi(lumi_)
+
+    def GetLumi(self):
+        return self.Lumi
+
+    def GetDataLumi(self, dataset_=""):
+        localumi = 0
+        if not isinstance(dataset_, list):
+            dataset = [dataset_]
+        else:
+            dataset = dataset_
+
+        if len(dataset) == 0 or dataset[0] == "":
+            for proname in self.GetProNames("Data"):
+                for pyhist in self.AllProds[proname].ProList:
+                    localumi += pyhist.GetFileLumi()
+            return localumi
+
+        for proname in dataset:
+            for pyhist in self.AllProds[proname].ProList:
+                localumi += pyhist.GetFileLumi()
+        return localumi
 

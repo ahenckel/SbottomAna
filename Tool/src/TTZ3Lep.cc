@@ -105,8 +105,9 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
   CutOrder.push_back("NoCut");
   CutOrder.push_back("Filter");
   CutOrder.push_back("Trigger");
-  CutOrder.push_back("HasZ");
+  CutOrder.push_back("nJets");
   CutOrder.push_back("3Leps");
+  CutOrder.push_back("HasZ");
   CutOrder.push_back("BJets");
   CutOrder.push_back("Tagger");
   CutOrder.push_back("MET40");
@@ -115,13 +116,14 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
   //Set the cutbit of each cut
   CutMap["NoCut"]   = "00000000000000000";
   CutMap["Filter"]  = "00000000000000001";
-  CutMap["Trigger"] = "00000000001000001";
-  CutMap["HasZ"]    = "00000000001000011";
-  CutMap["3Leps"]   = "00000000001000111";
-  CutMap["BJets"]   = "00000000001001111";
-  CutMap["Tagger"]  = "00000000001011111";
-  CutMap["MET40"]   = "00000000001111111";
-  CutMap["2B1T"]    = "00000000011110111";
+  CutMap["Trigger"] = "00000000000000011";
+  CutMap["nJets"]   = "00000000000000111";
+  CutMap["3Leps"]   = "00000000000001111";
+  CutMap["HasZ"]    = "00000000000011111";
+  CutMap["BJets"]   = "00000000000111111";
+  CutMap["Tagger"]  = "00000000001111111";
+  CutMap["MET40"]   = "00000000011111111";
+  CutMap["2B1T"]    = "00000000111111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -139,19 +141,21 @@ bool TTZ3Lep::CheckCut()
 
   // Check event has Z
   //cutbit.set(1 , HasZ());
-  cutbit.set(1 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
+  cutbit.set(1 , PassTrigger());
 
-  cutbit.set(2 ,  tr->getVar<int>(Label["nMuons_Base"]) + tr->getVar<int>(Label["nElectrons_Base"]) == 3 );
+  cutbit.set(2 , tr->getVar<bool>(Label["passnJets"]));
 
-  cutbit.set(3 , tr->getVar<int>(Label["cntCSVS"]) >= 1);
+  cutbit.set(3 ,  tr->getVar<int>(Label["nMuons_Base"]) + tr->getVar<int>(Label["nElectrons_Base"]) == 3 );
 
-  cutbit.set(4 , tr->getVar<int>(Label["NTopsB"]) >= 1);
+  cutbit.set(4 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
 
-  cutbit.set(5 , tr->getVar<double>(METLabel) > 40);
+  cutbit.set(5 , tr->getVar<int>(Label["cntCSVS"]) >= 1);
 
-  cutbit.set(6 , PassTrigger());
+  cutbit.set(6 , tr->getVar<int>(Label["NTopsB"]) >= 1);
 
-  cutbit.set(7 , tr->getVar<int>(Label["cntCSVS"]) == 2);
+  cutbit.set(7 , tr->getVar<double>(METLabel) > 40);
+
+  cutbit.set(8 , tr->getVar<int>(Label["cntCSVS"]) == 2);
 
   return true;
 }       // -----  end of function TTZ3Lep::CheckCut  -----

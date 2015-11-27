@@ -46,10 +46,13 @@ class PyProcess():
             for var in vars(hists[0]):
                 if var not in rehist:
                     setattr(rehist, var, getattr(hists[0], var))
+            # Set XS of the rehist
+            rehist.xs = sum([h.xs for h in hists])
             done = True
 
         if done and histname == "CutFlow":
-            rehist.Scale(1/rehist.GetBinContent(1))
+            if norm == "Unit":
+                rehist.Scale(1/rehist.GetBinContent(1))
 
         rehist.ptype = self.stype
         rehist.norm = norm
@@ -87,3 +90,8 @@ class PyProcess():
         hdenorminator.Divide(hnumerator, hdenorminator, 1, 1, "B")
         hdenorminator.GetYaxis().SetTitle("Efficiency")
         return hdenorminator
+
+    def SetLumi(self, lumi_):
+        self.lumi = lumi_
+        for pyhist in self.ProList:
+            pyhist.SetLumi(lumi_)

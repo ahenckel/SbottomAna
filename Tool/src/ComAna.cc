@@ -345,7 +345,12 @@ bool ComAna::BookTLVHistos(std::string name)
   his->AddTH1C(ss.str(), ss.str(), "#phi", ylabel.str(),  20, -5, 5);
   ss.str("");
   ss << name <<"Mass";
-  his->AddTH1C(ss.str(), ss.str(), "Mass", ylabel.str(),  100, 0, 500);
+  if (name.find("RecoZ") != std::string::npos)
+  {
+    his->AddTH1C(ss.str(), ss.str(), "Mass", ylabel.str(),  100, 50, 150);
+  }
+  else
+    his->AddTH1C(ss.str(), ss.str(), "Mass", ylabel.str(),  100, 0, 500);
 
   return true;
 }       // -----  end of function ComAna::BookTLVHistos  -----
