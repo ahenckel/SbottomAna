@@ -116,6 +116,7 @@ int main(int argc, char* argv[])
   //clock to monitor the run time
   size_t t0 = clock();
   NTupleReader tr(fChain);
+  tr.registerFunction(boost::bind(PassEventListFilter, _1, SamplePro));
   tr.registerFunction(&passBaselineFunc);
   //tr.registerFunction(&passBaselineTTZ);
   tr.registerFunction(boost::bind(passBaselineZinv, _1, "01"));
