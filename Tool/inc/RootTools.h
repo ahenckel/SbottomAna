@@ -40,7 +40,6 @@
 #include "SusyAnaTools/Tools/samples.h"
 #include "SusyAnaTools/Tools/NTupleReader.h"
 #include "SusyAnaTools/Tools/baselineDef.h"
-#include "SusyAnaTools/Tools/EventListFilter.h"
 
 std::map<std::string, double> GetXS(std::string name);
 int GetCutBin( std::vector<std::string> &CutOrder , std::string name);
@@ -65,6 +64,7 @@ bool TopWithoutBVeto(NTupleReader &tr, std::string spec);
 std::string ChooseLepPath(std::string leps);
 void passBaselineZinv(NTupleReader &tr, std::string leps);
 void passBaselineTTZ(NTupleReader &tr, std::string leps);
-bool PassEventListFilter(NTupleReader &tr, std::map<std::string, double> SamplePro);
+std::string GetEventFilterList(std::string dataset);
+template<class T> void PassEventListFilter(NTupleReader &tr, T *filter);
 
 #endif   // ----- #ifndef MY_ROOTTOOLS_INC  -----

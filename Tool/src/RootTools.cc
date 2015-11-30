@@ -54,7 +54,7 @@ std::map<std::string, double> GetXS(std::string name)
     reVal["kfactor"] = allSamples[keyString].kfactor;
     reVal["nEvts"] = allSamples[keyString].nEvts;
     reVal["color"] = allSamples[keyString].color;
-    reVal[keyString] = -999.8;
+    reVal[GetEventFilterList(keyString)] = -999.8;
 
     std::cout << " Found " << keyString << " with XS " <<  allSamples[keyString].xsec  << " with kFactor " 
       << allSamples[keyString].kfactor << std::endl;
@@ -423,52 +423,63 @@ std::string ChooseLepPath(std::string leps)
 }       // -----  end of function ChooseLepPath  -----
 
 // ===  FUNCTION  ============================================================
-//         Name:  PassEventListFilter
-//  Description:  /* cursor */
+//         Name:  GetEventFilterList
+//  Description:  
 // ===========================================================================
-bool PassEventListFilter(NTupleReader &tr, std::map<std::string, double> SamplePro)
+std::string GetEventFilterList(std::string dataset)
 {
-  std::string dataset = "";
-  for(auto &key : SamplePro)
-  {
-    if (key.second == -999.8)
-    {
-      dataset = key.first;
-    }
-  }
   assert(dataset != "");
-
   if (dataset.find("Data") == std::string::npos)
   {
-    return true;
+    return "";
   }
-
   typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
   boost::char_separator<char> sep("_");
   tokenizer tokens(dataset, sep);
   tokenizer::iterator tok_iter = tokens.begin();
   tok_iter ++; // Get keyword after Data_
 
+  std::string cscfile = "";
   std::stringstream ss;
   ss << "FileList/" << *tok_iter <<"_csc2015.txt";
   std::ifstream ifile(ss.str());
   if (!ifile)
   {
-    std::cout << " No BeamHole File for " << *tok_iter << std::endl;
-    throw 0;
-  }
+    ss.str("");
+    ss << *tok_iter <<"_csc2015.txt";
+    std::ifstream ifile2(ss.str());
+    if (!ifile2)
+    {
+      std::cout << " No BeamHole File for " << *tok_iter << std::endl;
+      throw 0;
+    } else
+      cscfile = ss.str();
+  } else cscfile = ss.str();
+  assert(cscfile != "");
 
-  EventListFilter filter(ss.str());
+  return cscfile;
+}       // -----  end of function GetEventFilterList  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  PassEventListFilter
+//  Description:  Since EventFilter included both definition and declaration,
+//  using template function to avoid double symbol :-(
+// ===========================================================================
+  template<class T>
+void PassEventListFilter(NTupleReader &tr, T *filter)
+{
   bool beamHaloFilter = true;
-  if(filter.Initialized()) 
+  if(filter->Initialized()) 
   {
     const unsigned int& run =   tr.getVar<unsigned int>("run");
     const unsigned int& lumi  = tr.getVar<unsigned int>("lumi");
     const unsigned int& event = tr.getVar<unsigned int>("event");
-    beamHaloFilter = filter.CheckEvent(run, lumi, event);
+    beamHaloFilter = filter->CheckEvent(run, lumi, event);
+    //if (!beamHaloFilter)
+    //{
     //std::cout << " Run " << run <<" lumi " << lumi <<" event " << event <<" filter " << beamHaloFilter << std::endl;
+    //}
   }
   tr.registerDerivedVar("CSCbeamHaloFilter", beamHaloFilter);
 
-  return false;
 }       // -----  end of function PassEventListFilter  -----

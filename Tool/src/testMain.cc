@@ -50,6 +50,7 @@
 // SusyAnaTools
 #include "SusyAnaTools/Tools/baselineDef.h"
 #include "SusyAnaTools/Tools/NTupleReader.h"
+#include "SusyAnaTools/Tools/EventListFilter.h"
 
 
 int main(int argc, char* argv[])
@@ -112,11 +113,24 @@ int main(int argc, char* argv[])
     his->FillTPro("XS", static_cast<int>(i), SamplePro[binlabel]);
   }
 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setup EventFilter ~~~~~
+  EventListFilter *filter = NULL;
+  for(auto &it : SamplePro){
+    if (it.second == -999.8)
+    {
+      if (it.first == "")
+      {
+        filter = new EventListFilter();
+      }
+      else
+        filter = new EventListFilter(it.first);
+    }
+  }
 
   //clock to monitor the run time
   size_t t0 = clock();
   NTupleReader tr(fChain);
-  tr.registerFunction(boost::bind(PassEventListFilter, _1, SamplePro));
+  tr.registerFunction(boost::bind(PassEventListFilter<EventListFilter>, _1, filter));
   tr.registerFunction(&passBaselineFunc);
   //tr.registerFunction(&passBaselineTTZ);
   tr.registerFunction(boost::bind(passBaselineZinv, _1, "01"));
