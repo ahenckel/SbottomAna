@@ -460,26 +460,3 @@ std::string GetEventFilterList(std::string dataset)
   return cscfile;
 }       // -----  end of function GetEventFilterList  -----
 
-// ===  FUNCTION  ============================================================
-//         Name:  PassEventListFilter
-//  Description:  Since EventFilter included both definition and declaration,
-//  using template function to avoid double symbol :-(
-// ===========================================================================
-  template<class T>
-void PassEventListFilter(NTupleReader &tr, T *filter)
-{
-  bool beamHaloFilter = true;
-  if(filter->Initialized()) 
-  {
-    const unsigned int& run =   tr.getVar<unsigned int>("run");
-    const unsigned int& lumi  = tr.getVar<unsigned int>("lumi");
-    const unsigned int& event = tr.getVar<unsigned int>("event");
-    beamHaloFilter = filter->CheckEvent(run, lumi, event);
-    //if (!beamHaloFilter)
-    //{
-    //std::cout << " Run " << run <<" lumi " << lumi <<" event " << event <<" filter " << beamHaloFilter << std::endl;
-    //}
-  }
-  tr.registerDerivedVar("CSCbeamHaloFilter", beamHaloFilter);
-
-}       // -----  end of function PassEventListFilter  -----

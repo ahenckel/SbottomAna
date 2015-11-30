@@ -65,6 +65,30 @@ std::string ChooseLepPath(std::string leps);
 void passBaselineZinv(NTupleReader &tr, std::string leps);
 void passBaselineTTZ(NTupleReader &tr, std::string leps);
 std::string GetEventFilterList(std::string dataset);
-template<class T> void PassEventListFilter(NTupleReader &tr, T *filter);
 
+// ===  FUNCTION  ============================================================
+//         Name:  PassEventListFilter
+//  Description:  Since EventFilter included both definition and declaration,
+//  using template function to avoid double symbol :-(
+//  Keeping function here for avoid linker error, according to 
+//  http://stackoverflow.com/questions/1639797/template-issue-causes-linker-error-c
+// ===========================================================================
+  template<typename T>
+void PassEventListFilter(NTupleReader &tr, T *filter)
+{
+  bool beamHaloFilter = true;
+  if(filter->Initialized()) 
+  {
+    const unsigned int& run =   tr.getVar<unsigned int>("run");
+    const unsigned int& lumi  = tr.getVar<unsigned int>("lumi");
+    const unsigned int& event = tr.getVar<unsigned int>("event");
+    beamHaloFilter = filter->CheckEvent(run, lumi, event);
+    //if (!beamHaloFilter)
+    //{
+    //std::cout << " Run " << run <<" lumi " << lumi <<" event " << event <<" filter " << beamHaloFilter << std::endl;
+    //}
+  }
+  tr.registerDerivedVar("CSCbeamHaloFilter", beamHaloFilter);
+
+}       // -----  end of function PassEventListFilter  -----
 #endif   // ----- #ifndef MY_ROOTTOOLS_INC  -----
