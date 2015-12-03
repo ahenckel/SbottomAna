@@ -131,18 +131,20 @@ bool STZinv::InitCutOrder(std::string ana)
   //CutOrder.push_back("MT2");
 
   //Set the cutbit of each cut
-  CutMap["NoCut"]   = "00000000000000000";
-  CutMap["Filter"]  = "00000000000000001";
-  CutMap["Trigger"] = "00000000000000011";
-  CutMap["nJets"]   = "00000000000000111";
-  CutMap["2Leps"]   = "00000000000001111";
-  CutMap["HasZ"]    = "00000000000011111";
-  CutMap["dPhis"]   = "00000000000111111";
-  CutMap["HT"]      = "00000000001111111";
-  CutMap["0bLoose"] = "00000010011111111";
-  CutMap["0bTight"] = "00000001011111111";
-  CutMap["1bLoose"] = "00000010101111111";
-  CutMap["1bTight"] = "00000001101111111";
+  CutMap["NoCut"]    = "00000000000000000";
+  CutMap["Filter"]   = "00000000000000001";
+  CutMap["Trigger"]  = "00000000000000011";
+  CutMap["nJets"]    = "00000000000000111";
+  CutMap["2Leps"]    = "00000000000001111";
+  CutMap["HasZ"]     = "00000000000011111";
+  CutMap["dPhis"]    = "00000000000111111";
+  CutMap["HT"]       = "00000000001111111";
+  CutMap["0bLoose"]  = "00000010011111111";
+  CutMap["0bTight"]  = "00000001011111111";
+  CutMap["1bLoose"]  = "00000010101111111";
+  CutMap["1bTight"]  = "00000001101111111";
+  CutMap["0bVLoose"] = "00000100011111111";
+  CutMap["1bVLoose"] = "00000100011111111";
 
   //CutMap["BJets"]     = "00000000011111111";
   //CutMap["Tagger"]  = "00000000111111111";
@@ -176,7 +178,8 @@ bool STZinv::CheckCut()
 
   // MET region: tight and loose
   cutbit.set(9 , tr->getVar<double>(METLabel) >= 200);
-  cutbit.set(10 , tr->getVar<double>(METLabel) < 200);
+  cutbit.set(10 , tr->getVar<double>(METLabel) >= 100 && tr->getVar<double>(METLabel) < 200);
+  cutbit.set(11 , tr->getVar<double>(METLabel) >= 50 && tr->getVar<double>(METLabel) < 200);
 
   return true;
 }       // -----  end of function STZinv::CheckCut  -----
