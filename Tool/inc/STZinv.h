@@ -63,7 +63,7 @@ class STZinv : public ComAna
     bool FillCut();
     bool FillSearchBins(int NCut);
     // ====================  DATA MEMBERS  ===============================
-    bool FillZMET(int NCut) const;
+    bool FillZMET(int NCut);
 
   private:
     // ====================  METHODS       ===============================

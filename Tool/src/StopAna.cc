@@ -66,7 +66,7 @@ StopAna::operator = ( const StopAna &other )
 bool StopAna::BookHistograms()
 {
   ComAna::BookHistograms();
-  his->AddTH1C("SearchBins", "Search Bins", 50, 0, 50);
+  his->AddTH1C("SearchBins", "Search Bins", "Search Bins", "Events", 50, 0, 50);
   return true;
 }       // -----  end of function StopAna::BookHistograms  -----
 

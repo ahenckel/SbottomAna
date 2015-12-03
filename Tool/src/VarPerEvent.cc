@@ -356,8 +356,8 @@ bool VarPerEvent::PassDiEleTrigger(std::string spec) const
 {
   const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>("cutEleVec"+spec);
   assert(cutEleVec.size() == tr->getVar<int>("nElectrons_Base"));
-  const double minElePt = 30.0;
-  const double highElePt = 30.0;
+  const double minElePt = 35.0;
+  const double highElePt = 35.0;
   bool pass = (cutEleVec.size() >= 2 && (cutEleVec)[0].Pt() > highElePt && (cutEleVec)[1].Pt() > minElePt);
   tr->registerDerivedVar("PassDiEleTrigger"+spec, pass);
   return true;
@@ -412,7 +412,7 @@ bool VarPerEvent::GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZL
   }
 
   const double zMass    = 91.0;
-  const double minElePt = 30.0, highElePt = 30.0;
+  const double minElePt = 35.0, highElePt = 35.0;
   double zMassMin = 0.0;
   double zMassMax = 0.0;
   if (spec.find("TTZ") != std::string::npos)

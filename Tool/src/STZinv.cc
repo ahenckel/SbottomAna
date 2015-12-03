@@ -86,10 +86,17 @@ bool STZinv::BookHistograms()
 {
   ComAna::BookHistograms();
   BookTLVHistos("RecoZ");
+  BookTLVHistos("RecoTop");
+
   his->AddTH1C("SearchBins", "Search Bins", 50, 0, 50);
   his->AddTH1C("JBT", "JBT", "JBT", "Events", 400, 0, 400);
-  his->AddTH1C("ZMET",    "MET",    "#slash{E}_{T} [GeV]",      "Events" , 200, 0,  800);
-  his->AddTH1C("ZMETFake",    "METFake",    "#slash{E}_{T} [GeV]",      "Events" , 200, 0,  800);
+
+  //Study the MET coorelation between
+  his->AddTH1C("RawMET",    "RawMET",    "raw #slash{E}_{T} [GeV]",      "Events" , 200, 0,  800);
+  his->AddTH1C("dPhiZMET" , "dPhiZMET" , "#phi(Z, #slash{E}_{T})" , "Events" , 20 , -5  , 5);
+  his->AddTH2C("ZPTNJet" , "ZPTNJet" , "Z p_{T} [GeV]", "No. of Jets" , 100 , 0  , 1000, 10, 0, 10 );
+  his->AddTH2C("ZPTRawMET" , "ZPTRawMET" , "Z p_{T} [GeV]", "raw #slash{E}_{T} [GeV]" , 100 , 0  , 1000, 200, 0 , 800 );
+  his->AddTH2C("ZPTdPhiRawMET" , "ZPTdPhiRawMET" , "Z p_{T} [GeV]", "#phi(Z, #slash{E}_{T})" , 100 , 0  , 1000, 20, -5 , 5 );
   return true;
 
 }       // -----  end of function STZinv::BookHistograms  -----
@@ -112,11 +119,16 @@ bool STZinv::InitCutOrder(std::string ana)
   CutOrder.push_back("2Leps");
   CutOrder.push_back("HasZ");
   CutOrder.push_back("dPhis");
-  CutOrder.push_back("BJets");
-  CutOrder.push_back("MET");
-  CutOrder.push_back("Tagger");
-  CutOrder.push_back("MT2");
   CutOrder.push_back("HT");
+  CutOrder.push_back("0bLoose");
+  CutOrder.push_back("0bTight");
+  CutOrder.push_back("1bLoose");
+  CutOrder.push_back("1bTight");
+
+  //CutOrder.push_back("BJets");
+  //CutOrder.push_back("MET");
+  //CutOrder.push_back("Tagger");
+  //CutOrder.push_back("MT2");
 
   //Set the cutbit of each cut
   CutMap["NoCut"]   = "00000000000000000";
@@ -126,11 +138,16 @@ bool STZinv::InitCutOrder(std::string ana)
   CutMap["2Leps"]   = "00000000000001111";
   CutMap["HasZ"]    = "00000000000011111";
   CutMap["dPhis"]   = "00000000000111111";
-  CutMap["BJets"]   = "00000000001111111";
-  CutMap["MET"]     = "00000000011111111";
-  CutMap["Tagger"]  = "00000000111111111";
-  CutMap["MT2"]     = "00000001111111111";
-  CutMap["HT"]      = "00000011111111111";
+  CutMap["HT"]      = "00000000001111111";
+  CutMap["0bLoose"] = "00000010011111111";
+  CutMap["0bTight"] = "00000001011111111";
+  CutMap["1bLoose"] = "00000010101111111";
+  CutMap["1bTight"] = "00000001101111111";
+
+  //CutMap["BJets"]     = "00000000011111111";
+  //CutMap["Tagger"]  = "00000000111111111";
+  //CutMap["MT2"]     = "00000001111111111";
+  //CutMap["MET"]      = "00000011111111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -151,11 +168,15 @@ bool STZinv::CheckCut()
   cutbit.set(3 , tr->getVar<int>(Label["nMuons_Base"]) + tr->getVar<int>(Label["nElectrons_Base"]) == 2 );
   cutbit.set(4 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
   cutbit.set(5 , tr->getVar<bool>(Label["passdPhis"]));
-  cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
-  cutbit.set(7 , tr->getVar<bool>(Label["passMET"]));
-  cutbit.set(8 , tr->getVar<bool>(Label["passTagger"]));
-  cutbit.set(9 , tr->getVar<bool>(Label["passMT2"]));
-  cutbit.set(10, tr->getVar<bool>(Label["passHT"]));
+  cutbit.set(6 , tr->getVar<double>(Label["HT"]) >= 200);
+
+  // Nbtag bits
+  cutbit.set(7 , tr->getVar<int>(Label["cntCSVS"]) == 0);
+  cutbit.set(8 , tr->getVar<int>(Label["cntCSVS"]) > 0);
+
+  // MET region: tight and loose
+  cutbit.set(9 , tr->getVar<double>(METLabel) >= 200);
+  cutbit.set(10 , tr->getVar<double>(METLabel) < 200);
 
   return true;
 }       // -----  end of function STZinv::CheckCut  -----
@@ -183,10 +204,16 @@ bool STZinv::FillCut()
     ComAna::FillCut(i);
     ComAna::CheckLeadingLeptons(i);
     FillSearchBins(i);
+    FillZMET(i);
 
     for(auto &z: tr->getVec<TLorentzVector>(Label["recoZVec"]))
     {
       FillTLVHistos(i, "RecoZ", z);
+    }
+
+    for(auto &z: tr->getVec<TLorentzVector>(Label["vTops"]))
+    {
+      FillTLVHistos(i, "RecoTop", z);
     }
 
     if (i+1 == CutOrder.size()) 
@@ -215,14 +242,21 @@ bool STZinv::FillSearchBins(int NCut)
 
 // ===  FUNCTION  ============================================================
 //         Name:  STZinv::FillZMET
-//  Description:  
+//  Description:  To study the correlation between regions
 // ===========================================================================
-bool STZinv::FillZMET(int NCut) const
+bool STZinv::FillZMET(int NCut)
 {
-  if (tr->getVec<TLorentzVector>("recoZVecZinv").size() > 0)
+  his->FillTH1(NCut, "RawMET", tr->getVar<double>("met"));
+
+  if (tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1)
   {
-    his->FillTH1(NCut, "ZMET", tr->getVar<double>("met"));
-    his->FillTH1(NCut, "ZMETFake", tr->getVar<double>(METLabel));
+    TLorentzVector METLV(0, 0, 0, 0);
+    METLV.SetPtEtaPhiE(tr->getVar<double>("met"), 0, tr->getVar<double>("metphi"), 0);
+    TLorentzVector recoZ =  tr->getVec<TLorentzVector>(Label["recoZVec"]).at(0);
+    his->FillTH1(NCut, "dPhiZMET", recoZ.DeltaPhi(METLV));
+    his->FillTH2(NCut, "ZPTNJet", recoZ.Pt(), tr->getVar<int>("cntNJetsPt30Eta24"));
+    his->FillTH2(NCut, "ZPTRawMET", recoZ.Pt(), tr->getVar<double>("met"));
+    his->FillTH2(NCut, "ZPTdPhiRawMET", recoZ.Pt(), recoZ.DeltaPhi(METLV));
   }
   return true;
 }       // -----  end of function STZinv::FillZMET  -----
