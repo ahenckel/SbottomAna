@@ -12,6 +12,11 @@ cd ${CMSSW}/src
 eval `scramv1 runtime -csh`
 cd ${_CONDOR_SCRATCH_DIR}
 
+foreach tarfile (`ls *gz FileList/*gz`)
+  echo $tarfile
+  tar -xzf $tarfile 
+end
+
 #============================================================================#
 #--------------------------   To Run the Process   --------------------------#
 #============================================================================#

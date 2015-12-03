@@ -14,114 +14,71 @@ tempdir = ''
 UserEMAIL = 'benwu@fnal.gov'
 ProjectName = 'Test0'
 Process = {
-    #'DYJetsToLL_HT_100to200'                     : ['../FileList/DYJetsToLL_HT_100to200.list',                     1],
-    #'DYJetsToLL_HT_200to400'                     : ['../FileList/DYJetsToLL_HT_200to400.list',                     1],
-    #'DYJetsToLL_HT_400to600'                     : ['../FileList/DYJetsToLL_HT_400to600.list',                     1],
-    #'DYJetsToLL_HT_600toInf'                     : ['../FileList/DYJetsToLL_HT_600toInf.list',                     1],
-    #'Signal_T1bbbb_mGluino1000_mLSP900'          : ['../FileList/Signal_T1bbbb_mGluino1000_mLSP900.list',          1],
-    #'Signal_T1bbbb_mGluino1500_mLSP100'          : ['../FileList/Signal_T1bbbb_mGluino1500_mLSP100.list',          1],
-    #'Signal_T1tttt_mGluino1200_mLSP800'          : ['../FileList/Signal_T1tttt_mGluino1200_mLSP800.list',          1],
-    #'Signal_T1tttt_mGluino1500_mLSP100'          : ['../FileList/Signal_T1tttt_mGluino1500_mLSP100.list',          1],
-    #'Signal_T2bb_mSbottom600_mLSP580'            : ['../FileList/Signal_T2bb_mSbottom600_mLSP580.list',            1],
-    #'Signal_T2bb_mSbottom900_mLSP100'            : ['../FileList/Signal_T2bb_mSbottom900_mLSP100.list',            1],
-    #'Signal_T2tt_mStop425_mLSP325'                : ['../FileList/Signal_T2tt_mStop425_mLSP325.list',               1],
-    #'Signal_T2tt_mStop500_mLSP325'                : ['../FileList/Signal_T2tt_mStop500_mLSP325.list',               1],
-    #'Signal_T2tt_mStop650_mLSP325'                : ['../FileList/Signal_T2tt_mStop650_mLSP325.list',               1],
-    #'Signal_T2tt_mStop850_mLSP100'                : ['../FileList/Signal_T2tt_mStop850_mLSP100.list',               1],
-    ##'Signal_T5tttt_mGluino1300_mStop300_mCh285'  : ['../FileList/Signal_T5tttt_mGluino1300_mStop300_mCh285.list',  1],
-    ##'Signal_T5tttt_mGluino1300_mStop300_mChi280' : ['../FileList/Signal_T5tttt_mGluino1300_mStop300_mChi280.list', 1],
-    ##'TTZ'                                        : ['../FileList/TTZ.list',                                        1],
-    #'TTbar'                                       : ['../FileList/TTbar.list',                                      40],
-    #'QCD'                                         : ['../FileList/QCD_HT_500to1000.list',                           7],
-    ##'T_tW'                                       : ['../FileList/T_tW.list',                                       2],
-    ##'Tbar_tW'                                    : ['../FileList/Tbar_tW.list',                                    1],
-    #'WJetsToLNu_HT_100to200'                     : ['../FileList/WJetsToLNu_HT_100to200.list',                     10],
-    #'WJetsToLNu_HT_200to400'                     : ['../FileList/WJetsToLNu_HT_200to400.list',                     10],
-    #'WJetsToLNu_HT_400to600'                     : ['../FileList/WJetsToLNu_HT_400to600.list',                     10],
-    #'WJetsToLNu_HT_600toInf'                     : ['../FileList/WJetsToLNu_HT_600toInf.list',                     10],
-    #'ZJetsToNuNu_HT_100to200'                     : ['../FileList/ZJetsToNuNu_HT_100to200.list',                    13],
-    #'ZJetsToNuNu_HT_200to400'                     : ['../FileList/ZJetsToNuNu_HT_200to400.list',                    10],
-    #'ZJetsToNuNu_HT_400to600'                     : ['../FileList/ZJetsToNuNu_HT_400to600.list',                    10],
-    #'ZJetsToNuNu_HT_600toInf'                     : ['../FileList/ZJetsToNuNu_HT_600toInf.list',                    14],
-    #"WJetsToLNu_HT_600toInf"            : ['',6],
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SM ~~~~~
+    #"WJetsToLNu_HT_600toInf"   : ['',6],
+    #"WJetsToLNu_HT_100to200"   : ['',30],
+    #"WJetsToLNu_HT_200to400"   : ['',17],
+    #"WJetsToLNu_HT_400to600"   : ['',10],
+    #"WJetsToLNu_HT_600to800"   : ['',15],
+    #"WJetsToLNu_HT_800to1200"  : ['',11],
+    #"WJetsToLNu_HT_1200to2500" : ['',7],
+    #"WJetsToLNu_HT_2500toInf"  : ['',7],
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ f ~~~~~
-    "WJetsToLNu_HT_100to200"            : ['',30],
-    "WJetsToLNu_HT_200to400"            : ['',17],
-    "WJetsToLNu_HT_400to600"            : ['',10],
-    "WJetsToLNu_HT_600to800"            : ['',15],
-    "WJetsToLNu_HT_800to1200"           : ['',11],
-    "WJetsToLNu_HT_1200to2500"          : ['',7],
-    "WJetsToLNu_HT_2500toInf"           : ['',7],
-    "DYJetsToLL_HT_600toInf"            : ['',10],
-    "DYJetsToLL_HT_400to600"            : ['',10],
-    "DYJetsToLL_HT_200to400"            : ['',10],
-    "DYJetsToLL_HT_100to200"            : ['',10],
-    "ZJetsToNuNu_HT_600toInf"           : ['',10],
-    "ZJetsToNuNu_HT_400to600"           : ['',7],
-    "ZJetsToNuNu_HT_200to400"           : ['',40],
-    "ZJetsToNuNu_HT_100to200"           : ['',40],
-    "tW_top"                            : ['',4],
-    "tW_antitop"                        : ['',4],
-    "TTbarInc"                          : ['',35],
-    "TTbarDiLep"                        : ['',60],
-    "TTZToLLNuNu"                       : ['',4],
-    "TTZToQQ"                           : ['',4],
-    "TTWJetsToLNu"                      : ['',4],
-    "TTWJetsToQQ"                       : ['',7],
-    "TTbar_HT-600to800"                 : ['',20],
-    "TTbar_HT-800to1200"                : ['',4],
-    "TTbar_HT-1200to2500"               : ['',4],
-    "TTbar_HT-2500toInf"                : ['',4],
+    #"DYJetsToLL_HT_600toInf"   : ['',10],
+    #"DYJetsToLL_HT_400to600"   : ['',10],
+    #"DYJetsToLL_HT_200to400"   : ['',10],
+    #"DYJetsToLL_HT_100to200"   : ['',10],
+    #"ZJetsToNuNu_HT_600toInf"  : ['',10],
+    #"ZJetsToNuNu_HT_400to600"  : ['',7],
+    #"ZJetsToNuNu_HT_200to400"  : ['',40],
+    #"ZJetsToNuNu_HT_100to200"  : ['',40],
 
-    #"Signal_T2tt_mStop425_mLSP325"      : ['',1],
-    #"Signal_T2tt_mStop500_mLSP325"      : ['',1],
-    #"Signal_T2tt_mStop650_mLSP325"      : ['',1],
-    #"Signal_T2tt_mStop850_mLSP100"      : ['',1],
-    #"QCD_HT100to200"                    : ['',100],
-    #"QCD_HT200to300"                    : ['',50],
-    #"QCD_HT300to500"                    : ['',50],
-    #"QCD_HT500to700"                    : ['',50],
-    #"QCD_HT700to1000"                   : ['',40],
-    #"QCD_HT1000to1500"                  : ['',8],
-    #"QCD_HT1500to2000"                  : ['',6],
-    #"QCD_HT2000toInf"                   : ['',4],
+    #"TTbarInc"                 : ['',35],
+    #"TTbarDiLep"               : ['',60],
+    #"TTbar_HT_600to800"         : ['',40],
+    #"TTbar_HT_800to1200"        : ['',8],
+    #"TTbar_HT_1200to2500"       : ['',4],
+    #"TTbar_HT_2500toInf"        : ['',4],
+    #"TTbarSingleLepTbar"        : ['',40],
+    #"TTbarSingleLepT"           : ['',40],
 
-    #"tW_top"                            : ['../FileList/TopProj-tW_top.list'                ,4],
-    #"tW_antitop"                        : ['../FileList/TopProj-tW_antitop.list'            ,4],
-    #"TTbarDiLep"                        : ['../FileList/TopProj-TTbarDiLep.list'            ,60],
-    #"TTZToLLNuNu"                       : ['../FileList/TopProj-TTZToLLNuNu.list'           ,4],
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ f ~~~~~
+    #"QCD_HT100to200"           : ['',100],
+    #"QCD_HT200to300"           : ['',50],
+    #"QCD_HT300to500"           : ['',50],
+    #"QCD_HT500to700"           : ['',50],
+    #"QCD_HT700to1000"          : ['',40],
+    #"QCD_HT1000to1500"         : ['',8],
+    #"QCD_HT1500to2000"         : ['',6],
+    #"QCD_HT2000toInf"          : ['',4],
 
-    ##"IncDYSampleSet"                    : ['',4],
-    ##"QCD_Pt_10to15"                     : ['',4],
-    ##"QCD_Pt_15to30"                     : ['',4],
-    ##"QCD_Pt_30to50"                     : ['',4],
-    ##"QCD_Pt_50to80"                     : ['',4],
-    ##"QCD_Pt_80to120"                    : ['',4],
-    ##"QCD_Pt_120to170"                   : ['',4],
-    ##"QCD_Pt_170to300"                   : ['',4],
-    ##"QCD_Pt_300to470"                   : ['',4],
-    ##"QCD_Pt_470to600"                   : ['',4],
-    ##"QCD_Pt_600to800"                   : ['',4],
-    ##"QCD_Pt_800to1000"                  : ['',4],
-    ##"QCD_Pt_1000to1400"                 : ['',4],
-    ##"QCD_Pt_1400to1800"                 : ['',4],
-    ##"QCD_Pt_1800to2400"                 : ['',4],
-    ##"QCD_Pt_2400to3200"                 : ['',4],
-    ##"QCD_Pt_3200toInf"                  : ['',4],
-    #"Data_SingleElectron_2015B"         : ['',4],
-    #"Data_SingleElectron_2015C"         : ['',4],
-    #"Data_SingleElectron_2015D"         : ['',4],
-    #"Data_DoubleMuon_2015B"             : ['',4],
-    #"Data_DoubleMuon_2015C"             : ['',4],
-    #"Data_DoubleMuon_2015D"             : ['',4],
-    #"Data_DoubleEG_2015B"               : ['',4],
-    #"Data_DoubleEG_2015C"               : ['',4],
-    #"Data_DoubleEG_2015D"               : ['',4],
-    #"Data_HTMHT_2015B"                  : ['',4],
-    #"Data_HTMHT_2015C"                  : ['',4],
-    #"Data_HTMHT_2015D"                  : ['',4],
+    #"tW_top"                   : ['',4],
+    #"tW_antitop"               : ['',4],
+    #"TTZToLLNuNu"              : ['',4],
+    #"TTZToQQ"                  : ['',4],
+    #"TTWJetsToLNu"             : ['',4],
+    #"TTWJetsToQQ"              : ['',7],
+    #"WWZ"                       : ['',2],
+    #"WZZ"                       : ['',2],
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Data ~~~~~
+    "Data_DoubleEG_2015C"                  : ['',40],
+    "Data_DoubleEG_2015D_05Oct2015"        : ['',40],
+    "Data_DoubleEG_2015D_PromptReco"       : ['',40],
+    "Data_DoubleMuon_2015C"                : ['',40],
+    "Data_DoubleMuon_2015D_05Oct2015"      : ['',40],
+    "Data_DoubleMuon_2015D_PromptReco"     : ['',40],
+    "Data_SingleElectron_2015C"            : ['',40],
+    "Data_SingleElectron_2015D_05Oct2015"  : ['',40],
+    "Data_SingleElectron_2015D_PromptReco" : ['',60],
+    "Data_SingleMuon_2015C"                : ['',40],
+    "Data_SingleMuon_2015D_05Oct2015"      : ['',40],
+    "Data_SingleMuon_2015D_PromptReco"     : ['',40],
+    #"Data_HTMHT_2015C"                     : ['',4],
+    #"Data_HTMHT_2015D_05Oct2015"           : ['',4],
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Signal ~~~~~
     #"Signal_T1tttt_mGluino1200_mLSP800" : ['',1],
     #"Signal_T1tttt_mGluino1500_mLSP100" : ['',1],
     #"Signal_T1bbbb_mGluino1000_mLSP900" : ['',1],
@@ -130,14 +87,12 @@ Process = {
     #"Signal_T2bb_mSbottom900_mLSP100"   : ['',1],
     #"Signal_TTDMDMJets_M600GeV"         : ['',1],
     #"Signal_TTDMDMJets_M1000GeV"        : ['',1],
+    #"Signal_T2tt_mStop425_mLSP325"      : ['',1],
+    #"Signal_T2tt_mStop500_mLSP325"      : ['',1],
+    #"Signal_T2tt_mStop650_mLSP325"      : ['',1],
+    #"Signal_T2tt_mStop850_mLSP100"      : ['',1],
 
 
-
-
-    #"tW_top"                            : ['../FileList/TopProj-tW_top.list'                ,4],
-    #"tW_antitop"                        : ['../FileList/TopProj-tW_antitop.list'            ,4],
-    #"TTbarDiLep"                        : ['../FileList/TopProj-TTbarDiLep.list'            ,60],
-    #"TTZToLLNuNu"                       : ['../FileList/TopProj-TTZToLLNuNu.list'           ,4],
 }
 
 Mergeblock = """#!/usr/bin/env python
@@ -322,6 +277,7 @@ def my_process():
             arg = "\nArguments = %s.list %s.root \n Queue\n" % (key, key)
 
         npro.append(os.path.abspath(DelExe))
+        npro += GetBeamHaloList(key)
         tranferfiles = ", ".join(npro)
         ## Prepare the condor file
         condorfile = tempdir + "/" + "condor_" + ProjectName +"_" + key
@@ -342,6 +298,12 @@ def GetProcess(key, value):
         return SplitPro(key, value[0], 1)
     else :
         return SplitPro(key, value[0], value[1])
+
+def GetBeamHaloList(key):
+    if "Data" not in key:
+        return []
+    g = glob.glob("../FileList/*.tar.gz")
+    return [os.path.abspath(h) for h in g]
 
 if __name__ == "__main__":
     my_process()
