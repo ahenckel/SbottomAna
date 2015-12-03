@@ -159,6 +159,7 @@ bool ComAna::BookHistograms()
 
   // Search bins
   his->AddTH1C("MT2", "MT2", "MT2", "Events",  300, 0, 1500);
+  his->AddTH1C("HT", "HT", "HT", "Events",  300, 0, 1500);
   
   // Lepton
   if (spec.find("M") != std::string::npos)
@@ -225,6 +226,7 @@ bool ComAna::FillCut(int NCut)
   his->FillTH1(NCut, "NTops", tr->getVar<int>(Label["nTopCandSortedCnt"]));
   his->FillTH1(NCut, "MT2", tr->getVar<double>(Label["best_had_brJet_MT2"]));
   his->FillTH1(NCut, "MET", tr->getVar<double>(METLabel));
+  his->FillTH1(NCut, "HT", tr->getVar<double>(Label["HT"]));
 
   return true;
 }       // -----  end of function ComAna::FillCut  -----
