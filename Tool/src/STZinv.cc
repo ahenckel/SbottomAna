@@ -124,6 +124,8 @@ bool STZinv::InitCutOrder(std::string ana)
   CutOrder.push_back("0bTight");
   CutOrder.push_back("1bLoose");
   CutOrder.push_back("1bTight");
+  CutOrder.push_back("0bVLoose");
+  CutOrder.push_back("1bVLoose");
 
   //CutOrder.push_back("BJets");
   //CutOrder.push_back("MET");
@@ -144,7 +146,7 @@ bool STZinv::InitCutOrder(std::string ana)
   CutMap["1bLoose"]  = "00000010101111111";
   CutMap["1bTight"]  = "00000001101111111";
   CutMap["0bVLoose"] = "00000100011111111";
-  CutMap["1bVLoose"] = "00000100011111111";
+  CutMap["1bVLoose"] = "00000100101111111";
 
   //CutMap["BJets"]     = "00000000011111111";
   //CutMap["Tagger"]  = "00000000111111111";
