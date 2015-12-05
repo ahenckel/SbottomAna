@@ -134,9 +134,9 @@ int main(int argc, char* argv[])
   tr.registerFunction(&passBaselineFunc);
   tr.registerFunction(&GetTopPtReweight);
   //tr.registerFunction(&passBaselineTTZ);
+  tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
   tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
   tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
-  tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
   tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01")); // bit : EM
   tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10")); // bit : EM
 
@@ -203,18 +203,20 @@ int main(int argc, char* argv[])
     }
     if (stored_weight == -999) stored_weight = 1;
     evtWeight = stored_weight >= 0 ? 1 : -1;
+    if (tr.getVar<int>("run") != 1) // Set weight to 1 for Data
+      evtWeight = 1;
     rateWeight = evtWeight;
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for rate, but not shape ~~~~~
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
     evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
 
-    if (tr.getVar<int>("run") != 1) // Set weight to 1 for Data
-      evtWeight = 1;
     his->FillTH1("NEvent", 1, evtWeight);
     his->FillTH1("Weight", stored_weight);
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Fill Cuts ~~~~~
+    //**************************************************************************//
+    //                                 Fill Cuts                                //
+    //**************************************************************************//
     for( auto &it : AnaMap )
     {
       it.second->SetRateWeight(rateWeight);
