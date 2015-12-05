@@ -25,23 +25,29 @@ STZinv::STZinv (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &Out
 : ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
-  if (spec_.find("Zinv") != std::string::npos)
+  
+  if (spec.find("Zinv") != std::string::npos)
   {
 
     jetVecLabel = "jetsLVecLepCleaned";
     CSVVecLabel = "recoJetsBtag_0_LepCleaned";
     METLabel = "cleanMetPt" + spec_;
     METPhiLabel = "cleanMetPhi" + spec_;
-    if (spec_.find("M") != std::string::npos)
+    if (strcmp(&(spec.back()), "M") == 0)
     {
       HLTstr.push_back("HLT_Mu45_eta2p1_v2");
       MCTrigstr.push_back(Label["PassDiMuonTrigger"]);
     }
-    if (spec_.find("E") != std::string::npos)
+    if (strcmp(&(spec.back()), "E") == 0)
     {
       HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v2");
       HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v3");
       MCTrigstr.push_back(Label["PassDiEleTrigger"]);
+    }
+    if (strcmp(&(spec.back()), "T") == 0)
+    {
+      HLTstr.push_back("HLT_Mu45_eta2p1_v2");
+      MCTrigstr.push_back(Label["PassEleMuTrigger"]);
     }
   }
   //std::copy(MCTrigstr.begin(), MCTrigstr.end(), std::ostream_iterator<std::string>(std::cout, " "));

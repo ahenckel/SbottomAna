@@ -416,9 +416,9 @@ void passBaselineZinv(NTupleReader &tr, std::string leps)
 // ===========================================================================
 std::string ChooseLepPath(std::string leps)
 {
-  std::bitset<2> lepbit(leps);
+  std::bitset<3> lepbit(leps);
   std::stringstream ss;
-  ss <<  (lepbit.test(0) ? "M":"") <<  (lepbit.test(1) ? "E":"");
+  ss <<  (lepbit.test(0) ? "M":"") <<  (lepbit.test(1) ? "E":"") <<  (lepbit.test(2) ? "T":"");
   return ss.str();
 }       // -----  end of function ChooseLepPath  -----
 
@@ -460,3 +460,138 @@ std::string GetEventFilterList(std::string dataset)
   return cscfile;
 }       // -----  end of function GetEventFilterList  -----
 
+// ===  FUNCTION  ============================================================
+//         Name:  GetGenChild
+//  Description:  
+// ===========================================================================
+int GetGenChild( std::vector<int> &genDecayPdgIdVec, std::vector<int> &genDecayMomIdxVec ,
+    int parent, std::vector<int> pdgs)
+{
+  for (unsigned int i = 0; i < genDecayMomIdxVec.size(); ++i)
+  {
+    if (abs(genDecayMomIdxVec[i]) == parent)
+    {
+      for(unsigned int j=0; j < pdgs.size(); ++j)
+      {
+        if (abs(genDecayPdgIdVec.at(i)) == pdgs.at(j))
+        {
+          return i;
+        }
+      }
+    }
+  }
+  return -1;
+}       // -----  end of function GetGenChild  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  GetGenTops
+//  Description:  
+// ===========================================================================
+bool GetGenTops(NTupleReader &tr, std::vector<TLorentzVector> &vGenTops,
+    std::vector<int> &vGenTopCharge, std::vector<TLorentzVector> &vGenLeps)
+{
+  std::vector<TLorentzVector> genDecayLVec      ;
+  std::vector<int>            genDecayIdxVec    ;
+  std::vector<int>            genDecayPdgIdVec  ;
+  std::vector<int>            genDecayMomIdxVec ;
+  vGenTops.clear();
+  vGenTopCharge.clear();
+  vGenLeps.clear();
+
+  try{
+    genDecayLVec      = tr.getVec<TLorentzVector> ("genDecayLVec");
+    genDecayIdxVec    = tr.getVec<int>            ("genDecayIdxVec");
+    genDecayPdgIdVec  = tr.getVec<int>            ("genDecayPdgIdVec");
+    genDecayMomIdxVec = tr.getVec<int>            ("genDecayMomIdxVec");
+  }
+  catch(std::string &var)
+  {
+    return false;
+  }
+
+  for (unsigned int i = 0; i < genDecayMomIdxVec.size(); ++i)
+  {
+    if (abs(genDecayPdgIdVec[i]) == 6)
+    {
+      vGenTops.push_back(genDecayLVec.at(i));
+      vGenTopCharge.push_back(genDecayPdgIdVec[i]/6);
+
+      //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting the leptons  ~~~~~
+      int Widx_ = GetGenChild(genDecayPdgIdVec, genDecayMomIdxVec, genDecayIdxVec[i], {24});
+      int Lepidx_ = GetGenChild(genDecayPdgIdVec, genDecayMomIdxVec, genDecayIdxVec[Widx_], {11, 13, 15});
+      if (Lepidx_ != -1)
+      {
+        vGenLeps.push_back(genDecayLVec.at(Lepidx_));
+      }
+    }
+  }
+
+  return true;
+}       // -----  end of function GetGenTops  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  GetTopPtReweight
+//  Description:  Reweighting top pt from 8TeV recommendation
+//  https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
+// ===========================================================================
+void GetTopPtReweight(NTupleReader &tr)
+{
+  double topPtWeight = 1;
+  std::vector<TLorentzVector> vGenTops;
+  std::vector<int> vGenTopCharge;
+  std::vector<TLorentzVector> vGenLeps;
+  GetGenTops(tr, vGenTops, vGenTopCharge, vGenLeps);
+
+  // For data and not_TTbar MC, set the weight to 1.
+  if (tr.getVar<int>("run") != 1  || vGenTops.size() != 2)
+  {
+    tr.registerDerivedVar("TopPtReweight", topPtWeight);
+    return;
+  }
+  
+  assert(vGenTops.size() == 2);
+  // Getting the reweight factor SF(x)=exp(a+bx)
+  double a = 0;
+  double b = 0;
+  if (vGenLeps.size() == 1)  // Semileptonic
+  {
+    a = 0.159;
+    b = -0.00141;
+  }
+  if (vGenLeps.size() == 2)  // Dilepton
+  { 
+    a = 0.148;
+    b = -0.00129;
+  } 
+  if (vGenLeps.size() == 0)  // all combined, but use for all hadroinc case here
+  {
+    a = 0.156;
+    b = -0.00137;
+  }
+
+  // weight=sqrt(SF(top)SF(anti-top))
+  double weight = 1.0;
+  int weightcount = 0;
+  for(unsigned int i=0; i < vGenTops.size(); ++i)
+  {
+    TLorentzVector gentop = vGenTops.at(i);
+    if (gentop.Pt() <= 400)
+    {
+      weight = weight * TMath::Exp(a + b*gentop.Pt()); 
+      weightcount ++;
+    }
+    //std::cout << "pt " << gentop.Pt() <<" weight " << weightcount << " a " << a <<" b " << b << " exp " << TMath::Exp(a + b*gentop.Pt()) << std::endl;
+  }
+  
+  if (weightcount == 2)
+  {
+    topPtWeight = sqrt(weight);
+  }
+  else
+    topPtWeight = weight;
+
+
+  tr.registerDerivedVar("TopPtReweight", topPtWeight);
+
+  return ;
+}       // -----  end of function GetTopPtReweight  -----

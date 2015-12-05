@@ -57,6 +57,8 @@ bool LTVMatch(TLorentzVector &V1, TLorentzVector V2, double dR=0.3);
 int FindVectorIdX(std::vector<std::string> &TeV, std::string t);
 int HasTLV(TLorentzVector &obj, std::vector<TLorentzVector> &TLVs);
 
+int GetGenChild( std::vector<int> &genDecayPdgIdVec, std::vector<int> &genDecayMomIdxVec , int parent, std::vector<int> pdgs);
+bool GetGenTops(NTupleReader &tr, std::vector<TLorentzVector> &vGenTops, std::vector<int> &vGenTopCharge, std::vector<TLorentzVector> &vGenLeps);
 //**************************************************************************//
 //                            Register Functions                            //
 //**************************************************************************//
@@ -65,7 +67,7 @@ std::string ChooseLepPath(std::string leps);
 void passBaselineZinv(NTupleReader &tr, std::string leps);
 void passBaselineTTZ(NTupleReader &tr, std::string leps);
 std::string GetEventFilterList(std::string dataset);
-
+void GetTopPtReweight(NTupleReader &tr);
 // ===  FUNCTION  ============================================================
 //         Name:  PassEventListFilter
 //  Description:  Since EventFilter included both definition and declaration,

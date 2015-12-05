@@ -24,7 +24,7 @@
 // Description:  constructor
 //----------------------------------------------------------------------------
 ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_):
-  isData(false), tr(tr_), spec(spec_)
+  isData(false), tr(tr_), spec(spec_), NBaseWeight(1.0)
 {
   his = new HistTool(OutFile, "Cut", name);
   DefineLabels(spec);
@@ -93,6 +93,7 @@ bool ComAna::DefineLabels(std::string spec)
   Label["ZLepIdx"]                = "ZLepIdx"                ; 
   Label["PassDiMuonTrigger"]      = "PassDiMuonTrigger"      ; 
   Label["PassDiEleTrigger"]       = "PassDiEleTrigger"       ; 
+  Label["PassEleMuTrigger"]       = "PassEleMuTrigger"       ; 
   Label["NTopsB"]                 = "NTopsB"                 ; 
 
   if (spec != "")
@@ -192,7 +193,7 @@ bool ComAna::InitCutOrder(std::string ana)
 // ===========================================================================
 bool ComAna::FillCut(int NCut)
 {
-  his->FillTH1(NCut, "NBase", 1);
+  his->FillTH1(NCut, "NBase", 1, NBaseWeight);
   // Jet
   his->FillTH1(NCut, "NJets", j30count);
   FillTLVHistos(NCut, "Jet1", Jet1);
@@ -512,9 +513,18 @@ bool ComAna::SetEvtWeight(double weight)
 {
    his->SetWeight(weight);
    IsData();
-  return true;
+   return true;
 }       // -----  end of function ComAna::SetEvtWeight  -----
 
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetRateWeight
+//  Description:  
+// ===========================================================================
+bool ComAna::SetRateWeight(double weight)
+{
+  NBaseWeight = weight;
+  return true;
+}       // -----  end of function ComAna::SetRateWeight  -----
 
 // ===  FUNCTION  ============================================================
 //         Name:  ComAna::SaveCutHist

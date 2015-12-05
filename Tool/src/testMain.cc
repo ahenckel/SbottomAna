@@ -132,11 +132,13 @@ int main(int argc, char* argv[])
   NTupleReader tr(fChain);
   tr.registerFunction(boost::bind(PassEventListFilter<EventListFilter>, _1, filter));
   tr.registerFunction(&passBaselineFunc);
+  tr.registerFunction(&GetTopPtReweight);
   //tr.registerFunction(&passBaselineTTZ);
-  tr.registerFunction(boost::bind(passBaselineZinv, _1, "01"));
-  tr.registerFunction(boost::bind(passBaselineZinv, _1, "10"));
-  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01"));
-  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10"));
+  tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
+  tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
+  tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
+  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01")); // bit : EM
+  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10")); // bit : EM
 
   //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
 
@@ -149,10 +151,11 @@ int main(int argc, char* argv[])
   //AnaMap["STRM"] = new STRM("STRM", &tr, OutFile);
   AnaMap["STZinvM"] = new STZinv("STZinvM", &tr, OutFile,"ZinvM");
   AnaMap["STZinvE"] = new STZinv("STZinvE", &tr, OutFile,"ZinvE");
-  AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
-  AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
-  AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
-  AnaMap["TTZDiLepE"] = new TTZDiLep("TTZDiLepE", &tr, OutFile, "TTZE");
+  AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
+  //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
+  //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
+  //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
+  //AnaMap["TTZDiLepE"] = new TTZDiLep("TTZDiLepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "TTZ");
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
   //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
@@ -186,14 +189,26 @@ int main(int argc, char* argv[])
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ testing Zone ~~~~~
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Set Event Weight ~~~~~
+    //**************************************************************************//
+    //                             Set Event Weight                             //
+    //**************************************************************************//
     double stored_weight = -999;
+    double evtWeight = 1.0; // For shape 
+    double rateWeight = 1.0; // For rate (event count) -> NBase
+
+    //~~~~~~~~~~~~~~~~~~~~~ Getting weight that apply to both shape and rate ~~~~~
     try {
       stored_weight = tr.getVar<double>("stored_weight");
     } catch (std::string var) {
     }
     if (stored_weight == -999) stored_weight = 1;
-    int evtWeight = stored_weight >= 0 ? 1 : -1;
+    evtWeight = stored_weight >= 0 ? 1 : -1;
+    rateWeight = evtWeight;
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for rate, but not shape ~~~~~
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
+    evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
+
     if (tr.getVar<int>("run") != 1) // Set weight to 1 for Data
       evtWeight = 1;
     his->FillTH1("NEvent", 1, evtWeight);
@@ -202,6 +217,7 @@ int main(int argc, char* argv[])
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Fill Cuts ~~~~~
     for( auto &it : AnaMap )
     {
+      it.second->SetRateWeight(rateWeight);
       it.second->SetEvtWeight(evtWeight);
       it.second->FillCut();
     }

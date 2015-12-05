@@ -67,7 +67,8 @@ class VarPerEvent
     bool PassDiEleTrigger(std::string spec) const;
     bool GetMuInfo(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx, std::string spec) const;
     bool GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx, std::string spec) const;
-
+    bool GetEleMuZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx, std::string spec) const;
+    bool PassEleMuTrigger(std::string spec) const;
     // ====================  DATA MEMBERS  ===============================
     NTupleReader *tr;
 

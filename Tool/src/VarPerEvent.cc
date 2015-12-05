@@ -460,6 +460,7 @@ bool VarPerEvent::GetEleZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZL
 
   return true;
 }       // -----  end of function VarPerEvent::GetEleZ  -----
+
 // ===  FUNCTION  ============================================================
 //         Name:  VarPerEvent::GetRecoZ
 //  Description:  
@@ -470,7 +471,7 @@ bool VarPerEvent::GetRecoZ(std::string spec, std::string lepbit_) const
   std::map<unsigned int, std::pair<unsigned int, unsigned int> > *ZLepIdx = 
     new std::map<unsigned int, std::pair<unsigned int, unsigned int> >();
 
-  std::bitset<2> lepbit(lepbit_);
+  std::bitset<3> lepbit(lepbit_);
 
   if (lepbit.test(0))
   {
@@ -481,6 +482,11 @@ bool VarPerEvent::GetRecoZ(std::string spec, std::string lepbit_) const
   {
     GetEleZ(recoZVec, ZLepIdx, spec);
     PassDiEleTrigger(spec);
+  }
+  if (lepbit.test(2))
+  {
+    GetEleMuZ(recoZVec, ZLepIdx, spec);
+    PassEleMuTrigger(spec);
   }
 
   // Setting the clean MET
@@ -637,3 +643,165 @@ bool VarPerEvent::GetRecoZ(std::string spec, std::string lepbit_) const
   //tr->registerDerivedVar("pdgIdZDec", pdgIdZDec);
   //return true;
 //}       // -----  end of function VarPerEvent::GetGenZ  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  VarPerEvent::GetEleMuZ
+//  Description:  
+// ===========================================================================
+bool VarPerEvent::GetEleMuZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *ZLepIdx, std::string spec) const
+{
+
+  std::vector<TLorentzVector> elesLVec;
+  std::vector<double>         elesRelIso;
+  std::vector<double>         elesMiniIso;
+  std::vector<double>         elesMtw;
+  std::vector<double>         elesCharge;
+  std::vector<int>            elesFlagIDVec;
+  std::vector<unsigned int>            elesisEB;
+
+  std::vector<TLorentzVector> muonsLVec;
+  std::vector<double>         muonsRelIso;
+  std::vector<double>         muonsMiniIso;
+  std::vector<double>         muonsCharge;
+  std::vector<TLorentzVector> jetsLVec;
+  std::vector<double>         recoJetschargedEmEnergyFraction;
+  std::vector<double>         recoJetschargedHadronEnergyFraction;
+  std::vector<int>            muonsFlagIDVec;
+  double                      ht;
+  double                      met;
+  double                      metphi;
+
+  const std::string elesFlagIDLabel = "";
+
+  try
+  {
+    elesLVec = tr->getVec<TLorentzVector>("elesLVec");
+    elesMiniIso = tr->getVec<double>("elesMiniIso");
+    elesCharge = tr->getVec<double>("elesCharge");
+    elesRelIso =  tr->getVec<double>("elesRelIso");
+    elesMtw =  tr->getVec<double>("elesRelIso");
+    elesisEB =  tr->getVec<unsigned int>("elesRelIso");
+    elesFlagIDVec = elesFlagIDLabel.empty()? 
+      std::vector<int>(tr->getVec<double>("elesMiniIso").size(), 1):
+      tr->getVec<int>(elesFlagIDLabel.c_str()); 
+    muonsLVec                           = tr->getVec<TLorentzVector>("muonsLVec");
+    muonsRelIso                         = tr->getVec<double>("muonsRelIso");
+    muonsMiniIso                        = tr->getVec<double>("muonsMiniIso");
+    muonsCharge                         = tr->getVec<double>("muonsCharge");
+    jetsLVec                            = tr->getVec<TLorentzVector>("jetsLVec");
+    recoJetschargedEmEnergyFraction     = tr->getVec<double>("recoJetschargedEmEnergyFraction");
+    recoJetschargedHadronEnergyFraction = tr->getVec<double>("recoJetschargedHadronEnergyFraction");
+    try
+    {
+      muonsFlagIDVec                      = tr->getVec<int>("muonsFlagMedium");
+    }
+    catch (std::string var)
+    {
+      muonsFlagIDVec = std::vector<int>(tr->getVec<double>("muonsMiniIso").size(), 1);
+    }
+
+    ht                                  = tr->getVar<double>("ht");
+    met                                 = tr->getVar<double>("met");
+    metphi                              = tr->getVar<double>("metphi");
+  }
+  catch (std::string var)
+  {
+    std::cout << "Missing Var:"<< var << std::endl;
+    return false;
+  }
+
+//----------------------------------------------------------------------------
+//  Output 
+//----------------------------------------------------------------------------
+  std::vector<TLorentzVector>* cutMuVec = new std::vector<TLorentzVector>(); //Muons pass pt, Iso and trigger requirement
+  std::vector<double>* cutMuCharge = new std::vector<double>();
+  std::vector<TLorentzVector>* cutEleVec = new std::vector<TLorentzVector>(); 
+  std::vector<double>* cutEleCharge = new std::vector<double>();
+
+  for(unsigned int i = 0; i < elesLVec.size(); ++i)
+  {
+    // emulates muons with pt and iso requirements.  
+    if(AnaFunctions::passElectron(elesLVec[i], elesMiniIso[i], elesMtw[i], elesisEB[i], elesFlagIDVec[i], AnaConsts::elesMiniIsoArr) )
+    {
+      cutEleVec->push_back(elesLVec[i]);
+      cutEleCharge->push_back(elesCharge[i]);
+    }
+  }
+  for(unsigned int i = 0; i < muonsLVec.size(); ++i)
+  {
+    // emulates muons with pt and iso requirements.  
+    if(AnaFunctions::passMuon( muonsLVec[i], muonsMiniIso[i], 0.0, muonsFlagIDVec[i], AnaConsts::muonsArr))
+    {
+      cutMuVec->push_back(muonsLVec[i]);
+      cutMuCharge->push_back(muonsCharge[i]);
+    }
+  }
+
+  const double zMass    = 91.0;
+  const double minElePt = 35.0, highElePt = 35.0;
+  double zMassMin = 0.0;
+  double zMassMax = 0.0;
+  if (spec.find("TTZ") != std::string::npos)
+  {
+    zMassMin = 81.0;
+    zMassMax = 101.0;
+  }
+  if (spec.find("Zinv") != std::string::npos)
+  {
+    zMassMin = 71.0;
+    zMassMax = 111.0;
+  }
+
+  double zMassCurrent = 1.0e300;
+  //double zMassCurrent = 1.0e300, zEff = 1.0e100, zAcc = 1.0e100;
+  TLorentzVector bestRecoZ(0, 0, 0, 0);
+  int sumCharge = 0;
+  std::pair<unsigned int, unsigned int> elmupair;
+  for(unsigned int i = 0; i < cutMuVec->size(); ++i)
+  {
+    for(unsigned int j = 0; j < cutEleVec->size(); ++j)
+    {
+      double zm = ((*cutMuVec)[i] + (*cutEleVec)[j]).M();
+      //if(zm > zMassMin && zm < zMassMax && fabs(zm - zMass) < fabs(zMassCurrent - zMass))
+      if(fabs(zm - zMass) < fabs(zMassCurrent - zMass))
+      {
+        bestRecoZ = (*cutMuVec)[i] + (*cutEleVec)[j];
+        elmupair = std::make_pair(i, j+100);
+        zMassCurrent = zm;
+        sumCharge = 0;
+        sumCharge = cutMuCharge->at(i) + cutEleCharge->at(j);
+      }
+    }
+  }
+
+  if (bestRecoZ.Pt() != 0 && sumCharge == 0 && (bestRecoZ.M() > zMassMin) && (bestRecoZ.M() < zMassMax))
+  {
+    recoZVec->push_back(bestRecoZ);
+    ZLepIdx->insert(std::make_pair( recoZVec->size(), elmupair));
+  }
+  
+  tr->registerDerivedVec("cutEleVec"+spec, cutEleVec);
+  tr->registerDerivedVec("cutEleCharge"+spec, cutEleCharge);
+  tr->registerDerivedVec("cutMuVec"+spec, cutMuVec);
+  tr->registerDerivedVec("cutMuCharge"+spec, cutMuCharge);
+
+  return true;
+}       // -----  end of function VarPerEvent::GetEleMuZ  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  VarPerEvent::PassEleMuTrigger
+//  Description:  
+// ===========================================================================
+bool VarPerEvent::PassEleMuTrigger(std::string spec) const
+{
+  const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>("cutEleVec"+spec);
+  assert(cutEleVec.size() == tr->getVar<int>("nElectrons_Base"));
+  const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec"+spec);
+  assert(cutMuVec.size() == tr->getVar<int>("nMuons_Base"));
+
+  const double highMuPt = 45.0;
+  const double minElePt = 20.0;
+  bool pass = (cutMuVec.size() >= 1 && (cutMuVec)[0].Pt() > highMuPt && cutEleVec.size() >= 1 && (cutEleVec)[0].Pt() > minElePt );
+  tr->registerDerivedVar("PassEleMuTrigger"+spec, pass);
+  return true;
+}       // -----  end of function VarPerEvent::PassEleMuTrigger  -----
