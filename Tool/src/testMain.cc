@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
     //**************************************************************************//
     double stored_weight = -999;
     double evtWeight = 1.0; // For shape 
-    double rateWeight = 1.0; // For rate (event count) -> NBase
+    double rateWeight = 1.0; // For rate (event count) -> NEvent & NBase
 
     //~~~~~~~~~~~~~~~~~~~~~ Getting weight that apply to both shape and rate ~~~~~
     try {
@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
     evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
 
-    his->FillTH1("NEvent", 1, evtWeight);
+    his->FillTH1("NEvent", 1, rateWeight);
     his->FillTH1("Weight", stored_weight);
 
     //**************************************************************************//

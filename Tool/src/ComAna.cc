@@ -160,7 +160,7 @@ bool ComAna::BookHistograms()
 
   // Search bins
   his->AddTH1C("MT2", "MT2", "MT2", "Events",  300, 0, 1500);
-  his->AddTH1C("HT", "HT", "HT", "Events",  300, 0, 1500);
+  his->AddTH1C("HT", "HT", "HT", "Events",  150, 0, 1500);
   
   // Lepton
   if (spec.find("M") != std::string::npos)
