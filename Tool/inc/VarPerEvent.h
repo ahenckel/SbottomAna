@@ -17,6 +17,8 @@
 #ifndef  __VARPEREVENT_INC__
 #define  __VARPEREVENT_INC__
 
+#include <bitset>
+
 #include "boost/bimap.hpp"
 #include "boost/bimap/multiset_of.hpp"
 #include "boost/foreach.hpp"
