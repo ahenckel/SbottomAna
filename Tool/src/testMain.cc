@@ -143,9 +143,9 @@ int main(int argc, char* argv[])
   AnaMap["STZinvM"] = new STZinv("STZinvM", &tr, OutFile,"ZinvM");
   AnaMap["STZinvE"] = new STZinv("STZinvE", &tr, OutFile,"ZinvE");
   AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
-  //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
+  AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
-  //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
+  AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZDiLepE"] = new TTZDiLep("TTZDiLepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "TTZ");
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
