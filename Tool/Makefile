@@ -40,6 +40,9 @@ endif
 ifneq ($(shell echo $$LHAPDF_INCLUDE), )
   CXXFLAGS  += -isystem $(LHAPDF_INCLUDE)
   LIBS += -L$(LHAPDF_LIBDIR) -lLHAPDF
+else
+  CXXFLAGS  += -isystem $(LHAPDF_DATA_PATH)/../include
+  MT2LIB     = -L $(LHAPDF_DATA_PATH)/../lib -lLHAPDF
 endif
 
 #============================================================================#
