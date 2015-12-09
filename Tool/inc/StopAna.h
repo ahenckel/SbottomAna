@@ -39,9 +39,10 @@ class StopAna : public ComAna
   public:
 
     // ====================  LIFECYCLE     ===============================
-    StopAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile);                             // constructor
+    StopAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_="");                             // constructor
     StopAna ( const StopAna &other );   // copy constructor
     ~StopAna ();                            // destructor
+    StopAna* Clone(std::string newname, std::shared_ptr<TFile> OutFile_);
 
     // ====================  ACCESSORS     ===============================
     bool InitCutOrder(std::string ana);

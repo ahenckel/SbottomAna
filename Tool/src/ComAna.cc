@@ -23,12 +23,24 @@
 //      Method:  ComAna
 // Description:  constructor
 //----------------------------------------------------------------------------
-ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_):
-  isData(false), tr(tr_), spec(spec_), NBaseWeight(1.0)
+ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile_, std::string spec_):
+  isData(false), tr(tr_), spec(spec_), NBaseWeight(1.0), OutFile(OutFile_)
 {
-  his = new HistTool(OutFile, "Cut", name);
+  his = new HistTool(OutFile, "", name);
   DefineLabels(spec);
 }  // -----  end of method ComAna::ComAna  (constructor)  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::Clone
+//  Description:  /* cursor */
+// ===========================================================================
+ComAna* ComAna::Clone(std::string newname, std::shared_ptr<TFile> OutFile_)
+{
+  if (OutFile_ == NULL)
+    return new ComAna(newname, tr, OutFile, spec);
+  else
+    return new ComAna(newname, tr, OutFile_, spec);
+}       // -----  end of function ComAna::Clone  -----
 
 // ===  FUNCTION  ============================================================
 //         Name:  ComAna::DefineLabels
@@ -226,7 +238,6 @@ bool ComAna::FillCut(int NCut)
   his->FillTH1(NCut, "NBJets", tr->getVar<int>(Label["cntCSVS"]));
   his->FillTH1(NCut, "NTops", tr->getVar<int>(Label["nTopCandSortedCnt"]));
   his->FillTH1(NCut, "MT2", tr->getVar<double>(Label["best_had_brJet_MT2"]));
-  his->FillTH1(NCut, "MET", tr->getVar<double>(METLabel));
   his->FillTH1(NCut, "HT", tr->getVar<double>(Label["HT"]));
 
   return true;
@@ -511,9 +522,13 @@ bool ComAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std
 // ===========================================================================
 bool ComAna::SetEvtWeight(double weight)
 {
-   his->SetWeight(weight);
-   IsData();
-   return true;
+  IsData();
+  double tempweight = 1.0;
+  if (Sysbit.test(0))
+    tempweight = weight * tr->getVar<double>(SysVarName);
+  else tempweight = weight;
+  his->SetWeight(tempweight);
+  return true;
 }       // -----  end of function ComAna::SetEvtWeight  -----
 
 // ===  FUNCTION  ============================================================
@@ -522,7 +537,9 @@ bool ComAna::SetEvtWeight(double weight)
 // ===========================================================================
 bool ComAna::SetRateWeight(double weight)
 {
-  NBaseWeight = weight;
+  if (Sysbit.test(1))
+    NBaseWeight = weight * tr->getVar<double>(SysVarName);
+  else NBaseWeight = weight;
   return true;
 }       // -----  end of function ComAna::SetRateWeight  -----
 
@@ -634,3 +651,14 @@ bool ComAna::CheckLeadingLeptons(int NCut)
   }
   return true;
 }       // -----  end of function ComAna::CheckLeadingLeptons  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetSysVar
+//  Description:  
+// ===========================================================================
+bool ComAna::SetSysVar(std::string &Sysbit_, std::string &SysVar_)
+{
+  SysVarName = SysVar_;
+  Sysbit = std::bitset<2>(Sysbit_);
+  return true;
+}       // -----  end of function ComAna::SetSysVar  -----

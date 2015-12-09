@@ -39,6 +39,18 @@ STISR::STISR ( const STISR &other ): ComAna(other)
 {
 }  // -----  end of method STISR::STISR  (copy constructor)  -----
 
+
+// ===  FUNCTION  ============================================================
+//         Name:  STISR::Clone
+//  Description:  
+// ===========================================================================
+STISR* STISR::Clone(std::string newname, std::shared_ptr<TFile> OutFile_)
+{
+  if (OutFile_ == NULL)
+    return new STISR(newname, tr, OutFile);
+  else
+    return new STISR(newname, tr, OutFile_);
+}       // -----  end of function STISR::Clone  -----
 //----------------------------------------------------------------------------
 //       Class:  STISR
 //      Method:  ~STISR

@@ -43,6 +43,7 @@ class STISR : public ComAna
     // constructor
     STISR ( const STISR &other );   // copy constructor
     ~STISR ();                            // destructor
+    STISR* Clone(std::string newname, std::shared_ptr<TFile> OutFile_);
 
     // ====================  ACCESSORS     ===============================
     bool InitCutOrder(std::string ana);

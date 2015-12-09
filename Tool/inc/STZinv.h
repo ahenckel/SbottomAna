@@ -46,6 +46,7 @@ class STZinv : public ComAna
     STZinv (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_="");                             // constructor
     STZinv ( const STZinv &other );   // copy constructor
     ~STZinv ();                            // destructor
+    STZinv* Clone(std::string newname, std::shared_ptr<TFile> OutFile_);
 
     // ====================  ACCESSORS     ===============================
 

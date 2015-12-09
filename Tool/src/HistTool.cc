@@ -28,7 +28,10 @@ HistTool::HistTool (std::shared_ptr<TFile> OutFile_, std::string name, std::stri
   if (cutflag != "")
   {
     std::stringstream ss;
-    ss << prefix <<"_"<< cutflag;
+    if (prefix != "")
+      ss << prefix <<"_"<< cutflag;
+    else
+      ss << cutflag;
     OutFile->mkdir(ss.str().c_str());
     cutflag = ss.str();
   }

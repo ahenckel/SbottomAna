@@ -51,7 +51,9 @@
 #include "SusyAnaTools/Tools/baselineDef.h"
 #include "SusyAnaTools/Tools/NTupleReader.h"
 #include "SusyAnaTools/Tools/EventListFilter.h"
+#include "SusyAnaTools/Tools/PDFUncertainty.h"
 
+bool DefSysComAnd(std::map<std::string, std::pair<std::string, std::string> > &SysMap, std::map<std::string, ComAna*> &AnaMap, std::shared_ptr<TFile> OutFile=NULL);
 
 int main(int argc, char* argv[])
 {
@@ -113,27 +115,15 @@ int main(int argc, char* argv[])
     his->FillTPro("XS", static_cast<int>(i), SamplePro[binlabel]);
   }
 
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setup EventFilter ~~~~~
-  EventListFilter *filter = NULL;
-  for(auto &it : SamplePro){
-    if (it.second == -999.8)
-    {
-      if (it.first == "")
-      {
-        filter = new EventListFilter();
-      }
-      else
-        filter = new EventListFilter(it.first);
-    }
-  }
-
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setup Global Object ~~~~~
+  LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
+  PDFUncertainty pdfs;
   //clock to monitor the run time
   size_t t0 = clock();
   NTupleReader tr(fChain);
-  tr.registerFunction(boost::bind(PassEventListFilter<EventListFilter>, _1, filter));
+  tr.registerFunction(pdfs);
   tr.registerFunction(&passBaselineFunc);
-  tr.registerFunction(&GetTopPtReweight);
-  //tr.registerFunction(&passBaselineTTZ);
+  tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
   tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
   tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
   tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
@@ -161,6 +151,16 @@ int main(int argc, char* argv[])
   //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
   //AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
   //AnaMap["PassCut"] = new PassCut("LeftOver", &tr, OutFile);
+
+//**************************************************************************//
+//                      Setup Systematics with Weights                      //
+//**************************************************************************//
+  // Systematic_Name, sysbit (rate, shape), registerName
+  std::map<std::string, std::pair<std::string, std::string> > SysMap;
+  SysMap["PDF_up"] = std::make_pair("01", "PDF_Unc_Up"); // as shape uncertainty
+  SysMap["PDF_down"] = std::make_pair("01", "PDF_Unc_Down"); // as shape uncertainty
+  DefSysComAnd(SysMap, AnaMap);
+
   for( auto &it : AnaMap )
   {
     it.second->SaveCutHist(true);
@@ -239,3 +239,31 @@ int main(int argc, char* argv[])
 
   return 0;
 }
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  DefSysComAnd
+//  Description:  /* cursor */
+// ===========================================================================
+bool DefSysComAnd(std::map<std::string, std::pair<std::string, std::string> > &SysMap, 
+  std::map<std::string, ComAna*> &AnaMap, std::shared_ptr<TFile> OutFile)
+{
+  std::vector<std::string> anaNames;
+  for(auto &ana : AnaMap)
+  {
+    anaNames.push_back(ana.first);
+  }
+
+  for(auto &sys : SysMap)
+  {
+    for(auto &ananame : anaNames)
+    {
+      std::stringstream ss;
+      ss << ananame <<"_" << sys.first;
+      AnaMap[ss.str()] = AnaMap[ananame]->Clone(ss.str(), OutFile);
+      AnaMap[ss.str()]->SetSysVar(sys.second.first, sys.second.second);
+    }
+  }
+  return true;
+}       // -----  end of function DefSysComAnd  -----
+

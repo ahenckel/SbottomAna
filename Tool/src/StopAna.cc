@@ -21,8 +21,8 @@
 //      Method:  StopAna
 // Description:  constructor
 //----------------------------------------------------------------------------
-StopAna::StopAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile)
-: ComAna(name, tr_, OutFile)
+StopAna::StopAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_)
+: ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
   his->AddTH1("NBase", "Number of Events passed baseline", 2, 0, 2);
@@ -36,6 +36,18 @@ StopAna::StopAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
 StopAna::StopAna ( const StopAna &other ): ComAna(other)
 {
 }  // -----  end of method StopAna::StopAna  (copy constructor)  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  StopAna::Clone
+//  Description:  /* cursor */
+// ===========================================================================
+StopAna* StopAna::Clone(std::string newname, std::shared_ptr<TFile> OutFile_) 
+{
+  if (OutFile_ == NULL)
+    return new StopAna(newname, tr, OutFile, spec);
+  else
+    return new StopAna(newname, tr, OutFile_, spec);
+}       // -----  end of function StopAna::Clone  -----
 
 //----------------------------------------------------------------------------
 //       Class:  StopAna
@@ -66,7 +78,7 @@ StopAna::operator = ( const StopAna &other )
 bool StopAna::BookHistograms()
 {
   ComAna::BookHistograms();
-  his->AddTH1C("SearchBins", "Search Bins", "Search Bins", "Events", 50, 0, 50);
+  his->AddTH1C("SearchBins", "Search Bins", "Search Bins", "Events", 45, 0, 45);
   return true;
 }       // -----  end of function StopAna::BookHistograms  -----
 
@@ -166,7 +178,6 @@ bool StopAna::FillCut()
     if (i+1 == CutOrder.size()) 
     {
       assert(tr->getVar<bool>(Label["passBaseline"]));
-      his->FillTH1("NBase", 1);
       passcuts = true;
     }
   }

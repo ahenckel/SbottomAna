@@ -43,6 +43,7 @@ class TTZ3Lep : public ComAna
     // constructor
     TTZ3Lep ( const TTZ3Lep &other );   // copy constructor
     ~TTZ3Lep ();                            // destructor
+    TTZ3Lep* Clone(std::string newname, std::shared_ptr<TFile> OutFile_);
 
     // ====================  ACCESSORS     ===============================
     bool InitCutOrder(std::string ana);

@@ -55,6 +55,7 @@ std::map<std::string, double> GetXS(std::string name)
     reVal["nEvts"] = allSamples[keyString].nEvts;
     reVal["color"] = allSamples[keyString].color;
     reVal[GetEventFilterList(keyString)] = -999.8;
+    reVal[keyString] = -999.9;
 
     std::cout << " Found " << keyString << " with XS " <<  allSamples[keyString].xsec  << " with kFactor " 
       << allSamples[keyString].kfactor << std::endl;
@@ -534,7 +535,7 @@ bool GetGenTops(NTupleReader &tr, std::vector<TLorentzVector> &vGenTops,
 //  Description:  Reweighting top pt from 8TeV recommendation
 //  https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
 // ===========================================================================
-void GetTopPtReweight(NTupleReader &tr)
+void GetTopPtReweight(NTupleReader &tr, std::map<std::string, double> &SamplePro)
 {
   double topPtWeight = 1;
   std::vector<TLorentzVector> vGenTops;
@@ -542,8 +543,18 @@ void GetTopPtReweight(NTupleReader &tr)
   std::vector<TLorentzVector> vGenLeps;
   GetGenTops(tr, vGenTops, vGenTopCharge, vGenLeps);
 
+  std::string proname = "";
+  for(auto &it : SamplePro)
+  {
+    if (it.second == -999.9)
+    {
+      proname = it.first;
+      break;
+    }
+  }
+
   // For data and not_TTbar MC, set the weight to 1.
-  if (tr.getVar<int>("run") != 1  || vGenTops.size() != 2)
+  if (tr.getVar<int>("run") != 1  || proname.find("TTbar") == std::string::npos || vGenTops.size() != 2)
   {
     tr.registerDerivedVar("TopPtReweight", topPtWeight);
     return;

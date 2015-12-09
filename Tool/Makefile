@@ -37,6 +37,11 @@ else
   LIBS += -L../../recipeAUX/OxbridgeMT2/.libs -loxbridgekinetics-1.0 
 endif
 
+ifneq ($(shell echo $$LHAPDF_INCLUDE), )
+  CXXFLAGS  += -isystem $(LHAPDF_INCLUDE)
+  LIBS += -L$(LHAPDF_LIBDIR) -lLHAPDF
+endif
+
 #============================================================================#
 #-----------------------------   Include Boost   ----------------------------#
 #============================================================================#
@@ -44,7 +49,7 @@ ifneq ($(shell echo $$BOOSTROOT), )
   CXXFLAGS  += -isystem $(shell echo $(BOOSTROOT))
 endif
 
-SUSYTools = $(SUSYObj)/NTupleReader.o $(SUSYObj)/samples.o $(SUSYObj)/baselineDef.o $(SUSYObj)/customize.o $(SUSYObj)/searchBins.o
+SUSYTools = $(SUSYObj)/NTupleReader.o $(SUSYObj)/samples.o $(SUSYObj)/baselineDef.o $(SUSYObj)/customize.o $(SUSYObj)/searchBins.o $(SUSYObj)/PDFUncertainty.o
 
 FILES = $(wildcard $(SDIR)/*.cc)
 OBJS  := $(FILES:$(SDIR)/%.cc=$(ODIR)/%.o)

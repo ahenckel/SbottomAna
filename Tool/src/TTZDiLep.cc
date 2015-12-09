@@ -53,6 +53,18 @@ TTZDiLep::TTZDiLep ( const TTZDiLep &other ): ComAna(other)
 {
 }  // -----  end of method TTZDiLep::TTZDiLep  (copy constructor)  -----
 
+// ===  FUNCTION  ============================================================
+//         Name:  TTZDiLep::Clone
+//  Description:  
+// ===========================================================================
+TTZDiLep* TTZDiLep::Clone(std::string newname, std::shared_ptr<TFile> OutFile_)
+{
+  if (OutFile_ == NULL)
+    return new TTZDiLep(newname, tr, OutFile, spec);
+  else
+    return new TTZDiLep(newname, tr, OutFile_, spec);
+}       // -----  end of function TTZDiLep::Clone  -----
+
 //----------------------------------------------------------------------------
 //       Class:  TTZDiLep
 //      Method:  ~TTZDiLep

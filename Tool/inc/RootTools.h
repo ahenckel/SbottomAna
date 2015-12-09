@@ -67,7 +67,7 @@ std::string ChooseLepPath(std::string leps);
 void passBaselineZinv(NTupleReader &tr, std::string leps);
 void passBaselineTTZ(NTupleReader &tr, std::string leps);
 std::string GetEventFilterList(std::string dataset);
-void GetTopPtReweight(NTupleReader &tr);
+void GetTopPtReweight(NTupleReader &tr, std::map<std::string, double> &SamplePro);
 // ===  FUNCTION  ============================================================
 //         Name:  PassEventListFilter
 //  Description:  Since EventFilter included both definition and declaration,

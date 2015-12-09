@@ -43,6 +43,7 @@ class ComAna
     // ====================  LIFECYCLE     ===============================
     ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec="");
     ~ComAna ();                            // destructor
+    virtual ComAna* Clone(std::string newname, std::shared_ptr<TFile> OutFile_=NULL);
 
     // ====================  ACCESSORS     ===============================
     bool SetEvtWeight(double weight);
@@ -55,6 +56,7 @@ class ComAna
     bool WriteHistogram();
     bool DrawHistogram();
     bool RunEvent();
+    bool SetSysVar(std::string &Sysbit_, std::string &SysVar_);
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================
@@ -98,6 +100,11 @@ class ComAna
     std::vector<std::string> MCTrigstr;
     // Label defined in derived, which changed by spec name
     std::map<std::string, std::string> Label;
+    std::shared_ptr<TFile> OutFile;
+
+    // Systematics
+    std::bitset<2> Sysbit;
+    std::string SysVarName;
 
   private:
     // ====================  METHODS       ===============================

@@ -53,6 +53,19 @@ TTZ3Lep::TTZ3Lep ( const TTZ3Lep &other ): ComAna(other)
 {
 }  // -----  end of method TTZ3Lep::TTZ3Lep  (copy constructor)  -----
 
+// ===  FUNCTION  ============================================================
+//         Name:  TTZ3Lep::Clone
+//  Description:  
+// ===========================================================================
+TTZ3Lep* TTZ3Lep::Clone(std::string newname, std::shared_ptr<TFile> OutFile_)
+{
+  if (OutFile_ == NULL)
+    return new TTZ3Lep(newname, tr, OutFile, spec);
+  else
+    return new TTZ3Lep(newname, tr, OutFile_, spec);
+
+}       // -----  end of function TTZ3Lep::Clone  -----
+
 //----------------------------------------------------------------------------
 //       Class:  TTZ3Lep
 //      Method:  ~TTZ3Lep

@@ -71,6 +71,18 @@ STZinv::~STZinv ()
 {
 }  // -----  end of method STZinv::-STZinv  (destructor)  -----
 
+// ===  FUNCTION  ============================================================
+//         Name:  STZinv::Clone
+//  Description:  
+// ===========================================================================
+STZinv* STZinv::Clone(std::string newname, std::shared_ptr<TFile> OutFile_)
+{
+  if (OutFile_ == NULL)
+    return new STZinv(newname, tr, OutFile, spec);
+  else
+    return new STZinv(newname, tr, OutFile_, spec);
+}       // -----  end of function STZinv::Clone  -----
+
 //----------------------------------------------------------------------------
 //       Class:  STZinv
 //      Method:  operator =
