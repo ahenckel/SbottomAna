@@ -157,14 +157,17 @@ bool ComAna::BookHistograms()
   //  MET
   his->AddTH1C("MET",    "MET",    "#slash{E}_{T} [GeV]",      "Events" , 200, 0,  800);
   his->AddTH1C("METPhi", "METPhi", "#phi #slash{E}_{T} [GeV]", "Events" , 20,  -5, 5);
-
   // Number of Objects
   his->AddTH1C("NJets"     , "NJets"     , "Number of Jets"   , "Events" , 10 , 0 , 10);
+  his->AddTH1C("hNJets30"    , "NJets30;N_{jets} (p_{T} > 30);Events" , 10 , 0    , 10);   // "cntNJetsPt30Eta24"
+  his->AddTH1C("hNJets50"    , "NJets50;N_{jets} (p_{T} > 50);Events" , 10 , 0    , 10);   // "cntNJetsPt50Eta24"
   his->AddTH1C("NRecoTops" , "NRecoTops" , "No. of Reco Tops" , "Events" , 5  , 0 , 5);
   his->AddTH1C("NBJets", "NBJets", "Number of b-Jets"   , "Events" , 4, 0, 4);
   his->AddTH1C("NEles"     , "NEles"     , "Number of Electrons"   , "Events" , 10 , 0 , 10);
   his->AddTH1C("NMuons"     , "NMuons"     , "Number of Muons"   , "Events" , 10 , 0 , 10);
   his->AddTH1C("NIsks"     , "NIsks"     , "Number of IsoTracks"   , "Events" , 10 , 0 , 10);
+  his->AddTH1C("CSV", "CSV", "CSV", "No. of Jets",  150, 0, 1.5);
+  his->AddTH2C("NBJetsNJets30" , "NBJetsNJets30" , "Number of b-Jets", "Number of Jets" , 5, 0  , 5, 10, 0 , 10 );
 
   // RM from arXiv:1506.00653
   his->AddTH1C("RM"        , "RM"        , "#frac{MET}{ISR Jet}" , "Events"        , 100      , 0  , 1);
@@ -208,6 +211,15 @@ bool ComAna::FillCut(int NCut)
   his->FillTH1(NCut, "NBase", 1, NBaseWeight);
   // Jet
   his->FillTH1(NCut, "NJets", j30count);
+  his->FillTH1(NCut, "hNJets30", tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
+  his->FillTH1(NCut, "hNJets50", tr->getVar<int>(Label["cntNJetsPt50Eta24"]));
+  his->FillTH2(NCut, "NBJetsNJets30", tr->getVar<int>(Label["cntCSVS"]), tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
+  for(auto &b : tr->getVec<double>(Label["recoJetsBtag_forTagger"]))
+  {
+    his->FillTH1(NCut, "CSV", b);
+  }
+
+
   FillTLVHistos(NCut, "Jet1", Jet1);
   FillTLVHistos(NCut, "Jet2", Jet2);
   FillTLVHistos(NCut, "Jet3", Jet3);

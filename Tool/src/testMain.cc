@@ -53,7 +53,8 @@
 #include "SusyAnaTools/Tools/EventListFilter.h"
 #include "SusyAnaTools/Tools/PDFUncertainty.h"
 
-bool DefSysComAnd(std::map<std::string, std::pair<std::string, std::string> > &SysMap, std::map<std::string, ComAna*> &AnaMap, std::shared_ptr<TFile> OutFile=NULL);
+bool DefSysComAnd(std::map<std::string, std::pair<std::string, std::string> > &SysMap, 
+    std::map<std::string, ComAna*> &AnaMap, std::shared_ptr<TFile> OutFile=NULL);
 
 int main(int argc, char* argv[])
 {
@@ -152,13 +153,13 @@ int main(int argc, char* argv[])
   //AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
   //AnaMap["PassCut"] = new PassCut("LeftOver", &tr, OutFile);
 
-//**************************************************************************//
-//                      Setup Systematics with Weights                      //
-//**************************************************************************//
+  //**************************************************************************//
+  //                      Setup Systematics with Weights                      //
+  //**************************************************************************//
   // Systematic_Name, sysbit (rate, shape), registerName
   std::map<std::string, std::pair<std::string, std::string> > SysMap;
-  SysMap["PDF_up"] = std::make_pair("01", "PDF_Unc_Up"); // as shape uncertainty
-  SysMap["PDF_down"] = std::make_pair("01", "PDF_Unc_Down"); // as shape uncertainty
+  SysMap["PDF_up"] = std::make_pair("11", "PDF_Unc_Up"); // as shape uncertainty
+  SysMap["PDF_down"] = std::make_pair("11", "PDF_Unc_Down"); // as shape uncertainty
   DefSysComAnd(SysMap, AnaMap);
 
   for( auto &it : AnaMap )
