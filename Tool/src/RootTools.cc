@@ -54,7 +54,7 @@ std::map<std::string, double> GetXS(std::string name)
     reVal["kfactor"] = allSamples[keyString].kfactor;
     reVal["nEvts"] = allSamples[keyString].nEvts;
     reVal["color"] = allSamples[keyString].color;
-    reVal[GetEventFilterList(keyString)] = -999.8;
+    //reVal[GetEventFilterList(keyString)] = -999.8;
     reVal[keyString] = -999.9;
 
     std::cout << " Found " << keyString << " with XS " <<  allSamples[keyString].xsec  << " with kFactor " 
