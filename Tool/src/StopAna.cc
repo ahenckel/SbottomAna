@@ -78,7 +78,15 @@ StopAna::operator = ( const StopAna &other )
 bool StopAna::BookHistograms()
 {
   ComAna::BookHistograms();
-  his->AddTH1C("SearchBins", "Search Bins", "Search Bins", "Events", 45, 0, 45);
+  his->AddTH1C("hSearchBins" , "Search Bins;Search Bin;Events"        , 45 , 0    , 45);
+  his->AddTH1C("hNJets30"    , "NJets30;N_{jets} (p_{T} > 30);Events" , 10 , 0    , 10);   // "cntNJetsPt30Eta24"
+  his->AddTH1C("hNJets50"    , "NJets50;N_{jets} (p_{T} > 50);Events" , 10 , 0    , 10);   // "cntNJetsPt50Eta24"
+  his->AddTH1C("hNTops"      , "NTops;N_{tops};Events"                , 5  , 0    , 5);    // "nTopCandSortedCnt"
+  his->AddTH1C("hNbJets"     , "NbJets;N_{bjets};Events"              , 5  , 0    , 5);    // "cntCSVS"
+  his->AddTH1C("hMET"        , "MET;#slash{E}_{T} [GeV];Events"       , 24 , 200  , 800);  // "met"
+  his->AddTH1C("hMT2"        , "MT2;M_{T2} [GeV];Events"              , 24 , 200  , 800);  // "best_had_brJet_MT2"
+  his->AddTH1C("hHT"         , "HT;H_{T} [GeV];Events"                , 20 , 500  , 1000); // "HT"
+
   return true;
 }       // -----  end of function StopAna::BookHistograms  -----
 
@@ -194,7 +202,16 @@ bool StopAna::FillSearchBins(int NCut)
       tr->getVar<double>(Label["best_had_brJet_MT2"]), tr->getVar<double>(METLabel));
   if( searchbin_id >= 0 )
   {
-    his->FillTH1(NCut, "SearchBins", searchbin_id);
+    his->FillTH1(NCut, "hSearchBins", searchbin_id);
   }
+
+  his->FillTH1(NCut, "hNJets30", tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
+  his->FillTH1(NCut, "hNJets50", tr->getVar<int>(Label["cntNJetsPt50Eta24"]));
+  his->FillTH1(NCut, "hNTops", tr->getVar<int>(Label["nTopCandSortedCnt"]));
+  his->FillTH1(NCut, "hNbJets", tr->getVar<int>(Label["cntCSVS"]));
+  his->FillTH1(NCut, "hMET", tr->getVar<double>(Label["met"]));
+  his->FillTH1(NCut, "hMT2", tr->getVar<double>(Label["best_had_brJet_MT2"]));
+  his->FillTH1(NCut, "hHT", tr->getVar<double>(Label["HT"]));
+
   return true;
 }       // -----  end of function StopAna::FillSearchBins  -----
