@@ -41,7 +41,6 @@
 #include "STISR.h"
 #include "STZinv.h"
 #include "STRM.h"
-#include "PassCut.h"
 #include "SBMulti.h"
 #include "StopAna.h"
 #include "TTZDiLep.h"
@@ -151,7 +150,6 @@ int main(int argc, char* argv[])
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
   //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
   //AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
-  //AnaMap["PassCut"] = new PassCut("LeftOver", &tr, OutFile);
 
   //**************************************************************************//
   //                      Setup Systematics with Weights                      //
