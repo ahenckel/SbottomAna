@@ -47,6 +47,7 @@ class ComAna
 
     // ====================  ACCESSORS     ===============================
     bool SetEvtWeight(double weight);
+    bool SetEvtWeight(std::string name);
     bool SetRateWeight(double weight);
     bool SaveCutHist(bool choice) const;
     virtual bool BookHistograms();
@@ -122,6 +123,7 @@ class ComAna
     // Event variables
     int j30count;
     double NBaseWeight;
+    double ShapeWeight;
     
 
 }; // -----  end of class ComAna  -----

@@ -111,6 +111,7 @@ bool ComAna::DefineLabels(std::string spec)
   Label["PassDiEleTrigger"]       = "PassDiEleTrigger"       ; 
   Label["PassEleMuTrigger"]       = "PassEleMuTrigger"       ; 
   Label["NTopsB"]                 = "NTopsB"                 ; 
+  Label["NbNjReweight"]           = "NbNjReweight"           ; 
 
   if (spec != "")
   {
@@ -538,12 +539,32 @@ bool ComAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std
 // ===========================================================================
 bool ComAna::SetEvtWeight(double weight)
 {
-  IsData();
-  double tempweight = 1.0;
+  if (tr->getVar<int>("run")!= 1)
+  {
+    his->SetWeight(1);
+    return true;
+  }
+  ShapeWeight = weight;
   if (Sysbit.test(0))
-    tempweight = weight * tr->getVar<double>(SysVarName);
-  else tempweight = weight;
-  his->SetWeight(tempweight);
+    ShapeWeight = ShapeWeight * tr->getVar<double>(SysVarName);
+  his->SetWeight(ShapeWeight);
+  return true;
+}       // -----  end of function ComAna::SetEvtWeight  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetEvtWeight
+//  Description:  
+// ===========================================================================
+bool ComAna::SetEvtWeight(std::string name)
+{
+  if (tr->getVar<int>("run")!= 1)
+  {
+    his->SetWeight(1);
+    return true;
+  }
+  ShapeWeight *= tr->getVar<double>(Label[name]);
+  his->SetWeight(ShapeWeight);
   return true;
 }       // -----  end of function ComAna::SetEvtWeight  -----
 
@@ -553,6 +574,12 @@ bool ComAna::SetEvtWeight(double weight)
 // ===========================================================================
 bool ComAna::SetRateWeight(double weight)
 {
+  if (tr->getVar<int>("run")!= 1)
+  {
+    his->SetWeight(1);
+    return true;
+  }
+
   if (Sysbit.test(1))
     NBaseWeight = weight * tr->getVar<double>(SysVarName);
   else NBaseWeight = weight;
