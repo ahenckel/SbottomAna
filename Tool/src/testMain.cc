@@ -52,6 +52,7 @@
 #include "SusyAnaTools/Tools/NTupleReader.h"
 #include "SusyAnaTools/Tools/EventListFilter.h"
 #include "SusyAnaTools/Tools/PDFUncertainty.h"
+#include "SusyAnaTools/Tools/Weights.h"
 
 bool DefSysComAnd(std::map<std::string, std::pair<std::string, std::string> > &SysMap, 
     std::map<std::string, ComAna*> &AnaMap, std::shared_ptr<TFile> OutFile=NULL);
@@ -119,12 +120,14 @@ int main(int argc, char* argv[])
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setup Global Object ~~~~~
   LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
   PDFUncertainty pdfs;  //PDF 
+  Pileup_Sys pileup;
   ExternObj Gobj;
 
   //clock to monitor the run time
   size_t t0 = clock();
   NTupleReader tr(fChain);
   tr.registerFunction(pdfs);
+  tr.registerFunction(pileup);
   tr.registerFunction(&passBaselineFunc);
   tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
   tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
@@ -146,9 +149,9 @@ int main(int argc, char* argv[])
   AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
   //AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
   //AnaMap["STRM"] = new STRM("STRM", &tr, OutFile);
-  AnaMap["STZinvM"] = new STZinv("STZinvM", &tr, OutFile,"ZinvM");
+  //AnaMap["STZinvM"] = new STZinv("STZinvM", &tr, OutFile,"ZinvM");
   //AnaMap["STZinvE"] = new STZinv("STZinvE", &tr, OutFile,"ZinvE");
-  AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
+  //AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
   //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
@@ -165,6 +168,8 @@ int main(int argc, char* argv[])
   std::map<std::string, std::pair<std::string, std::string> > SysMap;
   SysMap["PDF_up"] = std::make_pair("11", "PDF_Unc_Up"); // as shape uncertainty
   SysMap["PDF_down"] = std::make_pair("11", "PDF_Unc_Down"); // as shape uncertainty
+  SysMap["Scale_up"] = std::make_pair("11", "Scaled_Variations_Up"); // as shape uncertainty
+  SysMap["Scale_down"] = std::make_pair("11", "Scaled_Variations_Down"); // as shape uncertainty
   DefSysComAnd(SysMap, AnaMap);
 
   for( auto &it : AnaMap )
