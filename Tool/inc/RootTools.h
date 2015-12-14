@@ -42,6 +42,7 @@
 #include "SusyAnaTools/Tools/baselineDef.h"
 
 std::map<std::string, double> GetXS(std::string name);
+std::string GetProcName(std::map<std::string, double> &SamplePro);
 int GetCutBin( std::vector<std::string> &CutOrder , std::string name);
 double CalMT(TLorentzVector J1, TLorentzVector J2);
 double CalMCT(TLorentzVector J1, TLorentzVector J2);

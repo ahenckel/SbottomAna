@@ -24,10 +24,14 @@
 // Description:  constructor
 //----------------------------------------------------------------------------
 ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile_, std::string spec_):
-  isData(false), tr(tr_), spec(spec_), NBaseWeight(1.0), OutFile(OutFile_)
+  isData(false), tr(tr_), spec(spec_), OutFile(OutFile_)
 {
   his = new HistTool(OutFile, "", name);
   DefineLabels(spec);
+  evtweight = 1.0;     
+  xsweight = 1.0;      
+  effweight = 1.0;     
+  shapeweight = 1.0;   
 }  // -----  end of method ComAna::ComAna  (constructor)  -----
 
 // ===  FUNCTION  ============================================================
@@ -151,6 +155,8 @@ ComAna::operator = ( const ComAna &other )
 // ===========================================================================
 bool ComAna::BookHistograms()
 {
+  his->AddTH1("NxsSF", "Number of Events weighted XS", 2, 0, 2);
+  his->AddTH1("NTotal", "Number of Events", 2, 0, 2);
   his->AddTH1C("NBase", "Number of Events passed baseline", 2, 0, 2);
   // Jets
   BookTLVHistos("Jet1");
@@ -213,7 +219,9 @@ bool ComAna::InitCutOrder(std::string ana)
 // ===========================================================================
 bool ComAna::FillCut(int NCut)
 {
-  his->FillTH1(NCut, "NBase", 1, NBaseWeight);
+  // Event weights
+  his->FillTH1(NCut, "NBase", 1, effweight);
+
   // Jet
   his->FillTH1(NCut, "NJets", j30count);
   his->FillTH1(NCut, "hNJets30", tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
@@ -310,10 +318,20 @@ bool ComAna::FillCut()
 // ===========================================================================
 bool ComAna::RunEvent()
 {
+
+  // For Data, weight is one
+  if(tr->getVar<int>("run")!= 1)
+  {
+    xsweight = effweight = shapeweight = 1.0;
+  }
+
+  his->FillTH1("NTotal", 1, effweight);
+  his->FillTH1("NxsSF", 1, xsweight);
+  his->SetWeight(shapeweight);
+
   j30count = CountJets(30);
   GetLeadingJets();
   //GetType3TopTagger();
-
   return true;
 }       // -----  end of function ComAna::RunEvent  -----
 
@@ -532,60 +550,6 @@ bool ComAna::PassType3TopCrite(topTagger::type3TopTagger* type3TopTaggerPtr, std
     return true;
 }       // -----  end of function ComAna::PassType3TopCrite  -----
 
-
-// ===  FUNCTION  ============================================================
-//         Name:  ComAna::SetEvtWeight
-//  Description:  
-// ===========================================================================
-bool ComAna::SetEvtWeight(double weight)
-{
-  if (tr->getVar<int>("run")!= 1)
-  {
-    his->SetWeight(1);
-    return true;
-  }
-  ShapeWeight = weight;
-  if (Sysbit.test(0))
-    ShapeWeight = ShapeWeight * tr->getVar<double>(SysVarName);
-  his->SetWeight(ShapeWeight);
-  return true;
-}       // -----  end of function ComAna::SetEvtWeight  -----
-
-
-// ===  FUNCTION  ============================================================
-//         Name:  ComAna::SetEvtWeight
-//  Description:  
-// ===========================================================================
-bool ComAna::SetEvtWeight(std::string name)
-{
-  if (tr->getVar<int>("run")!= 1)
-  {
-    his->SetWeight(1);
-    return true;
-  }
-  ShapeWeight *= tr->getVar<double>(Label[name]);
-  his->SetWeight(ShapeWeight);
-  return true;
-}       // -----  end of function ComAna::SetEvtWeight  -----
-
-// ===  FUNCTION  ============================================================
-//         Name:  ComAna::SetRateWeight
-//  Description:  
-// ===========================================================================
-bool ComAna::SetRateWeight(double weight)
-{
-  if (tr->getVar<int>("run")!= 1)
-  {
-    his->SetWeight(1);
-    return true;
-  }
-
-  if (Sysbit.test(1))
-    NBaseWeight = weight * tr->getVar<double>(SysVarName);
-  else NBaseWeight = weight;
-  return true;
-}       // -----  end of function ComAna::SetRateWeight  -----
-
 // ===  FUNCTION  ============================================================
 //         Name:  ComAna::SaveCutHist
 //  Description:  
@@ -702,6 +666,130 @@ bool ComAna::CheckLeadingLeptons(int NCut)
 bool ComAna::SetSysVar(std::string &Sysbit_, std::string &SysVar_)
 {
   SysVarName = SysVar_;
-  Sysbit = std::bitset<2>(Sysbit_);
+  Sysbit = std::bitset<3>(Sysbit_);
   return true;
 }       // -----  end of function ComAna::SetSysVar  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetWeights
+//  Description:  
+//  double evtWeight = 1.0;      // For all, mostly for NLO
+//  double xsWeight = 1.0;       // For variation of XS -> NxsSF
+//  double effWeight = 1.0;      // For variation of efficiency -> Ntotal, Nbase
+//  double shapeWeight = 1.0;    // For variation in shape
+// ===========================================================================
+bool ComAna::SetWeights(double evtWeight_, double xsWeight_, double effWeight_, double shapeWeight_)
+{
+  evtweight   =  evtWeight_;
+  xsweight    =  xsWeight_;
+  effweight   =  effWeight_;
+  shapeweight =  shapeWeight_;
+
+  if (Sysbit.test(0))
+    shapeweight *= tr->getVar<double>(SysVarName);
+  if (Sysbit.test(1))
+    effweight *= tr->getVar<double>(SysVarName);
+  if (Sysbit.test(2))
+    xsweight *= tr->getVar<double>(SysVarName);
+
+  return true;
+}       // -----  end of function ComAna::SetWeights  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetXSWeight
+//  Description:  
+// ===========================================================================
+bool ComAna::SetXSWeight(double xsWeight_)
+{
+  xsweight *= xsWeight_;
+  return true;
+}       // -----  end of function ComAna::SetXSWeight  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetEffWeight
+//  Description:  
+// ===========================================================================
+bool ComAna::SetEffWeight(double effWeight_)
+{
+  effweight *= effWeight_;
+  return true;
+}       // -----  end of function ComAna::SetEffWeight  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetShapeWeight
+//  Description:  
+// ===========================================================================
+bool ComAna::SetShapeWeight(double shapeWeight_)
+{
+  shapeweight *= shapeWeight_;
+  return true;
+}       // -----  end of function ComAna::SetShapeWeight  -----
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetXSWeight
+//  Description:  
+// ===========================================================================
+bool ComAna::SetXSWeight(std::string var)
+{
+  if (tr->HasVar(var, spec))
+  {
+    xsweight *= tr->getVar<double>(var+spec);
+    return true;
+  }
+  if (tr->HasVar(var))
+  {
+    xsweight *= tr->getVar<double>(var);
+    return true;
+  }
+  return false;
+}       // -----  end of function ComAna::SetXSWeight  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetEffWeight
+//  Description:  
+// ===========================================================================
+bool ComAna::SetEffWeight(std::string var)
+{
+  
+  if (tr->HasVar(var, spec))
+  {
+    effweight *= tr->getVar<double>(var+spec);
+    return true;
+  }
+  if (tr->HasVar(var))
+  {
+    effweight *= tr->getVar<double>(var);
+    return true;
+  }
+
+  return false;
+}       // -----  end of function ComAna::SetEffWeight  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetShapeWeight
+//  Description:  
+// ===========================================================================
+bool ComAna::SetShapeWeight(std::string var)
+{
+  if (tr->HasVar(var, spec))
+  {
+    shapeweight *= tr->getVar<double>(var+spec);
+    return true;
+  }
+  if (tr->HasVar(var))
+  {
+    shapeweight *= tr->getVar<double>(var);
+    return true;
+  }
+  return false;
+}       // -----  end of function ComAna::SetShapeWeight  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::SetEffShapeWeight
+//  Description:  
+// ===========================================================================
+bool ComAna::SetEffShapeWeight(std::string var)
+{
+  SetEffWeight(var);
+  SetShapeWeight(var);
+  return true;
+}       // -----  end of function ComAna::SetEffShapeWeight  -----

@@ -107,6 +107,7 @@ int main(int argc, char* argv[])
   his->AddTH1("Weight", "Number of Events", 200, -1, 1);
 
   std::map<std::string, double> SamplePro = GetXS(inputFileList);
+  const std::string ProName = GetProcName(SamplePro);
   std::vector<std::string> Probins= { "key", "xsec", "lumi", "kfactor", "nEvts", "color" };
   his->AddTPro("XS", "Cross Section", Probins);
   for(unsigned int i=0; i < Probins.size(); ++i)
@@ -136,8 +137,11 @@ int main(int argc, char* argv[])
   tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01")); // bit : EM
   tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10")); // bit : EM
 
-  tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvT", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
   tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvM", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvM_NbNjWeight")))); 
+  if (ProName == "TTbar")
+  {
+    tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvT", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvM_NbNjWeight")))); 
+  }
   tr.registerFunction(boost::bind(RegisterDefaultAllSpecs<double>, _1, "NbNjReweight", 1.0));
 
   //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
@@ -164,12 +168,14 @@ int main(int argc, char* argv[])
   //**************************************************************************//
   //                      Setup Systematics with Weights                      //
   //**************************************************************************//
-  // Systematic_Name, sysbit (rate, shape), registerName
+  // Systematic_Name, sysbit (XS, eff, shape), registerName
   std::map<std::string, std::pair<std::string, std::string> > SysMap;
-  SysMap["PDF_up"] = std::make_pair("11", "PDF_Unc_Up"); // as shape uncertainty
-  SysMap["PDF_down"] = std::make_pair("11", "PDF_Unc_Down"); // as shape uncertainty
-  SysMap["Scale_up"] = std::make_pair("11", "Scaled_Variations_Up"); // as shape uncertainty
-  SysMap["Scale_down"] = std::make_pair("11", "Scaled_Variations_Down"); // as shape uncertainty
+  SysMap["PDF_up"] = std::make_pair("111", "PDF_Unc_Up"); // as shape uncertainty
+  SysMap["PDF_down"] = std::make_pair("111", "PDF_Unc_Down"); // as shape uncertainty
+  SysMap["Scale_up"] = std::make_pair("111", "Scaled_Variations_Up"); // as shape uncertainty
+  SysMap["Scale_down"] = std::make_pair("111", "Scaled_Variations_Down"); // as shape uncertainty
+  SysMap["PileUp_up"] = std::make_pair("011", "_PUSysUp"); // as shape uncertainty
+  SysMap["PileUp_down"] = std::make_pair("011", "_PUSysDown"); // as shape uncertainty
   DefSysComAnd(SysMap, AnaMap);
 
   for( auto &it : AnaMap )
@@ -203,9 +209,18 @@ int main(int argc, char* argv[])
     //**************************************************************************//
     //                             Set Event Weight                             //
     //**************************************************************************//
-    double stored_weight = -999;
-    double evtWeight = 1.0; // For shape 
-    double rateWeight = 1.0; // For rate (event count) -> NEvent & NBase
+    // yeild = xs * lumi * eff (NBase/Ntotal) * xs_scale(NxsSF/Nevent)
+    // In total 5 places for weight, included ShapeWeight
+    // Nevent      : NLO
+    // NxsSF       : NLO, PDF, Scale,
+    // Ntotal      : NLO, PDF, Scale, PileUp, NbNj, 
+    // NBase       : NLO, PDF, Scale, PileUp, NbNj, 
+    // ShapeWeight : NLO, PDF, Scale, PileUp, NbNj, TopPt, 
+    double stored_weight = -999; // From ntuple
+    double evtWeight = 1.0;      // For all, mostly for mc@NLO
+    double xsWeight = 1.0;       // For variation of XS -> NxsSF/NEvent
+    double effWeight = 1.0;      // For variation of efficiency -> Ntotal, Nbase
+    double shapeWeight = 1.0;    // For variation in shape
 
     //~~~~~~~~~~~~~~~~~~~~~ Getting weight that apply to both shape and rate ~~~~~
     try {
@@ -216,13 +231,16 @@ int main(int argc, char* argv[])
     evtWeight = stored_weight >= 0 ? 1 : -1;
     if (tr.getVar<int>("run") != 1) // Set weight to 1 for Data
       evtWeight = 1;
-    rateWeight = evtWeight;
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for rate, but not shape ~~~~~
+    xsWeight = effWeight = shapeWeight = evtWeight;
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
-    evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Weight for eff. ~~~~~
+    effWeight *= tr.getVar<double>("_PUweightFactor");
 
-    his->FillTH1("NEvent", 1, rateWeight);
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Weight for shape ~~~~~
+    shapeWeight *= tr.getVar<double>("_PUweightFactor");
+    shapeWeight *= tr.getVar<double>("TopPtReweight");
+
+    his->FillTH1("NEvent", 1, evtWeight);
     his->FillTH1("Weight", stored_weight);
 
     //**************************************************************************//
@@ -230,9 +248,8 @@ int main(int argc, char* argv[])
     //**************************************************************************//
     for( auto &it : AnaMap )
     {
-      it.second->SetRateWeight(rateWeight);
-      it.second->SetEvtWeight(evtWeight);
-      it.second->SetEvtWeight("NbNjReweight");
+      it.second->SetWeights(evtWeight, xsWeight, effWeight, shapeWeight);
+      //it.second->SetEffShapeWeight("NbNjReweight");
       it.second->FillCut();
     }
 

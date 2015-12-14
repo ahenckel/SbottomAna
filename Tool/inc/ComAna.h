@@ -46,9 +46,15 @@ class ComAna
     virtual ComAna* Clone(std::string newname, std::shared_ptr<TFile> OutFile_=NULL);
 
     // ====================  ACCESSORS     ===============================
-    bool SetEvtWeight(double weight);
-    bool SetEvtWeight(std::string name);
-    bool SetRateWeight(double weight);
+    bool SetWeights(double evtWeight_, double xsWeight_, double effWeight_, double shapeWeight_);
+    bool SetShapeWeight(std::string var);
+    bool SetEffWeight(std::string var);
+    bool SetXSWeight(std::string var);
+    bool SetEffWeight(double effWeight_);
+    bool SetXSWeight(double xsWeight_);
+    bool SetShapeWeight(double shapeWeight_);
+    bool SetEffShapeWeight(std::string var);
+
     bool SaveCutHist(bool choice) const;
     virtual bool BookHistograms();
     virtual bool InitCutOrder(std::string ana);
@@ -104,7 +110,7 @@ class ComAna
     std::shared_ptr<TFile> OutFile;
 
     // Systematics
-    std::bitset<2> Sysbit;
+    std::bitset<3> Sysbit; //XS, Eff, Shape
     std::string SysVarName;
 
   private:
@@ -122,9 +128,11 @@ class ComAna
 
     // Event variables
     int j30count;
-    double NBaseWeight;
-    double ShapeWeight;
-    
+
+    double evtweight;   // for all, mostly for nlo
+    double xsweight;    // for variation of xs-> nxssf
+    double effweight;   // for variation of efficiency->ntotal, nbase
+    double shapeweight; // for variation in shape
 
 }; // -----  end of class ComAna  -----
 

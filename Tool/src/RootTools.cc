@@ -55,7 +55,7 @@ std::map<std::string, double> GetXS(std::string name)
     reVal["nEvts"] = allSamples[keyString].nEvts;
     reVal["color"] = allSamples[keyString].color;
     //reVal[GetEventFilterList(keyString)] = -999.8;
-    reVal[keyString] = -999.9;
+    reVal[keyString] = -998.9;
 
     std::cout << " Found " << keyString << " with XS " <<  allSamples[keyString].xsec  << " with kFactor " 
       << allSamples[keyString].kfactor << std::endl;
@@ -546,7 +546,7 @@ void GetTopPtReweight(NTupleReader &tr, std::map<std::string, double> &SamplePro
   std::string proname = "";
   for(auto &it : SamplePro)
   {
-    if (it.second == -999.9)
+    if (it.second == -998.9)
     {
       proname = it.first;
       break;
@@ -606,3 +606,21 @@ void GetTopPtReweight(NTupleReader &tr, std::map<std::string, double> &SamplePro
 
   return ;
 }       // -----  end of function GetTopPtReweight  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  GetProcName
+//  Description:  
+// ===========================================================================
+std::string GetProcName(std::map<std::string, double> &SamplePro)
+{
+  std::string proname = "";
+  for(auto &it : SamplePro)
+  {
+    if (it.second == -998.9)
+    {
+      proname = it.first;
+      break;
+    }
+  }
+  return proname;
+}       // -----  end of function GetProcName  -----
