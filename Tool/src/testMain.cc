@@ -130,15 +130,15 @@ int main(int argc, char* argv[])
   tr.registerFunction(pileup);
   tr.registerFunction(&passBaselineFunc);
   tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
-  tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
-  tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
-  tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
-  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01")); // bit : EM
-  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10")); // bit : EM
+  //tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
+  //tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
+  //tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
+  //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01")); // bit : EM
+  //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10")); // bit : EM
 
-  tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvT", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
-  tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvM", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvM_NbNjWeight")))); 
-  tr.registerFunction(boost::bind(RegisterDefaultAllSpecs<double>, _1, "NbNjReweight", 1.0));
+  //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvT", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
+  //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvM", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvM_NbNjWeight")))); 
+  //tr.registerFunction(boost::bind(RegisterDefaultAllSpecs<double>, _1, "NbNjReweight", 1.0));
 
   //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
 
@@ -171,6 +171,8 @@ int main(int argc, char* argv[])
   SysMap["Scale_up"] = std::make_pair("11", "Scaled_Variations_Up"); // as shape uncertainty
   SysMap["Scale_down"] = std::make_pair("11", "Scaled_Variations_Down"); // as shape uncertainty
   DefSysComAnd(SysMap, AnaMap);
+  AnaMap["Stop_PU_up"] = new StopAna("Stop_PU_up", &tr, OutFile);
+  AnaMap["Stop_PU_down"] = new StopAna("Stop_PU_down", &tr, OutFile);
 
   for( auto &it : AnaMap )
   {
@@ -191,7 +193,7 @@ int main(int argc, char* argv[])
         std::cout << name << std::endl;
     }
 
-    //if (tr.getEvtNum() > 10000) break;
+    if (tr.getEvtNum() > 10000) break;
     if (tr.getEvtNum() % 20000 == 0)
     {
       process_mem_usage(vm, rss);
@@ -230,9 +232,25 @@ int main(int argc, char* argv[])
     //**************************************************************************//
     for( auto &it : AnaMap )
     {
-      it.second->SetRateWeight(rateWeight);
-      it.second->SetEvtWeight(evtWeight);
-      it.second->SetEvtWeight("NbNjReweight");
+      double temprate = rateWeight;
+      double tempevt = evtWeight;
+      if (it.first.find("PU") == std::string::npos)
+      {
+        temprate *= tr.getVar<double>("_PUweightFactor");
+        tempevt *= tr.getVar<double>("_PUweightFactor");
+      } else if (it.first.find("PU_up") != std::string::npos)
+      {
+        temprate *= tr.getVar<double>("_PUSysUp");
+        tempevt *= tr.getVar<double>("_PUSysUp");
+      } else if (it.first.find("PU_down") != std::string::npos)
+      {
+        temprate *= tr.getVar<double>("_PUSysDown");
+        tempevt *= tr.getVar<double>("_PUSysDown");
+      }
+
+      it.second->SetRateWeight(temprate);
+      it.second->SetEvtWeight(tempevt);
+      //it.second->SetEvtWeight("NbNjReweight");
       it.second->FillCut();
     }
 
