@@ -218,7 +218,7 @@ bool StopAna::FillSearchBins(int NCut)
   {
     for(auto &z: tr->getVec<TLorentzVector>(Label["vTops"]))
     {
-      FillTLVHistos(i, "RecoTop", z);
+      FillTLVHistos(NCut, "RecoTop", z);
     }
   }
 
