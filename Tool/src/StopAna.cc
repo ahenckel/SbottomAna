@@ -79,6 +79,7 @@ bool StopAna::BookHistograms()
 {
   ComAna::BookHistograms();
   BookTLVHistos("RecoTop");
+  his->AddTH1C("SearchBinsStat" , "Search Bins Stat;Search Bin;Events"        , 45 , 0    , 45);
   his->AddTH1C("hSearchBins" , "Search Bins;Search Bin;Events"        , 45 , 0    , 45);
   his->AddTH1C("hNJets30"    , "NJets30;N_{jets} (p_{T} > 30);Events" , 10 , 0    , 10);   // "cntNJetsPt30Eta24"
   his->AddTH1C("hNJets50"    , "NJets50;N_{jets} (p_{T} > 50);Events" , 10 , 0    , 10);   // "cntNJetsPt50Eta24"
@@ -204,6 +205,7 @@ bool StopAna::FillSearchBins(int NCut)
   if( searchbin_id >= 0 )
   {
     his->FillTH1(NCut, "hSearchBins", searchbin_id);
+    his->FillTH1(NCut, "SearchBinsStat", searchbin_id, tr->getVar<double>("stored_weight") >= 0 ? 1 : -1);
   }
 
   his->FillTH1(NCut, "hNJets30", tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
