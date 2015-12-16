@@ -78,6 +78,7 @@ StopAna::operator = ( const StopAna &other )
 bool StopAna::BookHistograms()
 {
   ComAna::BookHistograms();
+  BookTLVHistos("RecoTop");
   his->AddTH1C("hSearchBins" , "Search Bins;Search Bin;Events"        , 45 , 0    , 45);
   his->AddTH1C("hNJets30"    , "NJets30;N_{jets} (p_{T} > 30);Events" , 10 , 0    , 10);   // "cntNJetsPt30Eta24"
   his->AddTH1C("hNJets50"    , "NJets50;N_{jets} (p_{T} > 50);Events" , 10 , 0    , 10);   // "cntNJetsPt50Eta24"
@@ -212,6 +213,14 @@ bool StopAna::FillSearchBins(int NCut)
   his->FillTH1(NCut, "hMET", tr->getVar<double>(Label["met"]));
   his->FillTH1(NCut, "hMT2", tr->getVar<double>(Label["best_had_brJet_MT2"]));
   his->FillTH1(NCut, "hHT", tr->getVar<double>(Label["HT"]));
+
+  if (tr->getVar<int>(Label["nTopCandSortedCnt"]) == 1)
+  {
+    for(auto &z: tr->getVec<TLorentzVector>(Label["vTops"]))
+    {
+      FillTLVHistos(i, "RecoTop", z);
+    }
+  }
 
   return true;
 }       // -----  end of function StopAna::FillSearchBins  -----
