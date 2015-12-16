@@ -164,8 +164,6 @@ bool ComAna::BookHistograms()
   his->AddTH1C("METPhi", "METPhi", "#phi #slash{E}_{T} [GeV]", "Events" , 20,  -5, 5);
   // Number of Objects
   his->AddTH1C("NJets"     , "NJets"     , "Number of Jets"   , "Events" , 10 , 0 , 10);
-  his->AddTH1C("hNJets30"    , "NJets30;N_{jets} (p_{T} > 30);Events" , 10 , 0    , 10);   // "cntNJetsPt30Eta24"
-  his->AddTH1C("hNJets50"    , "NJets50;N_{jets} (p_{T} > 50);Events" , 10 , 0    , 10);   // "cntNJetsPt50Eta24"
   his->AddTH1C("NRecoTops" , "NRecoTops" , "No. of Reco Tops" , "Events" , 5  , 0 , 5);
   his->AddTH1C("NBJets", "NBJets", "Number of b-Jets"   , "Events" , 4, 0, 4);
   his->AddTH1C("NEles"     , "NEles"     , "Number of Electrons"   , "Events" , 10 , 0 , 10);
@@ -216,8 +214,6 @@ bool ComAna::FillCut(int NCut)
   his->FillTH1(NCut, "NBase", 1, NBaseWeight);
   // Jet
   his->FillTH1(NCut, "NJets", j30count);
-  his->FillTH1(NCut, "hNJets30", tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
-  his->FillTH1(NCut, "hNJets50", tr->getVar<int>(Label["cntNJetsPt50Eta24"]));
   his->FillTH2(NCut, "NBJetsNJets30", tr->getVar<int>(Label["cntCSVS"]), tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
   for(auto &b : tr->getVec<double>(Label["recoJetsBtag_forTagger"]))
   {

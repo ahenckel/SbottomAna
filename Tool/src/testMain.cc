@@ -166,8 +166,10 @@ int main(int argc, char* argv[])
   //**************************************************************************//
   // Systematic_Name, sysbit (rate, shape), registerName
   std::map<std::string, std::pair<std::string, std::string> > SysMap;
-  SysMap["PDF_up"] = std::make_pair("11", "PDF_Unc_Up"); // as shape uncertainty
-  SysMap["PDF_down"] = std::make_pair("11", "PDF_Unc_Down"); // as shape uncertainty
+  SysMap["PDF_up"] = std::make_pair("11", "NNPDF_From_Median_Up"); // as shape uncertainty
+  SysMap["PDF_down"] = std::make_pair("11", "NNPDF_From_Median_Down"); // as shape uncertainty
+  //SysMap["PDF_up"] = std::make_pair("11", "PDF_Unc_Up"); // as shape uncertainty
+  //SysMap["PDF_down"] = std::make_pair("11", "PDF_Unc_Down"); // as shape uncertainty
   SysMap["Scale_up"] = std::make_pair("11", "Scaled_Variations_Up"); // as shape uncertainty
   SysMap["Scale_down"] = std::make_pair("11", "Scaled_Variations_Down"); // as shape uncertainty
   DefSysComAnd(SysMap, AnaMap);
@@ -193,7 +195,7 @@ int main(int argc, char* argv[])
         std::cout << name << std::endl;
     }
 
-    if (tr.getEvtNum() > 10000) break;
+    //if (tr.getEvtNum() > 10000) break;
     if (tr.getEvtNum() % 20000 == 0)
     {
       process_mem_usage(vm, rss);
