@@ -90,6 +90,10 @@ bool ComAna::DefineLabels(std::string spec)
   Label["HT"]                     = "HT"                     ;
   Label["vTops"]                  = "vTops"                  ;
   Label["mTopJets"]               = "mTopJets"               ;
+  Label["MHT"]                    = "MHT"                    ;
+  Label["MHTPhi"]                 = "MHTPhi"                 ;
+  Label["MHTSig"]                 = "MHTSig"                 ;
+  Label["METSig"]                 = "METSig"                 ;
 
   // Z reco variables
   Label["bestRecoZPt"]            = "bestRecoZPt"            ; 
@@ -237,12 +241,12 @@ bool ComAna::FillCut(int NCut)
   // MET
   his->FillTH1(NCut, "MET", tr->getVar<double>(METLabel) );
   his->FillTH1(NCut, "METPhi", tr->getVar<double>(METPhiLabel) );
-  his->FillTH1(NCut, "MHT", tr->getVar<double>("MHT") );
-  his->FillTH1(NCut, "MHTPhi", tr->getVar<double>("MHTPhi") );
-  his->FillTH1(NCut, "METSig", tr->getVar<double>("METSig") );
-  his->FillTH1(NCut, "MHTSig", tr->getVar<double>("MHTSig") );
-  his->FillTH1(NCut, "METMHT", std::fabs(tr->getVar<double>("MHT") - tr->getVar<double>(METLabel) ) 
-      / (tr->getVar<double>("MHT")   + tr->getVar<double>(METLabel) ));
+  his->FillTH1(NCut, "MHT", tr->getVar<double>(Label["MHT"]) );
+  his->FillTH1(NCut, "MHTPhi", tr->getVar<double>(Label["MHTPhi"]) );
+  his->FillTH1(NCut, "METSig", tr->getVar<double>(Label["METSig"]) );
+  his->FillTH1(NCut, "MHTSig", tr->getVar<double>(Label["MHTSig"]) );
+  his->FillTH1(NCut, "METMHT", std::fabs(tr->getVar<double>(Label["MHT"]) - tr->getVar<double>(METLabel) ) 
+      / (tr->getVar<double>(Label["MHT"])   + tr->getVar<double>(METLabel) ));
 
 
   // NTops
