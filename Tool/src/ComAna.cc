@@ -161,7 +161,14 @@ bool ComAna::BookHistograms()
 
   //  MET
   his->AddTH1C("MET",    "MET",    "#slash{E}_{T} [GeV]",      "Events" , 200, 0,  800);
+  his->AddTH1C("MHT",    "MHT",    "#slash{H}_{T} [GeV]",      "Events" , 200, 0,  800);
   his->AddTH1C("METPhi", "METPhi", "#phi #slash{E}_{T} [GeV]", "Events" , 20,  -5, 5);
+  his->AddTH1C("MHTPhi", "MHTPhi", "#phi #slash{H}_{T} [GeV]", "Events" , 20,  -5, 5);
+  his->AddTH1C("METSig", "METSig", "Sig. #slash{E}_{T} [GeV]", "Events" , 100,  0, 10);
+  his->AddTH1C("MHTSig", "MHTSig", "Sig. #slash{H}_{T} [GeV]", "Events" , 100,  0, 10);
+  his->AddTH1C("METMHT",    "METMHT",  "#frac{|#slash{E}_{T} - #slash{H}_{T}|}{ #slash{E}_{T} - #slash{H}_{T}}",     
+      "Events" , 50, 0,  1);
+
   // Number of Objects
   his->AddTH1C("NJets"     , "NJets"     , "Number of Jets"   , "Events" , 10 , 0 , 10);
   his->AddTH1C("NRecoTops" , "NRecoTops" , "No. of Reco Tops" , "Events" , 5  , 0 , 5);
@@ -230,6 +237,13 @@ bool ComAna::FillCut(int NCut)
   // MET
   his->FillTH1(NCut, "MET", tr->getVar<double>(METLabel) );
   his->FillTH1(NCut, "METPhi", tr->getVar<double>(METPhiLabel) );
+  his->FillTH1(NCut, "MHT", tr->getVar<double>("MHT") );
+  his->FillTH1(NCut, "MHTPhi", tr->getVar<double>("MHTPhi") );
+  his->FillTH1(NCut, "METSig", tr->getVar<double>("METSig") );
+  his->FillTH1(NCut, "MHTSig", tr->getVar<double>("MHTSig") );
+  his->FillTH1(NCut, "METMHT", std::fabs(tr->getVar<double>("MHT") - tr->getVar<double>(METLabel) ) 
+      / (tr->getVar<double>("MHT")   + tr->getVar<double>(METLabel) ));
+
 
   // NTops
   his->FillTH1(NCut, "NRecoTops", tr->getVar<int>(Label["nTopCandSortedCnt"]));

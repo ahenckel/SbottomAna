@@ -65,6 +65,10 @@ class ComAna
     ComAna& operator = ( const ComAna &other ); // assignment operator
 
     // ====================  DATA MEMBERS  ===============================
+    std::string jetVecLabel;
+    std::string CSVVecLabel;
+    std::string METLabel   ;
+    std::string METPhiLabel;
 
   protected:
     // ====================  METHODS       ===============================
@@ -93,10 +97,6 @@ class ComAna
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input Labels ~~~~~
     bool isData;
     std::string spec;
-    std::string jetVecLabel;
-    std::string CSVVecLabel;
-    std::string METLabel   ;
-    std::string METPhiLabel;
     std::vector<std::string> HLTstr;
     std::vector<std::string> MCTrigstr;
     // Label defined in derived, which changed by spec name

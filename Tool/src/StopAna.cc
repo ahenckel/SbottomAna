@@ -212,7 +212,7 @@ bool StopAna::FillSearchBins(int NCut)
   his->FillTH1(NCut, "hNJets50", tr->getVar<int>(Label["cntNJetsPt50Eta24"]));
   his->FillTH1(NCut, "hNTops", tr->getVar<int>(Label["nTopCandSortedCnt"]));
   his->FillTH1(NCut, "hNbJets", tr->getVar<int>(Label["cntCSVS"]));
-  his->FillTH1(NCut, "hMET", tr->getVar<double>(Label["met"]));
+  his->FillTH1(NCut, "hMET", tr->getVar<double>(METLabel));
   his->FillTH1(NCut, "hMT2", tr->getVar<double>(Label["best_had_brJet_MT2"]));
   his->FillTH1(NCut, "hHT", tr->getVar<double>(Label["HT"]));
 

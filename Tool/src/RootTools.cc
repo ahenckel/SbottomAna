@@ -353,8 +353,28 @@ void passBaselineTTZ(NTupleReader &tr, std::string leps)
   blv.prepareTopTagger();
   blv.passBaseline(tr);
   blv.GetnTops(&tr);
+  blv.GetMHT(&tr);
   TopWithoutBVeto(tr, ss.str());
 }
+
+// ===  FUNCTION  ============================================================
+//         Name:  passBaselineMHT
+//  Description:  /* cursor */
+// ===========================================================================
+void passBaselineMHT(NTupleReader &tr)
+{
+  // Run baseline
+  BaselineVessel blv("MHT");
+  blv.jetVecLabel = "jetsLVecLepCleaned";
+  blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+  blv.METLabel = "MHT";
+  blv.METPhiLabel = "MHTPhi";
+
+  blv.prepareTopTagger();
+  blv.passBaseline(tr);
+  blv.GetnTops(&tr);
+  blv.GetMHT(&tr);
+}       // -----  end of function passBaselineMHT  -----
 
 // ===  FUNCTION  ============================================================
 //         Name:  TopWithoutBVeto
@@ -409,6 +429,7 @@ void passBaselineZinv(NTupleReader &tr, std::string leps)
   blv.prepareTopTagger();
   blv.passBaseline(tr);
   blv.GetnTops(&tr);
+  blv.GetMHT(&tr);
 }       // -----  end of function passBaselineZinv  -----
 
 // ===  FUNCTION  ============================================================

@@ -4,6 +4,7 @@ import ROOT as rt
 #   Initiated by: Gautier Hamel de Monchenault (Saclay)
 #   Translated in Python by: Joshua Hardenbrook (Princeton)
 #
+# cmsText        = "CMS Simulation"
 cmsText        = "CMS"
 cmsTextFont    = 61
 

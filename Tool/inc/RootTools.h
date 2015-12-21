@@ -66,6 +66,7 @@ bool TopWithoutBVeto(NTupleReader &tr, std::string spec);
 std::string ChooseLepPath(std::string leps);
 void passBaselineZinv(NTupleReader &tr, std::string leps);
 void passBaselineTTZ(NTupleReader &tr, std::string leps);
+void passBaselineMHT(NTupleReader &tr);
 std::string GetEventFilterList(std::string dataset);
 void GetTopPtReweight(NTupleReader &tr, std::map<std::string, double> &SamplePro);
 // ===  FUNCTION  ============================================================
