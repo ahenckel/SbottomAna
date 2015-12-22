@@ -630,6 +630,7 @@ TH2D* HistTool::AddTH2 (const std::string name, const std::string title,
 // ===========================================================================
 int HistTool::FillTH2(int Ncut, std::string HisName, double xvalue, double yvalue, double weight)
 {
+  if (Ncut+1 == CutSize) FillTH2(HisName, xvalue, yvalue, weight);
   TString mapname = HisName+"_"+static_cast<Long_t>(Ncut);
   if (HisMap2D.find(mapname.Data()) == HisMap2D.end())
     return 0;
@@ -644,6 +645,7 @@ int HistTool::FillTH2(int Ncut, std::string HisName, double xvalue, double yvalu
 
 int HistTool::FillTH2(int Ncut, std::string HisName, int xvalue, double yvalue, double weight)
 {
+  if (Ncut+1 == CutSize) FillTH2(HisName, xvalue, yvalue, weight);
   TString mapname = HisName+"_"+static_cast<Long_t>(Ncut);
   if (HisMap2D.find(mapname.Data()) == HisMap2D.end())
     return 0;

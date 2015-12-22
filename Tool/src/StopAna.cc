@@ -209,20 +209,20 @@ bool StopAna::FillSearchBins(int NCut)
   if( searchbin_id >= 0 )
   {
     his->FillTH1(NCut, "hSearchBins", searchbin_id);
-    his->FillTH1(NCut, "SearchBinsStat", searchbin_id, tr->getVar<double>("stored_weight") >= 0 ? 1 : -1);
-    his->FillTH2(NCut, "SearchBinsNJet30", searchbin_id, tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
-    his->FillTH2(NCut, "SearchBinsNJet50", searchbin_id, tr->getVar<int>(Label["cntNJetsPt50Eta24"]));
-    his->FillTH2(NCut, "SearchBinsMHT", searchbin_id, tr->getVar<double>(Label["MHT"]));
-    his->FillTH2(NCut, "SearchBinsMETSig", searchbin_id, tr->getVar<double>(Label["METSig"]));
+    his->FillTH1(NCut , "SearchBinsStat"   , searchbin_id , tr->getVar<double>("stored_weight") >= 0 ? 1 : -1);
+    his->FillTH2(NCut , "SearchBinsNJet30" , searchbin_id , tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
+    his->FillTH2(NCut , "SearchBinsNJet50" , searchbin_id , tr->getVar<int>(Label["cntNJetsPt50Eta24"]));
+    his->FillTH2(NCut , "SearchBinsMHT"    , searchbin_id , tr->getVar<double>(Label["MHT"]));
+    his->FillTH2(NCut , "SearchBinsMETSig" , searchbin_id , tr->getVar<double>(Label["METSig"]));
   }
 
   his->FillTH1(NCut, "hNJets30", tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
   his->FillTH1(NCut, "hNJets50", tr->getVar<int>(Label["cntNJetsPt50Eta24"]));
-  his->FillTH1(NCut, "hNTops", tr->getVar<int>(Label["nTopCandSortedCnt"]));
-  his->FillTH1(NCut, "hNbJets", tr->getVar<int>(Label["cntCSVS"]));
-  his->FillTH1(NCut, "hMET", tr->getVar<double>(METLabel));
-  his->FillTH1(NCut, "hMT2", tr->getVar<double>(Label["best_had_brJet_MT2"]));
-  his->FillTH1(NCut, "hHT", tr->getVar<double>(Label["HT"]));
+  his->FillTH1(NCut, "hNTops",   tr->getVar<int>(Label["nTopCandSortedCnt"]));
+  his->FillTH1(NCut, "hNbJets",  tr->getVar<int>(Label["cntCSVS"]));
+  his->FillTH1(NCut, "hMET",     tr->getVar<double>(METLabel));
+  his->FillTH1(NCut, "hMT2",     tr->getVar<double>(Label["best_had_brJet_MT2"]));
+  his->FillTH1(NCut, "hHT",      tr->getVar<double>(Label["HT"]));
 
   if (tr->getVar<int>(Label["nTopCandSortedCnt"]) == 1)
   {

@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
   tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
-  //tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
+  tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01")); // bit : EM
   //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10")); // bit : EM
 
@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
   //AnaMap["STRM"] = new STRM("STRM", &tr, OutFile);
   //AnaMap["STZinvM"] = new STZinv("STZinvM", &tr, OutFile,"ZinvM");
   //AnaMap["STZinvE"] = new STZinv("STZinvE", &tr, OutFile,"ZinvE");
-  //AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
+  AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
   //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
