@@ -137,11 +137,10 @@ int main(int argc, char* argv[])
   //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01")); // bit : EM
   //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10")); // bit : EM
 
-  tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvT", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
   tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
-  tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "MHT", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
+  //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvT", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
   //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvM", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvM_NbNjWeight")))); 
-  tr.registerFunction(boost::bind(RegisterDefaultAllSpecs<double>, _1, "NbNjReweight", 1.0));
+  //tr.registerFunction(boost::bind(RegisterDefaultAllSpecs<double>, _1, "NbNjReweight", 1.0));
 
   //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
 
@@ -232,6 +231,7 @@ int main(int argc, char* argv[])
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
     evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
+    evtWeight *= tr.getVar<double>("NbNjReweight"); // TopPtReweight, apply to shape, not rate
 
     his->FillTH1("NEvent", 1, rateWeight);
     his->FillTH1("Weight", stored_weight);
@@ -259,7 +259,6 @@ int main(int argc, char* argv[])
 
       it.second->SetRateWeight(temprate);
       it.second->SetEvtWeight(tempevt);
-      it.second->SetEvtWeight("NbNjReweight");
       it.second->FillCut();
     }
 
