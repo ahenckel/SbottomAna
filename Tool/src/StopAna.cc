@@ -88,6 +88,10 @@ bool StopAna::BookHistograms()
   his->AddTH1C("hMET"        , "MET;#slash{E}_{T} [GeV];Events"       , 24 , 200  , 800);  // "met"
   his->AddTH1C("hMT2"        , "MT2;M_{T2} [GeV];Events"              , 24 , 200  , 800);  // "best_had_brJet_MT2"
   his->AddTH1C("hHT"         , "HT;H_{T} [GeV];Events"                , 20 , 500  , 1000); // "HT"
+  his->AddTH2C("SearchBinsNJet30" , "Search Bins Vs NJet30;Search Bin;N_{jets} (p_{T} > 30)"        , 45 , 0    , 45, 10, 0, 10);
+  his->AddTH2C("SearchBinsNJet50" , "Search Bins Vs NJet50;Search Bin;N_{jets} (p_{T} > 50)"        , 45 , 0    , 45, 10, 0, 10);
+  his->AddTH2C("SearchBinsMHT" , "Search Bins Vs MHT;Search Bin;#slash{H}_{T} [GeV]"        , 45 , 0    , 45, 100, 0, 800);
+  his->AddTH2C("SearchBinsMETSig" , "Search Bins Vs MET Sig;Search Bin;Sig. #slash{E}_{T}"        , 45 , 0    , 45, 100, 0, 10);
 
   return true;
 }       // -----  end of function StopAna::BookHistograms  -----
@@ -206,6 +210,10 @@ bool StopAna::FillSearchBins(int NCut)
   {
     his->FillTH1(NCut, "hSearchBins", searchbin_id);
     his->FillTH1(NCut, "SearchBinsStat", searchbin_id, tr->getVar<double>("stored_weight") >= 0 ? 1 : -1);
+    his->FillTH2(NCut, "SearchBinsNJet30", searchbin_id, tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
+    his->FillTH2(NCut, "SearchBinsNJet50", searchbin_id, tr->getVar<int>(Label["cntNJetsPt50Eta24"]));
+    his->FillTH2(NCut, "SearchBinsMHT", searchbin_id, tr->getVar<double>(Label["MHT"]));
+    his->FillTH2(NCut, "SearchBinsMETSig", searchbin_id, tr->getVar<double>(Label["METSig"]));
   }
 
   his->FillTH1(NCut, "hNJets30", tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
