@@ -228,6 +228,7 @@ int main(int argc, char* argv[])
       evtWeight = 1;
     rateWeight = evtWeight;
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for rate, but not shape ~~~~~
+    rateWeight *= tr.getVar<double>("NbNjReweight"); // TopPtReweight, apply to shape, not rate
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
     evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
