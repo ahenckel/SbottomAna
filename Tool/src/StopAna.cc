@@ -93,6 +93,10 @@ bool StopAna::BookHistograms()
   his->AddTH2C("SearchBinsMHT" , "Search Bins Vs MHT;Search Bin;#slash{H}_{T} [GeV]"        , 45 , 0    , 45, 100, 0, 800);
   his->AddTH2C("SearchBinsMETSig" , "Search Bins Vs MET Sig;Search Bin;Sig. #slash{E}_{T}"        , 45 , 0    , 45, 100, 0, 10);
 
+  his->AddTH2C("NJetHadFrac" , "NJetHadFrc;N_{jets} (p_{T} > 30); Charged Hadron Energy Fraction"  , 10 , 0    , 10, 100, 0, 1);
+  his->AddTH2C("NJetCEMFrac" , "NJetCEMFrc;N_{jets} (p_{T} > 30); Charged EM Energy Fraction"  , 10 , 0    , 10, 100, 0, 1);
+  his->AddTH2C("NJetNEMFrac" , "NJetNEMFrc;N_{jets} (p_{T} > 30); Neutral EM Energy Fraction"  , 10 , 0    , 10, 100, 0, 1);
+  his->AddTH2C("NJetMuonFrac" , "NJetMuonFrc;N_{jets} (p_{T} > 30); Muon Energy Fraction"  , 10 , 0    , 10, 100, 0, 1);
   return true;
 }       // -----  end of function StopAna::BookHistograms  -----
 
@@ -230,6 +234,16 @@ bool StopAna::FillSearchBins(int NCut)
     {
       FillTLVHistos(NCut, "RecoTop", z);
     }
+  }
+
+  for(unsigned int i=0; i < tr->getVec<TLorentzVector>(jetVecLabel).size(); ++i)
+  {
+    TLorentzVector jet = tr->getVec<TLorentzVector>(jetVecLabel).at(i);
+    if (jet.Pt() < 30) continue;
+    his->FillTH2(NCut, "NJetHadFrac", tr->getVar<int>(Label["cntNJetsPt30Eta24"]), tr->getVec<double>("recoJetschargedHadronEnergyFraction").at(i));
+    his->FillTH2(NCut, "NJetCEMFrac", tr->getVar<int>(Label["cntNJetsPt30Eta24"]), tr->getVec<double>("recoJetschargedEmEnergyFraction").at(i));
+    his->FillTH2(NCut, "NJetNEMFrac", tr->getVar<int>(Label["cntNJetsPt30Eta24"]), tr->getVec<double>("recoJetsneutralEmEnergyFraction").at(i));
+    his->FillTH2(NCut, "NJetMuonFrac", tr->getVar<int>(Label["cntNJetsPt30Eta24"]), tr->getVec<double>("recoJetsmuonEnergyFraction").at(i));
   }
 
   return true;
