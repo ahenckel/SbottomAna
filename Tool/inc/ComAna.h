@@ -54,7 +54,7 @@ class ComAna
     virtual bool InitCutOrder(std::string ana);
     virtual bool FillCut();
     virtual bool FillCut(int NCut);
-    bool WriteHistogram();
+    virtual bool WriteHistogram();
     bool DrawHistogram();
     bool RunEvent();
     bool SetSysVar(std::string &Sysbit_, std::string &SysVar_);

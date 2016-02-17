@@ -42,6 +42,7 @@
 #include "SusyAnaTools/Tools/baselineDef.h"
 
 std::map<std::string, double> GetXS(std::string name);
+std::string GetProcName(std::map<std::string, double> &SamplePro);
 int GetCutBin( std::vector<std::string> &CutOrder , std::string name);
 double CalMT(TLorentzVector J1, TLorentzVector J2);
 double CalMCT(TLorentzVector J1, TLorentzVector J2);
@@ -67,6 +68,8 @@ std::string ChooseLepPath(std::string leps);
 void passBaselineZinv(NTupleReader &tr, std::string leps);
 void passBaselineTTZ(NTupleReader &tr, std::string leps);
 void passBaselineMHT(NTupleReader &tr);
+void passBaselineJECdn(NTupleReader &tr);
+void passBaselineJECup(NTupleReader &tr);
 std::string GetEventFilterList(std::string dataset);
 void GetTopPtReweight(NTupleReader &tr, std::map<std::string, double> &SamplePro);
 // ===  FUNCTION  ============================================================

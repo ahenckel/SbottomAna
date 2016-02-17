@@ -223,3 +223,13 @@ bool STRM::FillCut()
 
   return true;
 }       // -----  end of function STRM::FillCut  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  STRM::WriteHistogram
+//  Description:  
+// ===========================================================================
+bool STRM::WriteHistogram()
+{
+  ComAna::WriteHistogram();
+  return true;
+}       // -----  end of function STRM::WriteHistogram  -----

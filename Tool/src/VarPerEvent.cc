@@ -805,3 +805,48 @@ bool VarPerEvent::PassEleMuTrigger(std::string spec) const
   tr->registerDerivedVar("PassEleMuTrigger"+spec, pass);
   return true;
 }       // -----  end of function VarPerEvent::PassEleMuTrigger  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  VarPerEvent::GetJEC
+//  Description:  /* cursor */
+// ===========================================================================
+void VarPerEvent::GetJEC() 
+{
+  const std::vector<TLorentzVector>& jetsLVec = tr->getVec<TLorentzVector>("jetsLVec");
+  const std::vector<double> & recoJetsBtag = tr->getVec<double>("recoJetsBtag_0");
+  const std::vector<double>& recoJetsJecUnc = tr->getVec<double>("recoJetsJecUnc");
+
+  std::vector<TLorentzVector> *jetLVecUp = new std::vector<TLorentzVector>;
+  std::vector<TLorentzVector> *jetLVecDn = new std::vector<TLorentzVector>;
+
+  std::vector<double> *recoJetsBtagUp = new std::vector<double>;
+  std::vector<double> *recoJetsBtagDn = new std::vector<double>;
+
+  std::vector<double> tmpjetPtUp, tmpjetPtDn;
+
+  for(int iJet = 0; iJet < jetsLVec.size(); ++iJet){
+    tmpjetPtUp.push_back( jetsLVec[iJet].Pt() * (1 + recoJetsJecUnc[iJet]) );
+    tmpjetPtDn.push_back( jetsLVec[iJet].Pt() * (1 - recoJetsJecUnc[iJet]) );
+  }
+
+  std::vector<size_t> ptIdxUp, ptIdxDn;
+  stdindexSort::argsort(tmpjetPtUp.begin(), tmpjetPtUp.end(), std::greater<double>(), ptIdxUp);
+  stdindexSort::argsort(tmpjetPtDn.begin(), tmpjetPtDn.end(), std::greater<double>(), ptIdxDn);
+  for(unsigned int ip=0; ip<ptIdxUp.size(); ip++){
+    unsigned int idxMapped = ptIdxUp[ip];
+    jetLVecUp->push_back( jetsLVec[idxMapped] * (1 + recoJetsJecUnc[idxMapped]) );
+    recoJetsBtagUp->push_back( recoJetsBtag[idxMapped] );
+  }
+
+  for(unsigned int ip=0; ip<ptIdxDn.size(); ip++){
+    unsigned int idxMapped = ptIdxDn[ip];
+    jetLVecDn->push_back( jetsLVec[idxMapped] * (1 - recoJetsJecUnc[idxMapped]) );
+    recoJetsBtagDn->push_back( recoJetsBtag[idxMapped] );
+  }
+
+  tr->registerDerivedVec("jetLVec_jecUp", jetLVecUp);
+  tr->registerDerivedVec("jetLVec_jecDn", jetLVecDn);
+
+  tr->registerDerivedVec("recoJetsBtag_jecUp", recoJetsBtagUp);
+  tr->registerDerivedVec("recoJetsBtag_jecDn", recoJetsBtagDn);
+}       // -----  end of function VarPerEvent::GetJEC  -----

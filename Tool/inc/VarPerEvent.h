@@ -29,6 +29,7 @@
 #include "SusyAnaTools/Tools/NTupleReader.h"
 #include "SusyAnaTools/Tools/baselineDef.h"
 #include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
+#include "SusyAnaTools/TopTagger/interface/indexSort.h"
 
 void RegisterVarPerEvent(NTupleReader &tr);
 typedef std::map<unsigned int, std::pair<unsigned int, unsigned int> > TypeZLepIdx;
@@ -49,6 +50,7 @@ class VarPerEvent
     bool RunPerEvent() const;
 
     bool GetRecoZ(std::string spec, std::string lepbit_="11") const;
+    void GetJEC();
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================

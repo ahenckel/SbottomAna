@@ -34,7 +34,7 @@ LIBS       = $(shell root-config --glibs)
 ifneq ($(shell echo $$CMSSW_BASE), )
   LIBS += -L$(CMSSW_BASE)/lib/${SCRAM_ARCH}/ -lrecipeAUXOxbridgeMT2
 else
-  LIBS += -L../../recipeAUX/OxbridgeMT2/.libs -loxbridgekinetics-1.0 
+  LIBS += -L../../recipeAUX/OxbridgeMT2/.libs -loxbridgekinetics-1.0
 endif
 
 ifneq ($(shell echo $$LHAPDF_INCLUDE), )
@@ -53,7 +53,8 @@ ifneq ($(shell echo $$BOOSTROOT), )
 endif
 
 SUSYTools = $(SUSYObj)/NTupleReader.o $(SUSYObj)/samples.o $(SUSYObj)/baselineDef.o \
-  $(SUSYObj)/customize.o $(SUSYObj)/searchBins.o $(SUSYObj)/PDFUncertainty.o $(SUSYObj)/Weights.o
+			$(SUSYObj)/customize.o $(SUSYObj)/searchBins.o $(SUSYObj)/PDFUncertainty.o \
+			$(SUSYObj)/Weights.o $(SUSYObj)/BTagCorrector.o $(SUSYObj)/BTagCalibrationStandalone.o
 
 FILES = $(wildcard $(SDIR)/*.cc)
 OBJS  := $(FILES:$(SDIR)/%.cc=$(ODIR)/%.o)

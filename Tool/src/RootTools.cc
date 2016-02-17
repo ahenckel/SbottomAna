@@ -399,6 +399,42 @@ bool TopWithoutBVeto(NTupleReader &tr, std::string spec)
   return true;
 }       // -----  end of function TopWithoutBVeto  -----
 
+// ===  FUNCTION  ============================================================
+//         Name:  passBaselineJECup
+//  Description:  
+// ===========================================================================
+void passBaselineJECup(NTupleReader &tr)
+{
+  VarPerEvent var(&tr);
+  var.GetJEC();
+
+  // Run baseline
+  BaselineVessel blv("JECup");
+  blv.jetVecLabel = "jetLVec_jecUp";
+  blv.CSVVecLabel = "recoJetsBtag_jecUp";
+
+  blv.prepareTopTagger();
+  blv.passBaseline(tr);
+  blv.GetnTops(&tr);
+  blv.GetMHT(&tr);
+}       // -----  end of function passBaselineJECup  -----
+// ===  FUNCTION  ============================================================
+//         Name:  passBaselineJECdn
+//  Description:  
+// ===========================================================================
+void passBaselineJECdn(NTupleReader &tr)
+{
+  // Run baseline
+  BaselineVessel blv("JECdn");
+  blv.jetVecLabel = "jetLVec_jecDn";
+  blv.CSVVecLabel = "recoJetsBtag_jecDn";
+
+  blv.prepareTopTagger();
+  blv.passBaseline(tr);
+  blv.GetnTops(&tr);
+  blv.GetMHT(&tr);
+  return ;
+}       // -----  end of function passBaselineJECdn  -----
 
 
 // ===  FUNCTION  ============================================================
@@ -627,3 +663,21 @@ void GetTopPtReweight(NTupleReader &tr, std::map<std::string, double> &SamplePro
 
   return ;
 }       // -----  end of function GetTopPtReweight  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  GetProcName
+//  Description:  
+// ===========================================================================
+std::string GetProcName(std::map<std::string, double> &SamplePro)
+{
+  std::string proname = "";
+  for(auto &it : SamplePro)
+  {
+    if (it.second == -999.9)
+    {
+      proname = it.first;
+      break;
+    }
+  }
+  return proname;
+}       // -----  end of function GetProcName  -----

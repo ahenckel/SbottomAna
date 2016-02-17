@@ -42,6 +42,7 @@
 #include "STISR.h"
 #include "STZinv.h"
 #include "STRM.h"
+#include "STTagger.h"
 #include "SBMulti.h"
 #include "StopAna.h"
 #include "TTZDiLep.h"
@@ -53,6 +54,7 @@
 #include "SusyAnaTools/Tools/EventListFilter.h"
 #include "SusyAnaTools/Tools/PDFUncertainty.h"
 #include "SusyAnaTools/Tools/Weights.h"
+#include "SusyAnaTools/Tools/BTagCorrector.h"
 
 bool DefSysComAnd(std::map<std::string, std::pair<std::string, std::string> > &SysMap, 
     std::map<std::string, ComAna*> &AnaMap, std::shared_ptr<TFile> OutFile=NULL);
@@ -76,6 +78,11 @@ int main(int argc, char* argv[])
   //----------------------------------------------------------------------------
   const char *inputFileList = argv[1];
   const char *outFileName   = argv[2];
+  const char *fastsim   = "";
+  if (argc > 3)
+  {
+    fastsim = argv[3];
+  }
 
   TChain *fChain = new TChain("stopTreeMaker/AUX");
   
@@ -117,27 +124,46 @@ int main(int argc, char* argv[])
     his->FillTPro("XS", static_cast<int>(i), SamplePro[binlabel]);
   }
 
+  const std::string proname = GetProcName(SamplePro);
+  std::string filterstring = "";
+  if (strcmp(fastsim, "fastsim") == 0)
+  {
+    filterstring =  "fastsim";
+  }
+  
+
+  std::cout << " Sample is  " << filterstring << std::endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setup Global Object ~~~~~
   LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
   PDFUncertainty pdfs;  //PDF 
   Pileup_Sys pileup;
   ExternObj Gobj;
+  BTagCorrector btagcorr;
+  if (filterstring == "fastsim")
+  {
+    btagcorr.SetFastSim(true);
+    btagcorr.SetCalibFastSim("CSV_13TEV_Combined_20_11_2015.csv");
+  }
 
   //clock to monitor the run time
   size_t t0 = clock();
   NTupleReader tr(fChain);
   tr.registerFunction(pdfs);
   tr.registerFunction(pileup);
+  tr.registerFunction(btagcorr);
   tr.registerFunction(&passBaselineFunc);
-  tr.registerFunction(&passBaselineMHT);
-  tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
+  //tr.registerFunction(boost::bind(passBaselineFunc, _1, filterstring));
+  tr.registerFunction(&passBaselineJECup);
+  tr.registerFunction(&passBaselineJECdn);
+
+  //tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
-  tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
+  //tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01")); // bit : EM
   //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10")); // bit : EM
 
-  tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
+  //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
   //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvT", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
   //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvM", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvM_NbNjWeight")))); 
   //tr.registerFunction(boost::bind(RegisterDefaultAllSpecs<double>, _1, "NbNjReweight", 1.0));
@@ -149,15 +175,18 @@ int main(int argc, char* argv[])
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
   AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
-  AnaMap["StopMHT"] = new StopAna("StopMHT", &tr, OutFile, "MHT");
-  AnaMap["StopMHT"]->METLabel = "MHT";
-  AnaMap["StopMHT"]->METPhiLabel = "MHTPhi";
+  //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile);
+  //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "JECup");
+  //AnaMap["Tagger_Dn"] = new STTagger("TaggerDn", &tr, OutFile, "JECdn");
+  //AnaMap["StopMHT"] = new StopAna("StopMHT", &tr, OutFile, "MHT");
+  //AnaMap["StopMHT"]->METLabel = "MHT";
+  //AnaMap["StopMHT"]->METPhiLabel = "MHTPhi";
 
   //AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
   //AnaMap["STRM"] = new STRM("STRM", &tr, OutFile);
   //AnaMap["STZinvM"] = new STZinv("STZinvM", &tr, OutFile,"ZinvM");
   //AnaMap["STZinvE"] = new STZinv("STZinvE", &tr, OutFile,"ZinvE");
-  AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
+  //AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
   //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
@@ -178,7 +207,7 @@ int main(int argc, char* argv[])
   //SysMap["PDF_down"] = std::make_pair("11", "PDF_Unc_Down"); // as shape uncertainty
   SysMap["Scale_up"] = std::make_pair("11", "Scaled_Variations_Up"); // as shape uncertainty
   SysMap["Scale_down"] = std::make_pair("11", "Scaled_Variations_Down"); // as shape uncertainty
-  //DefSysComAnd(SysMap, AnaMap);
+  DefSysComAnd(SysMap, AnaMap);
   //AnaMap["Stop_PU_up"] = new StopAna("Stop_PU_up", &tr, OutFile);
   //AnaMap["Stop_PU_down"] = new StopAna("Stop_PU_down", &tr, OutFile);
 
@@ -201,7 +230,6 @@ int main(int argc, char* argv[])
         std::cout << name << std::endl;
     }
 
-    //if (tr.getEvtNum() > 10000) break;
     if (tr.getEvtNum() % 20000 == 0)
     {
       process_mem_usage(vm, rss);
@@ -228,11 +256,13 @@ int main(int argc, char* argv[])
       evtWeight = 1;
     rateWeight = evtWeight;
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for rate, but not shape ~~~~~
-    rateWeight *= tr.getVar<double>("NbNjReweight"); // TopPtReweight, apply to shape, not rate
+	//rateWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
+
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
-    evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
-    evtWeight *= tr.getVar<double>("NbNjReweight"); // TopPtReweight, apply to shape, not rate
+	//evtWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
+    //evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
+    //evtWeight *= tr.getVar<double>("NbNjReweight"); // TopPtReweight, apply to shape, not rate
 
     his->FillTH1("NEvent", 1, rateWeight);
     his->FillTH1("Weight", stored_weight);
@@ -244,19 +274,19 @@ int main(int argc, char* argv[])
     {
       double temprate = rateWeight;
       double tempevt = evtWeight;
-      if (it.first.find("PU") == std::string::npos)
-      {
-        temprate *= tr.getVar<double>("_PUweightFactor");
-        tempevt *= tr.getVar<double>("_PUweightFactor");
-      } else if (it.first.find("PU_up") != std::string::npos)
-      {
-        temprate *= tr.getVar<double>("_PUSysUp");
-        tempevt *= tr.getVar<double>("_PUSysUp");
-      } else if (it.first.find("PU_down") != std::string::npos)
-      {
-        temprate *= tr.getVar<double>("_PUSysDown");
-        tempevt *= tr.getVar<double>("_PUSysDown");
-      }
+      //if (it.first.find("PU") == std::string::npos)
+      //{
+        //temprate *= tr.getVar<double>("_PUweightFactor");
+        //tempevt *= tr.getVar<double>("_PUweightFactor");
+      //} else if (it.first.find("PU_up") != std::string::npos)
+      //{
+        //temprate *= tr.getVar<double>("_PUSysUp");
+        //tempevt *= tr.getVar<double>("_PUSysUp");
+      //} else if (it.first.find("PU_down") != std::string::npos)
+      //{
+        //temprate *= tr.getVar<double>("_PUSysDown");
+        //tempevt *= tr.getVar<double>("_PUSysDown");
+      //}
 
       it.second->SetRateWeight(temprate);
       it.second->SetEvtWeight(tempevt);
