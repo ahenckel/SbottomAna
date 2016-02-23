@@ -141,6 +141,7 @@ bool STTagger::BookHistograms()
   his->AddTH1("TopTagdPhiJ2_2Top_Numerator", "TopTagdPhiJ2_2Top_Numerator","dPhi(J2, MET)", "#geq 2 Reco Tops",  200, 0, 4);
   his->AddTH1("TopTagdPhiJ2_Efficiency",     "TopTagdPhiJ2_Efficiency",    "dPhi(J2, MET)", "Efficiency"      ,  200, 0, 4);
 
+  BookJMEHist();
   return true;
 }       // -----  end of function STTagger::BookHistograms  -----
 
@@ -158,24 +159,51 @@ bool STTagger::InitCutOrder(std::string ana)
   CutOrder.push_back("NoCut");
   CutOrder.push_back("Filter");
   CutOrder.push_back("nJets");
-  CutOrder.push_back("MuonVeto");
+  CutOrder.push_back("MuonSel");
   CutOrder.push_back("EleVeto");
-  CutOrder.push_back("IskVeto");
+  CutOrder.push_back("HTLep");
   CutOrder.push_back("dPhis");
   CutOrder.push_back("BJets");
   CutOrder.push_back("MET");
+  CutOrder.push_back("nComb");
 
   //Set the cutbit of each cut
-  CutMap["NoCut"]    = "00000000000000000";
-  CutMap["Filter"]   = "00000000000000001";
-  CutMap["nJets"]    = "00000000000000011";
-  CutMap["MuonVeto"] = "00000000000000111";
-  CutMap["EleVeto"]  = "00000000000001111";
-  CutMap["IskVeto"]  = "00000000000011111";
-  CutMap["dPhis"]    = "00000000000111111";
-  CutMap["BJets"]    = "00000000001111111";
-  CutMap["MET"]      = "00000000011111111";
+  CutMap["NoCut"]   = "00000000000000000";
+  CutMap["Filter"]  = "00000000000000001";
+  CutMap["nJets"]   = "00000000000000011";
+  CutMap["MuonSel"] = "00000000000000111";
+  CutMap["EleVeto"] = "00000000000001111";
+  CutMap["HTLep"]   = "00000000000011111";
+  CutMap["dPhis"]   = "00000000000111111";
+  CutMap["BJets"]   = "00000000001111111";
+  CutMap["MET"]     = "00000000011111111";
+  CutMap["nComb"]   = "00000000111111111";
 
+
+/*  Stop cut flow
+ *  //Add name and order of the cutflow
+ *  CutOrder.push_back("NoCut");
+ *  CutOrder.push_back("Filter");
+ *  CutOrder.push_back("nJets");
+ *  CutOrder.push_back("MuonVeto");
+ *  CutOrder.push_back("EleVeto");
+ *  CutOrder.push_back("IskVeto");
+ *  CutOrder.push_back("dPhis");
+ *  CutOrder.push_back("BJets");
+ *  CutOrder.push_back("MET");
+ *
+ *  //Set the cutbit of each cut
+ *  CutMap["NoCut"]    = "00000000000000000";
+ *  CutMap["Filter"]   = "00000000000000001";
+ *  CutMap["nJets"]    = "00000000000000011";
+ *  CutMap["MuonVeto"] = "00000000000000111";
+ *  CutMap["EleVeto"]  = "00000000000001111";
+ *  CutMap["IskVeto"]  = "00000000000011111";
+ *  CutMap["dPhis"]    = "00000000000111111";
+ *  CutMap["BJets"]    = "00000000001111111";
+ *  CutMap["MET"]      = "00000000011111111";
+ *
+ */
   assert(CutOrder.size() == CutMap.size());
 
   his->Cutorder(ana, CutOrder, static_cast<unsigned int>(NBITS));
@@ -192,12 +220,21 @@ bool STTagger::CheckCut()
 
   cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
   cutbit.set(1 , tr->getVar<bool>(Label["passnJets"]));
-  cutbit.set(2 , tr->getVar<bool>(Label["passMuonVeto"]));
+
+  // Exactly one muon with pt > 45 and |eta| < 2.1
+  cutbit.set(2 , GetMuon45());
+
   cutbit.set(3 , tr->getVar<bool>(Label["passEleVeto"]));
-  cutbit.set(4 , tr->getVar<bool>(Label["passIsoTrkVeto"]));
+
+  // MTW
+  cutbit.set(4 , GetHTLep() > 150);
+
   cutbit.set(5 , tr->getVar<bool>(Label["passdPhis"]));
   cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
-  cutbit.set(7 , tr->getVar<bool>(Label["passMET"]));
+
+  cutbit.set(7 , tr->getVar<double>(METLabel) > 20);
+
+  cutbit.set(8 , tr->getVec<TLorentzVector>(Label["vCombs"]).size() > 0);
 
   return true;
 }       // -----  end of function STTagger::CheckCut  -----
@@ -233,6 +270,7 @@ bool STTagger::FillCut()
 
   if (passcuts)
   {
+    FillJMEEff();
     FillGenTop();
     CalTaggerEff();
   }
@@ -521,6 +559,104 @@ bool STTagger::WriteHistogram()
   his->CalEfficiency("TopTagdPhiJ1_Efficiency", "TopTagdPhiJ1_Numerator", "TopTagdPhiJ1_Denominator");
   his->CalEfficiency("TopTagdPhiJ2_Efficiency", "TopTagdPhiJ2_Numerator", "TopTagdPhiJ2_Denominator");
 
+  his->CalEfficiency("TagPT_Efficiency", "TagPT_Numerator", "TagPT_Denominator");
+
   ComAna::WriteHistogram();
   return true;
 }       // -----  end of function STTagger::WriteHistogram  -----
+// ===  FUNCTION  ============================================================
+//         Name:  STTagger::GetMuon45
+//  Description:  
+// ===========================================================================
+bool STTagger::GetMuon45()
+{
+  vMuon45.clear();
+  for(auto mu : tr->getVec<TLorentzVector>(Label["cutMuVec"]))
+  {
+    if (mu.Pt() > 45 && fabs(mu.Eta()) < 2.1)
+    {
+      vMuon45.push_back(mu);
+    }
+  }
+  
+  return vMuon45.size() == 1;
+}       // -----  end of function STTagger::GetMuon45  -----
+// ===  FUNCTION  ============================================================
+//         Name:  STTagger::GetHTLep
+//  Description:  
+// ===========================================================================
+double STTagger::GetHTLep() const
+{
+  //assert(vMuon45.size() == 1);
+  //std::cout << "size " << vMuon45.size() << std::endl;
+  TLorentzVector muon = vMuon45.front();
+  return muon.Pt() + tr->getVar<double>(METLabel);
+}       // -----  end of function STTagger::GetHTLep  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  STTagger::BookJMEHist
+//  Description:  
+// ===========================================================================
+bool STTagger::BookJMEHist()
+{
+  his->AddTH1("TagPT_Denominator" , "TagPT_Denominator" , "p_{T}^{reco} [GeV]"       , "Denominator"   , 60, 0  , 1200);
+  his->AddTH1("TagPT_Numerator"   , "TagPT_Numerator"   , "p_{T}^{reco} [GeV]"       , "Numerator"     , 60, 0  , 1200);
+  his->AddTH1("TagPT_Efficiency"  , "TagPT_Efficiency"  , "p_{T}^{reco} [GeV]"       , "Efficiency"    , 60, 0  , 1200);
+
+  return true;
+}       // -----  end of function STTagger::BookJMEHist  -----
+// ===  FUNCTION  ============================================================
+//         Name:  STTagger::FillJMEEff
+//  Description:  For myself, I still not buying this method ...
+// ===========================================================================
+bool STTagger::FillJMEEff()
+{
+  const std::vector<TLorentzVector> &vTops = tr->getVec<TLorentzVector>(Label["vTops"]);
+
+  if (vTops.size() == 0)
+  {
+    TLorentzVector comb = GetBestComb();
+    his->FillTH1("TagPT_Denominator", comb.Pt());
+    return false;
+  }
+
+  //Get Pt order jet list, passing the requirement
+  boost::bimap<int, double > topdm;
+
+  for(unsigned int i=0; i < vTops.size(); ++i)
+  {
+    TLorentzVector itop = vTops.at(i);
+    topdm.insert(boost::bimap<int, double >::value_type(i, fabs(itop.M() - 172.5)));
+  }
+  TLorentzVector goodtop = vTops.at(topdm.right.begin()->second);
+  his->FillTH1("TagPT_Denominator", goodtop.Pt());
+  his->FillTH1("TagPT_Numerator", goodtop.Pt());
+
+  return true;
+}       // -----  end of function STTagger::FillJMEEff  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  STTagger::GetBestComb
+//  Description:  
+// ===========================================================================
+TLorentzVector STTagger::GetBestComb()
+{
+  const std::vector<TLorentzVector> &vCombs = tr->getVec<TLorentzVector>(Label["vCombs"]);
+  if (vCombs.size() == 0)
+  {
+    std::cout << "This is fucked so big!!! " << tr->getVar<double>(METLabel)<< std::endl;
+    return TLorentzVector(0,0,0,0);
+  }
+  
+  //Get Pt order jet list, passing the requirement
+  boost::bimap<int, double > topdm;
+
+  for(unsigned int i=0; i < vCombs.size(); ++i)
+  {
+    TLorentzVector itop = vCombs.at(i);
+    topdm.insert(boost::bimap<int, double >::value_type(i, fabs(itop.M() - 172.5)));
+  }
+  return vCombs.at(topdm.right.begin()->second);
+}       // -----  end of function STTagger::GetBestComb  -----

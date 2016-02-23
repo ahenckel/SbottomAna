@@ -90,6 +90,8 @@ bool ComAna::DefineLabels(std::string spec)
   Label["HT"]                     = "HT"                     ;
   Label["vTops"]                  = "vTops"                  ;
   Label["mTopJets"]               = "mTopJets"               ;
+  Label["vCombs"]                 = "vCombs"                 ;
+  Label["mCombJets"]              = "mCombJets"              ;
   Label["MHT"]                    = "MHT"                    ;
   Label["MHTPhi"]                 = "MHTPhi"                 ;
   Label["MHTSig"]                 = "MHTSig"                 ;

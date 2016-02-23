@@ -62,6 +62,12 @@ class STTagger : public ComAna
     int GetChild(int parent, std::vector<int> pdgs) const;
     bool GetRecoTops();
     bool GetGenTop();
+    // For JME Eff
+    bool GetMuon45();
+    double GetHTLep() const;
+    bool BookJMEHist();
+    bool FillJMEEff();
+    TLorentzVector GetBestComb();
     // ====================  OPERATORS     ===============================
 
     STTagger& operator = ( const STTagger &other ); // assignment operator
@@ -86,6 +92,7 @@ class STTagger : public ComAna
     std::vector<TLorentzVector> vRecoTops;
     std::vector<TopDecay> vGenTops;
 
+    std::vector<TLorentzVector> vMuon45;
 }; // -----  end of class STTagger  -----
 
 
