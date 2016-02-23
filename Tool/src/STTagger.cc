@@ -587,8 +587,7 @@ bool STTagger::GetMuon45()
 // ===========================================================================
 double STTagger::GetHTLep() const
 {
-  //assert(vMuon45.size() == 1);
-  //std::cout << "size " << vMuon45.size() << std::endl;
+  if (vMuon45.size() == 0) return -1;
   TLorentzVector muon = vMuon45.front();
   return muon.Pt() + tr->getVar<double>(METLabel);
 }       // -----  end of function STTagger::GetHTLep  -----
