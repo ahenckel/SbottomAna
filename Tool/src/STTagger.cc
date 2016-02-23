@@ -142,6 +142,7 @@ bool STTagger::BookHistograms()
   his->AddTH1("TopTagdPhiJ2_Efficiency",     "TopTagdPhiJ2_Efficiency",    "dPhi(J2, MET)", "Efficiency"      ,  200, 0, 4);
 
   BookJMEHist();
+  ComAna::BookHistograms();
   return true;
 }       // -----  end of function STTagger::BookHistograms  -----
 
@@ -252,6 +253,7 @@ bool STTagger::FillCut()
   CheckCut();
   GetGenTop();
   GetRecoTops();
+  ComAna::RunEvent();
 
   bool passcuts = false;
 
@@ -261,6 +263,7 @@ bool STTagger::FillCut()
     if ( (cutbit & locbit) != locbit) continue;
 
     his->FillTH1("CutFlow", int(i)); 
+    ComAna::FillCut(i);
 
     if (i+1 == CutOrder.size()) 
     {
