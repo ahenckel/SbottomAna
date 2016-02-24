@@ -224,7 +224,7 @@ bool STTagger::CheckCut()
   cutbit.set(1 , tr->getVar<bool>(Label["passnJets"]));
 
   // Exactly one muon with pt > 45 and |eta| < 2.1
-  cutbit.set(2 , GetMuon45());
+  cutbit.set(2 , vMuon45.size() == 1);
 
   cutbit.set(3 , tr->getVar<bool>(Label["passEleVeto"]));
 
@@ -251,11 +251,12 @@ bool STTagger::FillCut()
 //----------------------------------------------------------------------------
 //  Check cut and fill cut-based plots
 //----------------------------------------------------------------------------
-  CheckCut();
+  GetMuon45();
+  GetHTLep();
   GetGenTop();
   GetRecoTops();
   ComAna::RunEvent();
-  HTLep = GetHTLep();
+  CheckCut();
 
   bool passcuts = false;
 
@@ -597,9 +598,11 @@ bool STTagger::GetMuon45()
 // ===========================================================================
 double STTagger::GetHTLep() const
 {
+  HTLep = -1;
   if (vMuon45.size() == 0) return -1;
   TLorentzVector muon = vMuon45.front();
-  return muon.Pt() + tr->getVar<double>(METLabel);
+  HTLep = muon.Pt() + tr->getVar<double>(METLabel);
+  return HTLep;
 }       // -----  end of function STTagger::GetHTLep  -----
 
 
