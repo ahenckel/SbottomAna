@@ -57,6 +57,7 @@ STTagger*  STTagger::Clone(std::string newname, std::shared_ptr<TFile> OutFile_)
 //----------------------------------------------------------------------------
 STTagger::~STTagger ()
 {
+
 }  // -----  end of method STTagger::-STTagger  (destructor)  -----
 
 //----------------------------------------------------------------------------
@@ -179,6 +180,7 @@ bool STTagger::InitCutOrder(std::string ana)
   CutMap["BJets"]   = "00000000001111111";
   CutMap["MET"]     = "00000000011111111";
   CutMap["nComb"]   = "00000000111111111";
+  CutMap["IskVeto"] = "00000001111111111";
 
 
 /*  Stop cut flow
@@ -228,7 +230,7 @@ bool STTagger::CheckCut()
   cutbit.set(3 , tr->getVar<bool>(Label["passEleVeto"]));
 
   // MTW
-  cutbit.set(4 , GetHTLep() > 150);
+  cutbit.set(4 , HTLep > 150);
 
   cutbit.set(5 , tr->getVar<bool>(Label["passdPhis"]));
   cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
@@ -236,6 +238,8 @@ bool STTagger::CheckCut()
   cutbit.set(7 , tr->getVar<double>(METLabel) > 20);
 
   cutbit.set(8 , tr->getVec<TLorentzVector>(Label["vCombs"]).size() > 0);
+
+  cutbit.set(9 , tr->getVar<bool>(Label["passIsoTrkVeto"]));
 
   return true;
 }       // -----  end of function STTagger::CheckCut  -----
@@ -254,6 +258,7 @@ bool STTagger::FillCut()
   GetGenTop();
   GetRecoTops();
   ComAna::RunEvent();
+  HTLep = GetHTLep();
 
   bool passcuts = false;
 
@@ -263,6 +268,8 @@ bool STTagger::FillCut()
     if ( (cutbit & locbit) != locbit) continue;
 
     his->FillTH1("CutFlow", int(i)); 
+    his->FillTH1(int(i), "HTLep", HTLep);
+
     ComAna::FillCut(i);
 
     if (i+1 == CutOrder.size()) 
@@ -563,6 +570,9 @@ bool STTagger::WriteHistogram()
   his->CalEfficiency("TopTagdPhiJ2_Efficiency", "TopTagdPhiJ2_Numerator", "TopTagdPhiJ2_Denominator");
 
   his->CalEfficiency("TagPT_Efficiency", "TagPT_Numerator", "TagPT_Denominator");
+  his->CalEfficiency("TagMass_Efficiency", "TagMass_Numerator", "TagMass_Denominator");
+  his->CalEfficiency("TagPhi_Efficiency", "TagPhi_Numerator", "TagPhi_Denominator");
+  his->CalEfficiency("TagEta_Efficiency", "TagEta_Numerator", "TagEta_Denominator");
 
   ComAna::WriteHistogram();
   return true;
@@ -606,6 +616,19 @@ bool STTagger::BookJMEHist()
   his->AddTH1("TagPT_Numerator"   , "TagPT_Numerator"   , "p_{T}^{reco} [GeV]"       , "Numerator"     , 60, 0  , 1200);
   his->AddTH1("TagPT_Efficiency"  , "TagPT_Efficiency"  , "p_{T}^{reco} [GeV]"       , "Efficiency"    , 60, 0  , 1200);
 
+  his->AddTH1("TagMass_Denominator" , "TagMass_Denominator" , "m^{reco} [GeV]"       , "Denominator"   , 100, 0  , 250);
+  his->AddTH1("TagMass_Numerator"   , "TagMass_Numerator"   , "m^{reco} [GeV]"       , "Numerator"     , 100, 0  , 250);
+  his->AddTH1("TagMass_Efficiency"  , "TagMass_Efficiency"  , "m^{reco} [GeV]"       , "Efficiency"    , 100, 0  , 250);
+
+  his->AddTH1("TagEta_Denominator", "TagEta_Denominator", "#eta^{reco}"       , "Denominator"   , 20, -5, 5);
+  his->AddTH1("TagEta_Numerator"  , "TagEta_Numerator"  , "#eta^{reco}"       , "Numerator"     , 20, -5, 5);
+  his->AddTH1("TagEta_Efficiency" , "TagEta_Efficiency" , "#eta^{reco}"       , "Efficiency"    , 20, -5, 5);
+
+  his->AddTH1("TagPhi_Denominator", "TagPhi_Denominator", "#phi^{reco}"       , "Denominator"   , 20, -5, 5);
+  his->AddTH1("TagPhi_Numerator"  , "TagPhi_Numerator"  , "#phi^{reco}"       , "Numerator"     , 20, -5, 5);
+  his->AddTH1("TagPhi_Efficiency" , "TagPhi_Efficiency" , "#phi^{reco}"       , "Efficiency"    , 20, -5, 5);
+
+  his->AddTH1C("HTLep" , "HTLep" , "HTLep"       , "Event"    , 100, 0, 500);
   return true;
 }       // -----  end of function STTagger::BookJMEHist  -----
 // ===  FUNCTION  ============================================================
@@ -620,6 +643,9 @@ bool STTagger::FillJMEEff()
   {
     TLorentzVector comb = GetBestComb();
     his->FillTH1("TagPT_Denominator", comb.Pt());
+    his->FillTH1("TagPhi_Denominator", comb.Phi());
+    his->FillTH1("TagEta_Denominator", comb.Eta());
+    his->FillTH1("TagMass_Denominator", comb.M());
     return false;
   }
 
@@ -633,7 +659,13 @@ bool STTagger::FillJMEEff()
   }
   TLorentzVector goodtop = vTops.at(topdm.right.begin()->second);
   his->FillTH1("TagPT_Denominator", goodtop.Pt());
+  his->FillTH1("TagPhi_Denominator", goodtop.Phi());
+  his->FillTH1("TagEta_Denominator", goodtop.Eta());
+  his->FillTH1("TagMass_Denominator", goodtop.M());
   his->FillTH1("TagPT_Numerator", goodtop.Pt());
+  his->FillTH1("TagPhi_Numerator", goodtop.Phi());
+  his->FillTH1("TagEta_Numerator", goodtop.Eta());
+  his->FillTH1("TagMass_Numerator", goodtop.M());
 
   return true;
 }       // -----  end of function STTagger::FillJMEEff  -----

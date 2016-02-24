@@ -93,6 +93,7 @@ class STTagger : public ComAna
     std::vector<TopDecay> vGenTops;
 
     std::vector<TLorentzVector> vMuon45;
+    double HTLep;
 }; // -----  end of class STTagger  -----
 
 
