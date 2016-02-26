@@ -596,7 +596,7 @@ bool STTagger::GetMuon45()
 //         Name:  STTagger::GetHTLep
 //  Description:  
 // ===========================================================================
-double STTagger::GetHTLep() const
+double STTagger::GetHTLep()
 {
   HTLep = -1;
   if (vMuon45.size() == 0) return -1;
@@ -614,6 +614,9 @@ bool STTagger::BookJMEHist()
 {
   his->AddTH1("TagPT_Denominator" , "TagPT_Denominator" , "p_{T}^{reco} [GeV]"       , "Denominator"   , 60, 0  , 1200);
   his->AddTH1("TagPT_Numerator"   , "TagPT_Numerator"   , "p_{T}^{reco} [GeV]"       , "Numerator"     , 60, 0  , 1200);
+  his->AddTH1("TagHadPT_Numerator", "TagHadPT_Numerator" , "p_{T}^{reco} [GeV]"       , "Numerator"   , 60, 0  , 1200);
+  his->AddTH1("TagLepPT_Numerator", "TagLepPT_Numerator" , "p_{T}^{reco} [GeV]"       , "Numerator"   , 60, 0  , 1200);
+  his->AddTH1("TagOtherPT_Numerator", "TagOtherPT_Numerator" , "p_{T}^{reco} [GeV]"       , "Numerator"   , 60, 0  , 1200);
   his->AddTH1("TagPT_Efficiency"  , "TagPT_Efficiency"  , "p_{T}^{reco} [GeV]"       , "Efficiency"    , 60, 0  , 1200);
 
   his->AddTH1("TagMass_Denominator" , "TagMass_Denominator" , "m^{reco} [GeV]"       , "Denominator"   , 100, 0  , 250);
@@ -691,6 +694,45 @@ bool STTagger::FillJMEEff()
   his->FillTH1("TagdRLep_Numerator", goodtop.DeltaR(muon));
   his->FillTH1("TagdPhiLep_Numerator", goodtop.DeltaPhi(muon));
   his->FillTH1("TagdEtaLep_Numerator", goodtop.Eta() - muon.Eta());
+
+  bool goodtoptag= false;
+  for(unsigned int i=0; i < vGenTops.size(); ++i)
+  {
+    TopDecay gentop = vGenTops.at(i);
+    if (goodtop.DeltaR(genDecayLVec[gentop.topidx_]) < 0.4) // match
+    {
+      goodtoptag = true;
+      if (gentop.isLeptonic_) 
+        his->FillTH1("TagLepPT_Numerator", goodtop.Pt());
+      else
+        his->FillTH1("TagHadPT_Numerator", goodtop.Pt());
+      break;
+    }
+  }
+
+  if (!goodtoptag)
+  {
+    bool anothertoptag = false;
+    boost::bimap<int, double>::right_map::const_iterator it=topdm.right.begin();
+    it++;
+    for(;it!=topdm.right.end(); ++it)
+    {
+      TLorentzVector jjjTop = vRecoTops.at(it->second);
+
+      for(unsigned int i=0; i < vGenTops.size(); ++i)
+      {
+        TopDecay gentop = vGenTops.at(i);
+        if (jjjTop.DeltaR(genDecayLVec[gentop.topidx_]) < 0.4) // match
+        {
+          anothertoptag= true;
+          his->FillTH1("TagOtherPT_Numerator", goodtop.Pt());
+          break;
+        }
+      }
+      if (anothertoptag) break;
+    }
+  }
+
   return true;
 }       // -----  end of function STTagger::FillJMEEff  -----
 

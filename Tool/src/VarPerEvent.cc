@@ -850,3 +850,56 @@ void VarPerEvent::GetJEC()
   tr->registerDerivedVec("recoJetsBtag_jecUp", recoJetsBtagUp);
   tr->registerDerivedVec("recoJetsBtag_jecDn", recoJetsBtagDn);
 }       // -----  end of function VarPerEvent::GetJEC  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  VarPerEvent::GetNoLepJEC
+//  Description:  /* cursor */
+// ===========================================================================
+void VarPerEvent::GetNoLepJEC(int type) 
+{
+  const std::vector<TLorentzVector>& jetsLVec = tr->getVec<TLorentzVector>("jetsLVecLepCleaned");
+  const std::vector<double> & recoJetsBtag = tr->getVec<double>("recoJetsBtag_0_LepCleaned");
+  const std::vector<double>& recoJetsJecUnc = tr->getVec<double>("recoJetsJecUncLepCleaned");
+
+  if (type > 0)
+  {
+    std::vector<TLorentzVector> *jetLVecUp = new std::vector<TLorentzVector>;
+    std::vector<double> *recoJetsBtagUp = new std::vector<double>;
+    std::vector<double> tmpjetPtUp;
+
+    for(int iJet = 0; iJet < jetsLVec.size(); ++iJet){
+      tmpjetPtUp.push_back( jetsLVec[iJet].Pt() * (1 + recoJetsJecUnc[iJet]) );
+    }
+    std::vector<size_t> ptIdxUp;
+    stdindexSort::argsort(tmpjetPtUp.begin(), tmpjetPtUp.end(), std::greater<double>(), ptIdxUp);
+    for(unsigned int ip=0; ip<ptIdxUp.size(); ip++){
+      unsigned int idxMapped = ptIdxUp[ip];
+      jetLVecUp->push_back( jetsLVec[idxMapped] * (1 + recoJetsJecUnc[idxMapped]) );
+      recoJetsBtagUp->push_back( recoJetsBtag[idxMapped] );
+    }
+    tr->registerDerivedVec("jetLVecLepCleaned_jecUp", jetLVecUp);
+    tr->registerDerivedVec("recoJetsBtagLepCleaned_jecUp", recoJetsBtagUp);
+  }
+
+  if (type < 0)
+  {
+    std::vector<TLorentzVector> *jetLVecDn = new std::vector<TLorentzVector>;
+    std::vector<double> *recoJetsBtagDn = new std::vector<double>;
+    std::vector<double> tmpjetPtDn;
+
+    for(int iJet = 0; iJet < jetsLVec.size(); ++iJet){
+      tmpjetPtDn.push_back( jetsLVec[iJet].Pt() * (1 - recoJetsJecUnc[iJet]) );
+    }
+
+    std::vector<size_t> ptIdxDn;
+    stdindexSort::argsort(tmpjetPtDn.begin(), tmpjetPtDn.end(), std::greater<double>(), ptIdxDn);
+    for(unsigned int ip=0; ip<ptIdxDn.size(); ip++){
+      unsigned int idxMapped = ptIdxDn[ip];
+      jetLVecDn->push_back( jetsLVec[idxMapped] * (1 - recoJetsJecUnc[idxMapped]) );
+      recoJetsBtagDn->push_back( recoJetsBtag[idxMapped] );
+    }
+    tr->registerDerivedVec("jetLVecLepCleaned_jecDn", jetLVecDn);
+    tr->registerDerivedVec("recoJetsBtagLepCleaned_jecDn", recoJetsBtagDn);
+  }
+
+}       // -----  end of function VarPerEvent::GetNoLepJEC  -----

@@ -340,16 +340,33 @@ int HasTLV(TLorentzVector &obj, std::vector<TLorentzVector> &TLVs)
 //**************************************************************************//
 //                            Register Functions                            //
 //**************************************************************************//
-void passBaselineTTZ(NTupleReader &tr, std::string leps)
+void passBaselineTTZ(NTupleReader &tr, std::string leps, int JEC)
 {
   std::stringstream ss;
   ss <<"TTZ" << ChooseLepPath(leps);
+  if (JEC > 0) ss <<"JECup";
+  if (JEC < 0) ss <<"JECdn";
 
   VarPerEvent var(&tr);
   var.GetRecoZ(ss.str(), leps);
+  var.GetNoLepJEC(JEC);
+
   BaselineVessel blv(ss.str());
-  blv.jetVecLabel = "jetsLVecLepCleaned";
-  blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+  if (JEC == 0)
+  {
+    blv.jetVecLabel = "jetsLVecLepCleaned";
+    blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+  }
+  if (JEC > 0)
+  {
+    blv.jetVecLabel = "jetLVecLepCleaned_jecUp";
+    blv.CSVVecLabel = "recoJetsBtagLepCleaned_jecUp";
+  }
+  if (JEC <0)
+  {
+    blv.jetVecLabel = "jetLVecLepCleaned_jecDn";
+    blv.CSVVecLabel = "recoJetsBtagLepCleaned_jecDn";
+  }
   blv.prepareTopTagger();
   blv.passBaseline(tr);
   blv.GetnTops(&tr);
@@ -418,6 +435,7 @@ void passBaselineJECup(NTupleReader &tr)
   blv.GetnTops(&tr);
   blv.GetMHT(&tr);
 }       // -----  end of function passBaselineJECup  -----
+
 // ===  FUNCTION  ============================================================
 //         Name:  passBaselineJECdn
 //  Description:  

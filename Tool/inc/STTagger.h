@@ -64,7 +64,7 @@ class STTagger : public ComAna
     bool GetGenTop();
     // For JME Eff
     bool GetMuon45();
-    double GetHTLep() const;
+    double GetHTLep();
     bool BookJMEHist();
     bool FillJMEEff();
     TLorentzVector GetBestComb();

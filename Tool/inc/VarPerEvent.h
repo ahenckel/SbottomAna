@@ -50,6 +50,7 @@ class VarPerEvent
     bool RunPerEvent() const;
 
     bool GetRecoZ(std::string spec, std::string lepbit_="11") const;
+    void GetNoLepJEC(int type);
     void GetJEC();
     // ====================  MUTATORS      ===============================
 
