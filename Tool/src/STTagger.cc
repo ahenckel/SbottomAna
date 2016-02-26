@@ -572,6 +572,10 @@ bool STTagger::WriteHistogram()
   his->CalEfficiency("TagPhi_Efficiency", "TagPhi_Numerator", "TagPhi_Denominator");
   his->CalEfficiency("TagEta_Efficiency", "TagEta_Numerator", "TagEta_Denominator");
 
+  his->CalEfficiency("TagdRLep_Efficiency", "TagdRLep_Numerator", "TagdRLep_Denominator");
+  his->CalEfficiency("TagdEtaLep_Efficiency", "TagdEtaLep_Numerator", "TagdEtaLep_Denominator");
+  his->CalEfficiency("TagdPhiLep_Efficiency", "TagdPhiLep_Numerator", "TagdPhiLep_Denominator");
+  his->CalEfficiency("TagMtW_Efficiency", "TagMtW_Numerator", "TagMtW_Denominator");
   ComAna::WriteHistogram();
   return true;
 }       // -----  end of function STTagger::WriteHistogram  -----
@@ -619,9 +623,9 @@ bool STTagger::BookJMEHist()
   his->AddTH1("TagOtherPT_Numerator", "TagOtherPT_Numerator" , "p_{T}^{reco} [GeV]"       , "Numerator"   , 60, 0  , 1200);
   his->AddTH1("TagPT_Efficiency"  , "TagPT_Efficiency"  , "p_{T}^{reco} [GeV]"       , "Efficiency"    , 60, 0  , 1200);
 
-  his->AddTH1("TagMass_Denominator" , "TagMass_Denominator" , "m^{reco} [GeV]"       , "Denominator"   , 100, 0  , 250);
-  his->AddTH1("TagMass_Numerator"   , "TagMass_Numerator"   , "m^{reco} [GeV]"       , "Numerator"     , 100, 0  , 250);
-  his->AddTH1("TagMass_Efficiency"  , "TagMass_Efficiency"  , "m^{reco} [GeV]"       , "Efficiency"    , 100, 0  , 250);
+  his->AddTH1("TagMass_Denominator" , "TagMass_Denominator" , "m^{reco} [GeV]"       , "Denominator"   , 70, 0  , 350);
+  his->AddTH1("TagMass_Numerator"   , "TagMass_Numerator"   , "m^{reco} [GeV]"       , "Numerator"     , 70, 0  , 350);
+  his->AddTH1("TagMass_Efficiency"  , "TagMass_Efficiency"  , "m^{reco} [GeV]"       , "Efficiency"    , 70, 0  , 350);
 
   his->AddTH1("TagEta_Denominator", "TagEta_Denominator", "#eta^{reco}"       , "Denominator"   , 20, -5, 5);
   his->AddTH1("TagEta_Numerator"  , "TagEta_Numerator"  , "#eta^{reco}"       , "Numerator"     , 20, -5, 5);
@@ -643,6 +647,9 @@ bool STTagger::BookJMEHist()
   his->AddTH1("TagdRLep_Numerator"  , "TagdRLep_Numerator"  , "#Delta R^{reco}"       , "Numerator"     , 30, 0, 6);
   his->AddTH1("TagdRLep_Efficiency" , "TagdRLep_Efficiency" , "#Delta R^{reco}"       , "Efficiency"    , 30, 0, 6);
 
+  his->AddTH1("TagMtW_Denominator", "TagMtW_Denominator", "MtW [GeV]"       , "Denominator"   , 30, 0, 120);
+  his->AddTH1("TagMtW_Numerator"  , "TagMtW_Numerator"  , "MtW [GeV]"       , "Numerator"     , 30, 0, 120);
+  his->AddTH1("TagMtW_Efficiency" , "TagMtW_Efficiency" , "MtW [GeV]"       , "Efficiency"    , 30, 0, 120);
   his->AddTH1C("HTLep" , "HTLep" , "HTLep"       , "Event"    , 100, 0, 500);
   return true;
 }       // -----  end of function STTagger::BookJMEHist  -----
@@ -656,6 +663,10 @@ bool STTagger::FillJMEEff()
 
   assert(vMuon45.size() > 0);
   TLorentzVector muon = vMuon45.front();
+  TLorentzVector MET(0,0, 0,0);
+  MET.SetPtEtaPhiM( tr->getVar<double>(METLabel) , 0 , tr->getVar<double>(METPhiLabel) , 0 );
+
+  double mtw = sqrt( 2*( MET.Pt()* muon.Pt() -( MET.Px()*muon.Px() + MET.Py()*muon.Py() ) ) );
 
   if (vTops.size() == 0)
   {
@@ -667,6 +678,7 @@ bool STTagger::FillJMEEff()
     his->FillTH1("TagdRLep_Denominator", comb.DeltaR(muon));
     his->FillTH1("TagdPhiLep_Denominator", comb.DeltaPhi(muon));
     his->FillTH1("TagdEtaLep_Denominator", comb.Eta() - muon.Eta());
+    his->FillTH1("TagMtW_Denominator", mtw);
     return false;
   }
 
@@ -686,8 +698,10 @@ bool STTagger::FillJMEEff()
   his->FillTH1("TagdRLep_Denominator", goodtop.DeltaR(muon));
   his->FillTH1("TagdPhiLep_Denominator", goodtop.DeltaPhi(muon));
   his->FillTH1("TagdEtaLep_Denominator", goodtop.Eta() - muon.Eta());
+  his->FillTH1("TagMtW_Denominator", mtw);
 
   his->FillTH1("TagPT_Numerator", goodtop.Pt());
+  his->FillTH1("TagMtW_Numerator", mtw);
   his->FillTH1("TagPhi_Numerator", goodtop.Phi());
   his->FillTH1("TagEta_Numerator", goodtop.Eta());
   his->FillTH1("TagMass_Numerator", goodtop.M());
