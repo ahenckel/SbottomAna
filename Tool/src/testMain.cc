@@ -160,7 +160,9 @@ int main(int argc, char* argv[])
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
-  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01")); // bit : EM
+  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01", 0)); // bit : EM
+  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01", 1)); // bit : EM
+  tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01", -1)); // bit : EM
   //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10")); // bit : EM
 
   //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
@@ -176,8 +178,8 @@ int main(int argc, char* argv[])
   std::map<std::string, ComAna*> AnaMap;
   //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
   AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM");
-  //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "JECup");
-  //AnaMap["Tagger_Dn"] = new STTagger("TaggerDn", &tr, OutFile, "JECdn");
+  AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
+  AnaMap["Tagger_Dn"] = new STTagger("TaggerDn", &tr, OutFile, "TTZMJECdn");
   //AnaMap["StopMHT"] = new StopAna("StopMHT", &tr, OutFile, "MHT");
   //AnaMap["StopMHT"]->METLabel = "MHT";
   //AnaMap["StopMHT"]->METPhiLabel = "MHTPhi";
