@@ -731,7 +731,8 @@ bool STTagger::FillJMEEff()
     it++;
     for(;it!=topdm.right.end(); ++it)
     {
-      TLorentzVector jjjTop = vRecoTops.at(it->second);
+      if (it == topdm.right.end()) break;
+      TLorentzVector jjjTop = vTops.at(it->second);
 
       for(unsigned int i=0; i < vGenTops.size(); ++i)
       {
