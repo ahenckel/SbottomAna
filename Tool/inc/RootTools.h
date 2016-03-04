@@ -59,6 +59,7 @@ int FindVectorIdX(std::vector<std::string> &TeV, std::string t);
 int HasTLV(TLorentzVector &obj, std::vector<TLorentzVector> &TLVs);
 
 int GetGenChild( std::vector<int> &genDecayPdgIdVec, std::vector<int> &genDecayMomIdxVec , int parent, std::vector<int> pdgs);
+std::vector<int> GetGenChilds(std::vector<int> &genDecayPdgIdVec, std::vector<int> &genDecayMomIdxVec, int parent, std::vector<int> pdgs);
 bool GetGenTops(NTupleReader &tr, std::vector<TLorentzVector> &vGenTops, std::vector<int> &vGenTopCharge, std::vector<TLorentzVector> &vGenLeps);
 //**************************************************************************//
 //                            Register Functions                            //

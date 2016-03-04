@@ -560,6 +560,33 @@ int GetGenChild( std::vector<int> &genDecayPdgIdVec, std::vector<int> &genDecayM
 }       // -----  end of function GetGenChild  -----
 
 // ===  FUNCTION  ============================================================
+//         Name:  GetGenChilds
+//  Description:  
+// ===========================================================================
+std::vector<int>  GetGenChilds(std::vector<int> &genDecayPdgIdVec, std::vector<int> &genDecayMomIdxVec, int parent, std::vector<int> pdgs)
+{
+  
+  std::vector<int> outs;
+  
+  for (unsigned int i = 0; i < genDecayMomIdxVec.size(); ++i)
+  {
+    if (abs(genDecayMomIdxVec[i]) == parent)
+    {
+      for(unsigned int j=0; j < pdgs.size(); ++j)
+      {
+        if (abs(genDecayPdgIdVec.at(i)) == pdgs.at(j))
+        {
+          outs.push_back(i);
+        }
+      }
+    }
+  }
+
+  return outs;
+}       // -----  end of function GetGenChilds  -----
+
+
+// ===  FUNCTION  ============================================================
 //         Name:  GetGenTops
 //  Description:  
 // ===========================================================================

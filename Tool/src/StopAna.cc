@@ -126,22 +126,26 @@ bool StopAna::InitCutOrder(std::string ana)
   CutOrder.push_back("Tagger");
   CutOrder.push_back("MT2");
   CutOrder.push_back("HT");
-  CutOrder.push_back("Baseline");
+  CutOrder.push_back("GenZLepVeto");
+  CutOrder.push_back("GenWLepVeto");
+  //CutOrder.push_back("Baseline");
 
   //Set the cutbit of each cut
-  CutMap["NoCut"]    = "00000000000000000";
-  CutMap["Filter"]   = "00000000000000001";
-  CutMap["nJets"]    = "00000000000000011";
-  CutMap["MuonVeto"] = "00000000000000111";
-  CutMap["EleVeto"]  = "00000000000001111";
-  CutMap["IskVeto"]  = "00000000000011111";
-  CutMap["dPhis"]    = "00000000000111111";
-  CutMap["BJets"]    = "00000000001111111";
-  CutMap["MET"]      = "00000000011111111";
-  CutMap["Tagger"]   = "00000000111111111";
-  CutMap["MT2"]      = "00000001111111111";
-  CutMap["HT"]       = "00000011111111111";
-  CutMap["Baseline"] = "00000111111111111";
+  CutMap["NoCut"]       = "00000000000000000";
+  CutMap["Filter"]      = "00000000000000001";
+  CutMap["nJets"]       = "00000000000000011";
+  CutMap["MuonVeto"]    = "00000000000000111";
+  CutMap["EleVeto"]     = "00000000000001111";
+  CutMap["IskVeto"]     = "00000000000011111";
+  CutMap["dPhis"]       = "00000000000111111";
+  CutMap["BJets"]       = "00000000001111111";
+  CutMap["MET"]         = "00000000011111111";
+  CutMap["Tagger"]      = "00000000111111111";
+  CutMap["MT2"]         = "00000001111111111";
+  CutMap["HT"]          = "00000011111111111";
+  CutMap["GenZLepVeto"] = "00000111111111111";
+  CutMap["GenWLepVeto"] = "00001111111111111";
+  //CutMap["Baseline"] = "00000111111111111";
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -168,7 +172,9 @@ bool StopAna::CheckCut()
   cutbit.set(8 , tr->getVar<bool>(Label["passTagger"]));
   cutbit.set(9 , tr->getVar<bool>(Label["passMT2"]));
   cutbit.set(10, tr->getVar<bool>(Label["passHT"]));
-  cutbit.set(11, tr->getVar<bool>(Label["passBaseline"]));
+  //cutbit.set(11, tr->getVar<bool>(Label["passBaseline"]));
+  cutbit.set(11, ! IsGenZLep());
+  cutbit.set(12, ! IsGenWLep());
 
   return true;
 }       // -----  end of function StopAna::CheckCut  -----
@@ -251,3 +257,58 @@ bool StopAna::FillSearchBins(int NCut)
 
   return true;
 }       // -----  end of function StopAna::FillSearchBins  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  StopAna::IsGenZLep
+//  Description:  
+// ===========================================================================
+bool StopAna::IsGenZLep() const
+{
+  std::vector<TLorentzVector>   genDecayLVec      = tr->getVec<TLorentzVector> ("genDecayLVec");
+  std::vector<int>              genDecayIdxVec    = tr->getVec<int>            ("genDecayIdxVec");
+  std::vector<int>              genDecayPdgIdVec  = tr->getVec<int>            ("genDecayPdgIdVec");
+  std::vector<int>              genDecayMomIdxVec = tr->getVec<int>            ("genDecayMomIdxVec");
+
+  for (unsigned int i = 0; i < genDecayMomIdxVec.size(); ++i)
+  {
+    if (abs(genDecayPdgIdVec[i]) == 23)
+    {
+      //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting the leptons  ~~~~~
+      std::vector<int> out = GetGenChilds( genDecayPdgIdVec, genDecayMomIdxVec, genDecayIdxVec[i], {11, 13, 15});
+      if (out.size() > 0)
+      {
+        assert(out.size() == 2);
+        return true;
+      }
+    }
+  }
+  return false;
+}       // -----  end of function StopAna::IsGenZLep  -----
+
+
+// ===  FUNCTION  ============================================================
+//         Name:  StopAna::IsGenWLep
+//  Description:  
+// ===========================================================================
+bool StopAna::IsGenWLep() const
+{
+  std::vector<TLorentzVector>   genDecayLVec      = tr->getVec<TLorentzVector> ("genDecayLVec");
+  std::vector<int>              genDecayIdxVec    = tr->getVec<int>            ("genDecayIdxVec");
+  std::vector<int>              genDecayPdgIdVec  = tr->getVec<int>            ("genDecayPdgIdVec");
+  std::vector<int>              genDecayMomIdxVec = tr->getVec<int>            ("genDecayMomIdxVec");
+
+  for (unsigned int i = 0; i < genDecayMomIdxVec.size(); ++i)
+  {
+    if (abs(genDecayPdgIdVec[i]) == 24)
+    {
+      //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting the leptons  ~~~~~
+      std::vector<int> out = GetGenChilds( genDecayPdgIdVec, genDecayMomIdxVec, genDecayIdxVec[i], {11, 13, 15});
+      if (out.size() > 0)
+      {
+        assert(out.size() == 1);
+        return true;
+      }
+    }
+  }
+  return false;
+}       // -----  end of function StopAna::IsGenWLep  -----

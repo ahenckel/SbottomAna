@@ -66,6 +66,8 @@ class StopAna : public ComAna
   private:
     // ====================  METHODS       ===============================
     bool FillSearchBins(int NCut);
+    bool IsGenWLep() const;
+    bool IsGenZLep() const;
 
     // ====================  DATA MEMBERS  ===============================
 
