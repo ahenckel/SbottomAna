@@ -57,7 +57,9 @@ class STTagger : public ComAna
 
     bool GetRecoTops() const;
     bool FillGenTop();
+    bool FillGenTop(int icut);
     bool CalTaggerEff();
+    bool CalTaggerEff(int icut);
     std::vector<int> GetChilds(int parent, std::vector<int> pdgs) const;
     int GetChild(int parent, std::vector<int> pdgs) const;
     bool GetRecoTops();
