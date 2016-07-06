@@ -243,12 +243,17 @@ def GetLPClist():
         "tW"                  ,
         "TTZ"                 ,
         "TTW"                 ,
+        "WW"                 ,
+        "WZ"                 ,
+        "ZZ"                 ,
         "WWZ"                 ,
         "WZZ"                 ,
+        "ZZZ"                 ,
         "Data_SingleMuon"     ,
         "Data_SingleElectron" ,
         "Data_DoubleMuon"     ,
         "Data_DoubleEG"       ,
+        "Diboson",
         "Data_HTMHT"          ,
         ]
 

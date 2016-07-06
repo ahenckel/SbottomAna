@@ -26,6 +26,7 @@ STTagger::STTagger (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> 
 {
   InitCutOrder(name);
   BookHistograms();
+  DataMCSF = false;
 }  // -----  end of method STTagger::STTagger  (constructor)  -----
 
 //----------------------------------------------------------------------------
@@ -157,62 +158,59 @@ bool STTagger::InitCutOrder(std::string ana)
   CutOrder.clear();
   CutMap.clear();
 
-  ////Add name and order of the cutflow
-  //CutOrder.push_back("NoCut");
-  //CutOrder.push_back("Filter");
-  //CutOrder.push_back("nJets");
-  //CutOrder.push_back("MuonSel");
-  //CutOrder.push_back("EleVeto");
-  //CutOrder.push_back("HTLep");
-  //CutOrder.push_back("dPhis");
-  //CutOrder.push_back("BJets");
-  //CutOrder.push_back("MET");
-  //CutOrder.push_back("nComb");
 
-  ////Set the cutbit of each cut
-  //CutMap["NoCut"]   = "00000000000000000";
-  //CutMap["Filter"]  = "00000000000000001";
-  //CutMap["nJets"]   = "00000000000000011";
-  //CutMap["MuonSel"] = "00000000000000111";
-  //CutMap["EleVeto"] = "00000000000001111";
-  //CutMap["HTLep"]   = "00000000000011111";
-  //CutMap["dPhis"]   = "00000000000111111";
-  //CutMap["BJets"]   = "00000000001111111";
-  //CutMap["MET"]     = "00000000011111111";
-  //CutMap["nComb"]   = "00000000111111111";
+  if (DataMCSF)
+  {
+    //Add name and order of the cutflow
+    CutOrder.push_back("NoCut");
+    CutOrder.push_back("Filter");
+    CutOrder.push_back("nJets");
+    CutOrder.push_back("MuonSel");
+    CutOrder.push_back("EleVeto");
+    CutOrder.push_back("HTLep");
+    CutOrder.push_back("dPhis");
+    CutOrder.push_back("BJets");
+    CutOrder.push_back("MET");
+    CutOrder.push_back("nComb");
 
+    //Set the cutbit of each cut
+    CutMap["NoCut"]   = "00000000000000000";
+    CutMap["Filter"]  = "00000000000000001";
+    CutMap["nJets"]   = "00000000000000011";
+    CutMap["MuonSel"] = "00000000000000111";
+    CutMap["EleVeto"] = "00000000000001111";
+    CutMap["HTLep"]   = "00000000000011111";
+    CutMap["dPhis"]   = "00000000000111111";
+    CutMap["BJets"]   = "00000000001111111";
+    CutMap["MET"]     = "00000000011111111";
+    CutMap["nComb"]   = "00000000111111111";
+  } else{
+    //Add name and order of the cutflow
+    CutOrder.push_back("NoCut");
+    CutOrder.push_back("Filter");
+    CutOrder.push_back("nJets");
+    CutOrder.push_back("MuonVeto");
+    CutOrder.push_back("EleVeto");
+    CutOrder.push_back("IskVeto");
+    CutOrder.push_back("dPhis");
+    CutOrder.push_back("BJets");
+    CutOrder.push_back("MET");
+    CutOrder.push_back("HT");
+    CutOrder.push_back("nJet30Eta24");
 
-  //Add name and order of the cutflow
-  CutOrder.push_back("NoCut");
-  CutOrder.push_back("Filter");
-  CutOrder.push_back("nJets");
-  CutOrder.push_back("MuonVeto");
-  CutOrder.push_back("EleVeto");
-  CutOrder.push_back("IskVeto");
-  CutOrder.push_back("dPhis");
-  CutOrder.push_back("BJets");
-  CutOrder.push_back("MET");
-  CutOrder.push_back("HT");
-  CutOrder.push_back("nJet30");
-  CutOrder.push_back("nJet30Eta24");
-  CutOrder.push_back("nJet50Eta24");
-  CutOrder.push_back("nJetEta24");
-
-  //Set the cutbit of each cut
-  CutMap["NoCut"]       = "00000000000000000";
-  CutMap["Filter"]      = "00000000000000001";
-  CutMap["nJets"]       = "00000000000000011";
-  CutMap["MuonVeto"]    = "00000000000000111";
-  CutMap["EleVeto"]     = "00000000000001111";
-  CutMap["IskVeto"]     = "00000000000011111";
-  CutMap["dPhis"]       = "00000000000111111";
-  CutMap["BJets"]       = "00000000001111111";
-  CutMap["MET"]         = "00000000011111111";
-  CutMap["HT"]          = "00000000111111111";
-  CutMap["nJet30"]      = "00000001000000000";
-  CutMap["nJet30Eta24"] = "00000010000000000";
-  CutMap["nJet50Eta24"] = "00000100000000000";
-  CutMap["nJetEta24"]   = "00000110000000000";
+    //Set the cutbit of each cut
+    CutMap["NoCut"]       = "00000000000000000";
+    CutMap["Filter"]      = "00000000000000001";
+    CutMap["nJets"]       = "00000000000000011";
+    CutMap["MuonVeto"]    = "00000000000000111";
+    CutMap["EleVeto"]     = "00000000000001111";
+    CutMap["IskVeto"]     = "00000000000011111";
+    CutMap["dPhis"]       = "00000000000111111";
+    CutMap["BJets"]       = "00000000001111111";
+    CutMap["MET"]         = "00000000011111111";
+    CutMap["HT"]          = "00000000111111111";
+    CutMap["nJet30Eta24"] = "00000010000000001";
+  }
 
   assert(CutOrder.size() == CutMap.size());
 
@@ -227,40 +225,34 @@ bool STTagger::InitCutOrder(std::string ana)
 bool STTagger::CheckCut()
 {
   cutbit.reset();
+  if (DataMCSF)
+  {
+    cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
+    cutbit.set(1 , tr->getVar<bool>(Label["passnJets"]));
+    // Exactly one muon with pt > 45 and |eta| < 2.1
+    cutbit.set(2 , vMuon45.size() == 1);
+    cutbit.set(3 , tr->getVar<bool>(Label["passEleVeto"]));
+    // MTW
+    cutbit.set(4 , HTLep > 150);
+    cutbit.set(5 , tr->getVar<bool>(Label["passdPhis"]));
+    cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
+    cutbit.set(7 , tr->getVar<double>(METLabel) > 20);
+    cutbit.set(8 , tr->getVec<TLorentzVector>(Label["vCombs"]).size() > 0);
+  }else {
+    cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
+    cutbit.set(1 , tr->getVar<bool>(Label["passnJets"]));
+    cutbit.set(2 , tr->getVar<bool>(Label["passMuonVeto"]));
+    cutbit.set(3 , tr->getVar<bool>(Label["passEleVeto"]));
+    cutbit.set(4 , tr->getVar<bool>(Label["passIsoTrkVeto"]));
+    cutbit.set(5 , tr->getVar<bool>(Label["passdPhis"]));
+    cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
+    cutbit.set(7 , tr->getVar<bool>(Label["passMET"]));
+    cutbit.set(8 , tr->getVar<bool>(Label["passHT"]));
+    cutbit.set(9 , tr->getVar<int>(Label["cntNJetsPt30"]) >= 4);
+    cutbit.set(10 , tr->getVar<int>(Label["cntNJetsPt30Eta24"]) >=  4);
+    cutbit.set(11 , tr->getVar<int>(Label["cntNJetsPt50Eta24"]) >= 2);
+  }
 
-
-  //cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
-  //cutbit.set(1 , tr->getVar<bool>(Label["passnJets"]));
-
-  //// Exactly one muon with pt > 45 and |eta| < 2.1
-  //cutbit.set(2 , vMuon45.size() == 1);
-
-  //cutbit.set(3 , tr->getVar<bool>(Label["passEleVeto"]));
-
-  //// MTW
-  //cutbit.set(4 , HTLep > 150);
-
-  //cutbit.set(5 , tr->getVar<bool>(Label["passdPhis"]));
-  //cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
-
-  //cutbit.set(7 , tr->getVar<double>(METLabel) > 20);
-
-  //cutbit.set(8 , tr->getVec<TLorentzVector>(Label["vCombs"]).size() > 0);
-
-
-  cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
-  cutbit.set(1 , tr->getVar<bool>(Label["passnJets"]));
-  cutbit.set(2 , tr->getVar<bool>(Label["passMuonVeto"]));
-  cutbit.set(3 , tr->getVar<bool>(Label["passEleVeto"]));
-  cutbit.set(4 , tr->getVar<bool>(Label["passIsoTrkVeto"]));
-  cutbit.set(5 , tr->getVar<bool>(Label["passdPhis"]));
-  cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
-  cutbit.set(7 , tr->getVar<bool>(Label["passMET"]));
-  cutbit.set(8 , tr->getVar<bool>(Label["passHT"]));
-
-  cutbit.set(9 , tr->getVar<int>(Label["cntNJetsPt30"]) >= 4);
-  cutbit.set(10 , tr->getVar<int>(Label["cntNJetsPt30Eta24"]) >=  4);
-  cutbit.set(11 , tr->getVar<int>(Label["cntNJetsPt50Eta24"]) >= 2);
   return true;
 }       // -----  end of function STTagger::CheckCut  -----
 
@@ -274,7 +266,7 @@ bool STTagger::FillCut()
 //----------------------------------------------------------------------------
 //  Check cut and fill cut-based plots
 //----------------------------------------------------------------------------
-  //GetMuon45();
+  GetMuon45();
   GetHTLep();
   GetGenTop();
   GetRecoTops();
@@ -301,12 +293,12 @@ bool STTagger::FillCut()
     }
   }
 
-  //if (passcuts)
-  //{
-    ////FillJMEEff();
-    ////FillGenTop();
-    ////CalTaggerEff();
-  //}
+  if (passcuts && DataMCSF)
+  {
+    FillJMEEff();
+    FillGenTop();
+    CalTaggerEff();
+  }
   return passcuts;
 }       // -----  end of function STTagger::FillCut  -----
 
@@ -704,7 +696,6 @@ bool STTagger::WriteHistogram()
 bool STTagger::GetMuon45()
 {
   vMuon45.clear();
-  return false;
 
   std::vector<TLorentzVector> cutMuVec;
   try

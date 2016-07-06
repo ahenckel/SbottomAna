@@ -254,7 +254,7 @@ bool STZinv::FillCut()
 // ===========================================================================
 bool STZinv::FillSearchBins(int NCut)
 {
-  int searchbin_id = find_Binning_Index( tr->getVar<int>(Label["cntCSVS"]), tr->getVar<int>(Label["nTopCandSortedCnt"]), 
+  int searchbin_id = sb.find_Binning_Index( tr->getVar<int>(Label["cntCSVS"]), tr->getVar<int>(Label["nTopCandSortedCnt"]), 
       tr->getVar<double>(Label["best_had_brJet_MT2"]), tr->getVar<double>(METLabel));
   if( searchbin_id >= 0 )
   {

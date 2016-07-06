@@ -77,10 +77,12 @@ StopAna::operator = ( const StopAna &other )
 // ===========================================================================
 bool StopAna::BookHistograms()
 {
-  ComAna::BookHistograms();
+  //ComAna::BookHistograms();
   BookTLVHistos("RecoTop");
-  his->AddTH1C("hSearchBinsStat" , "Search Bins Stat;Search Bin;Events" , 37 , 0 , 37);
-  his->AddTH1C("hSearchBins"     , "Search Bins;Search Bin;Events"      , 37 , 0 , 37);
+  his->AddTH1C("hSearchBinsStat" , "Search Bins Stat;Search Bin;Events" , 59 , 0 , 59);
+  his->AddTH1C("hSearchBins"     , "Search Bins;Search Bin;Events"      , 59 , 0 , 59);
+  his->AddTH1C("PDFupBin32"     , "PDFBin32 Bins;PDF Weight;Bin32"      , 100 , -5, 5);
+  his->AddTH1C("PDFdowBin32"     , "PDFBin32 Bins;PDF Weight;Bin32"      , 100 , -5, 5);
   //his->AddTH1C("SearchBinsStat" , "Search Bins Stat;Search Bin;Events" , 45 , 0 , 45);
   //his->AddTH1C("hSearchBins"    , "Search Bins;Search Bin;Events"      , 45 , 0 , 45);
 
@@ -91,10 +93,10 @@ bool StopAna::BookHistograms()
   his->AddTH1C("hMET"        , "MET;#slash{E}_{T} [GeV];Events"       , 24 , 200  , 800);  // "met"
   his->AddTH1C("hMT2"        , "MT2;M_{T2} [GeV];Events"              , 24 , 200  , 800);  // "best_had_brJet_MT2"
   his->AddTH1C("hHT"         , "HT;H_{T} [GeV];Events"                , 20 , 500  , 1000); // "HT"
-  his->AddTH2C("SearchBinsNJet30" , "Search Bins Vs NJet30;Search Bin;N_{jets} (p_{T} > 30)"        , 45 , 0    , 45, 10, 0, 10);
-  his->AddTH2C("SearchBinsNJet50" , "Search Bins Vs NJet50;Search Bin;N_{jets} (p_{T} > 50)"        , 45 , 0    , 45, 10, 0, 10);
-  his->AddTH2C("SearchBinsMHT" , "Search Bins Vs MHT;Search Bin;#slash{H}_{T} [GeV]"        , 45 , 0    , 45, 100, 0, 800);
-  his->AddTH2C("SearchBinsMETSig" , "Search Bins Vs MET Sig;Search Bin;Sig. #slash{E}_{T}"        , 45 , 0    , 45, 100, 0, 10);
+  his->AddTH2C("SearchBinsNJet30" , "Search Bins Vs NJet30;Search Bin;N_{jets} (p_{T} > 30)"        , 59 , 0    , 59, 10, 0, 10);
+  his->AddTH2C("SearchBinsNJet50" , "Search Bins Vs NJet50;Search Bin;N_{jets} (p_{T} > 50)"        , 59 , 0    , 59, 10, 0, 10);
+  his->AddTH2C("SearchBinsMHT" , "Search Bins Vs MHT;Search Bin;#slash{H}_{T} [GeV]"        , 59 , 0    , 59, 100, 0, 800);
+  his->AddTH2C("SearchBinsMETSig" , "Search Bins Vs MET Sig;Search Bin;Sig. #slash{E}_{T}"        , 59 , 0    , 59, 100, 0, 10);
 
   his->AddTH2C("NJetHadFrac" , "NJetHadFrc;N_{jets} (p_{T} > 30); Charged Hadron Energy Fraction"  , 10 , 0    , 10, 100, 0, 1);
   his->AddTH2C("NJetCEMFrac" , "NJetCEMFrc;N_{jets} (p_{T} > 30); Charged EM Energy Fraction"  , 10 , 0    , 10, 100, 0, 1);
@@ -217,12 +219,20 @@ bool StopAna::FillCut()
 // ===========================================================================
 bool StopAna::FillSearchBins(int NCut)
 {
-  int searchbin_id = find_Binning_Index( tr->getVar<int>(Label["cntCSVS"]), tr->getVar<int>(Label["nTopCandSortedCnt"]), 
+  
+  int searchbin_id = sb.find_Binning_Index( tr->getVar<int>(Label["cntCSVS"]), tr->getVar<int>(Label["nTopCandSortedCnt"]), 
       tr->getVar<double>(Label["best_had_brJet_MT2"]), tr->getVar<double>(METLabel));
+
+  if (searchbin_id == 32)
+  {
+    his->FillTH1(NCut, "PDFupBin32", tr->getVar<double>(Label["NNPDF_From_Median_Up"]));
+    his->FillTH1(NCut, "PDFdowBin32", tr->getVar<double>(Label["NNPDF_From_Median_Down"]));
+  }
+
   if( searchbin_id >= 0 )
   {
     his->FillTH1(NCut, "hSearchBins", searchbin_id);
-    his->FillTH1(NCut , "SearchBinsStat"   , searchbin_id , tr->getVar<double>("stored_weight") >= 0 ? 1 : -1);
+    his->FillTH1(NCut , "hSearchBinsStat"   , searchbin_id , tr->getVar<double>("stored_weight") >= 0 ? 1 : -1);
     his->FillTH2(NCut , "SearchBinsNJet30" , searchbin_id , tr->getVar<int>(Label["cntNJetsPt30Eta24"]));
     his->FillTH2(NCut , "SearchBinsNJet50" , searchbin_id , tr->getVar<int>(Label["cntNJetsPt50Eta24"]));
     his->FillTH2(NCut , "SearchBinsMHT"    , searchbin_id , tr->getVar<double>(Label["MHT"]));

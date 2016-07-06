@@ -96,6 +96,7 @@ class STTagger : public ComAna
 
     std::vector<TLorentzVector> vMuon45;
     double HTLep;
+    bool DataMCSF;
 }; // -----  end of class STTagger  -----
 
 

@@ -69,6 +69,7 @@ class StopAna : public ComAna
     bool IsGenWLep() const;
     bool IsGenZLep() const;
 
+    SearchBins sb;
     // ====================  DATA MEMBERS  ===============================
 
 }; // -----  end of class StopAna  -----

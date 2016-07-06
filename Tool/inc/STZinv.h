@@ -72,6 +72,7 @@ class STZinv : public ComAna
     // ====================  METHODS       ===============================
 
     // ====================  DATA MEMBERS  ===============================
+    SearchBins sb;
 
 }; // -----  end of class STZinv  -----
 

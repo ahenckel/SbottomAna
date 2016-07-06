@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
   std::map<std::string, ComAna*> AnaMap;
   AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile);
-  //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM");
+  //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
   //AnaMap["Tagger_Dn"] = new STTagger("TaggerDn", &tr, OutFile, "TTZMJECdn");
   //AnaMap["StopMHT"] = new StopAna("StopMHT", &tr, OutFile, "MHT");
@@ -261,7 +261,6 @@ int main(int argc, char* argv[])
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for rate, but not shape ~~~~~
     //rateWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
 
-
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
     //evtWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
     //evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
@@ -309,6 +308,7 @@ int main(int argc, char* argv[])
   }
   his->WriteTPro();
   his->WriteTH1();
+  OutFile->Close();
 
   return 0;
 }
