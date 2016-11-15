@@ -351,7 +351,7 @@ void passBaselineTTZ(NTupleReader &tr, std::string leps, int JEC)
   var.GetRecoZ(ss.str(), leps);
   var.GetNoLepJEC(JEC);
 
-  BaselineVessel blv(ss.str());
+  BaselineVessel blv(tr, ss.str());
   if (JEC == 0)
   {
     blv.jetVecLabel = "jetsLVecLepCleaned";
@@ -367,10 +367,7 @@ void passBaselineTTZ(NTupleReader &tr, std::string leps, int JEC)
     blv.jetVecLabel = "jetLVecLepCleaned_jecDn";
     blv.CSVVecLabel = "recoJetsBtagLepCleaned_jecDn";
   }
-  blv.prepareTopTagger();
-  blv.passBaseline(tr);
-  blv.GetnTops(&tr);
-  blv.GetMHT(&tr);
+  blv.PassBaseline();
   TopWithoutBVeto(tr, ss.str());
 }
 
@@ -381,16 +378,13 @@ void passBaselineTTZ(NTupleReader &tr, std::string leps, int JEC)
 void passBaselineMHT(NTupleReader &tr)
 {
   // Run baseline
-  BaselineVessel blv("MHT");
+  BaselineVessel blv(tr, "MHT");
   blv.jetVecLabel = "jetsLVecLepCleaned";
   blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
   blv.METLabel = "MHT";
   blv.METPhiLabel = "MHTPhi";
 
-  blv.prepareTopTagger();
-  blv.passBaseline(tr);
-  blv.GetnTops(&tr);
-  blv.GetMHT(&tr);
+  blv.PassBaseline();
 }       // -----  end of function passBaselineMHT  -----
 
 // ===  FUNCTION  ============================================================
@@ -426,14 +420,11 @@ void passBaselineJECup(NTupleReader &tr)
   var.GetJEC();
 
   // Run baseline
-  BaselineVessel blv("JECup");
+  BaselineVessel blv(tr, "JECup");
   blv.jetVecLabel = "jetLVec_jecUp";
   blv.CSVVecLabel = "recoJetsBtag_jecUp";
 
-  blv.prepareTopTagger();
-  blv.passBaseline(tr);
-  blv.GetnTops(&tr);
-  blv.GetMHT(&tr);
+  blv.PassBaseline();
 }       // -----  end of function passBaselineJECup  -----
 
 // ===  FUNCTION  ============================================================
@@ -443,14 +434,10 @@ void passBaselineJECup(NTupleReader &tr)
 void passBaselineJECdn(NTupleReader &tr)
 {
   // Run baseline
-  BaselineVessel blv("JECdn");
+  BaselineVessel blv(tr, "JECdn");
   blv.jetVecLabel = "jetLVec_jecDn";
   blv.CSVVecLabel = "recoJetsBtag_jecDn";
-
-  blv.prepareTopTagger();
-  blv.passBaseline(tr);
-  blv.GetnTops(&tr);
-  blv.GetMHT(&tr);
+  blv.PassBaseline();
   return ;
 }       // -----  end of function passBaselineJECdn  -----
 
@@ -466,7 +453,7 @@ void passBaselineZinv(NTupleReader &tr, std::string leps)
 
   VarPerEvent var(&tr);
   var.GetRecoZ(ss.str(), leps);
-  BaselineVessel blv(ss.str());
+  BaselineVessel blv(tr, ss.str());
   blv.jetVecLabel = "jetsLVecLepCleaned";
   blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
   try
@@ -480,10 +467,7 @@ void passBaselineZinv(NTupleReader &tr, std::string leps)
   }
   blv.METLabel = "cleanMetPt" + ss.str();
   blv.METPhiLabel = "cleanMetPhi" + ss.str();
-  blv.prepareTopTagger();
-  blv.passBaseline(tr);
-  blv.GetnTops(&tr);
-  blv.GetMHT(&tr);
+  blv.PassBaseline();
 }       // -----  end of function passBaselineZinv  -----
 
 // ===  FUNCTION  ============================================================

@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
   double vm, rss;
   while(tr.getNextEvent())
   {
-    if (tr.IsFirstEvent() && tr.getVar<int>("run")!= 1)
+    if (tr.isFirstEvent() && tr.getVar<int>("run")!= 1)
     {
       for (auto& name: tr.getVec<std::string>("TriggerNames"))
         std::cout << name << std::endl;

@@ -19,11 +19,15 @@ CXXFLAGS  += $(subst -I, -isystem , $(shell root-config --cflags))
 #CXXDEPFLAGS = -MMD -MP
 
 ifneq ($(shell echo $$CMSSW_BASE), )
-  CXXFLAGS  += -isystem $(CMSSW_BASE)/src/
-  SUSYObj = $(CMSSW_BASE)/src/SusyAnaTools/Tools/obj/
+  CXXFLAGS += -isystem $(CMSSW_BASE)/src/
+  SUSYObj   = $(CMSSW_BASE)/src/SusyAnaTools/Tools/obj/
+  CXXFLAGS += -I$(shell scram tool info boost | grep '^INCLUDE' | sed 's/INCLUDE = //')
 else
   CXXFLAGS  += -isystem ../..
   SUSYObj = ../../SusyAnaTools/Tools/obj/
+  ifneq ($(shell echo $$BOOSTROOT), )
+	CXXFLAGS  += -isystem $(shell echo $(BOOSTROOT))
+  endif
 endif
 
 LD         = g++
@@ -45,16 +49,8 @@ else
   LIBS     += -L $(LHAPDF_DATA_PATH)/../../lib -lLHAPDF
 endif
 
-#============================================================================#
-#-----------------------------   Include Boost   ----------------------------#
-#============================================================================#
-ifneq ($(shell echo $$BOOSTROOT), )
-  CXXFLAGS  += -isystem $(shell echo $(BOOSTROOT))
-endif
-
-SUSYTools = $(SUSYObj)/NTupleReader.o $(SUSYObj)/samples.o $(SUSYObj)/baselineDef.o \
-			$(SUSYObj)/customize.o $(SUSYObj)/searchBins.o $(SUSYObj)/PDFUncertainty.o \
-			$(SUSYObj)/Weights.o $(SUSYObj)/BTagCorrector.o $(SUSYObj)/BTagCalibrationStandalone.o
+SUSYTools = SusyAnaTools
+LIBS     += -L$(SUSYObj) -l$(SUSYTools)
 
 FILES = $(wildcard $(SDIR)/*.cc)
 OBJS  := $(FILES:$(SDIR)/%.cc=$(ODIR)/%.o)
@@ -81,7 +77,7 @@ tupleTest: $(ODIR)/NTupleReader.o  $(ODIR)/tupleReadTest.o
 	$(LD) $^ $(LIBS)  -o $@
 
 
-testMain: $(TOOLS)  $(SUSYTools)  $(OBJS)
+testMain: $(TOOLS)  $(OBJS)
 	@echo "Linking $(PROGRAM) ..."
 	$(LD) $^ $(LIBS)  -o $@
 	@echo "done"
