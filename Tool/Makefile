@@ -21,7 +21,7 @@ CXXFLAGS  += $(subst -I, -isystem , $(shell root-config --cflags))
 ifneq ($(shell echo $$CMSSW_BASE), )
   CXXFLAGS += -isystem $(CMSSW_BASE)/src/
   SUSYObj   = $(CMSSW_BASE)/src/SusyAnaTools/Tools/obj/
-  CXXFLAGS += -I$(shell scram tool info boost | grep '^INCLUDE' | sed 's/INCLUDE = //')
+  CXXFLAGS += -isystem $(shell scram tool info boost | grep '^INCLUDE' | sed 's/INCLUDE=//')
 else
   CXXFLAGS  += -isystem ../..
   SUSYObj = ../../SusyAnaTools/Tools/obj/
