@@ -49,8 +49,11 @@ else
   LIBS     += -L $(LHAPDF_DATA_PATH)/../../lib -lLHAPDF
 endif
 
-SUSYTools = SusyAnaTools
-LIBS     += -L$(SUSYObj) -l$(SUSYTools)
+SUSYTools        = SusyAnaTools
+OPENCV_DIRECTORY = $(CMSSW_BASE)/src/opencv
+LIBS            += -L$(SUSYObj) -l$(SUSYTools)
+LIBS            += -L$(CMSSW_BASE)/src/TopTagger/TopTagger/test -lTopTagger
+LIBS            += -L$(OPENCV_DIRECTORY)/lib/ -lopencv_ml -lopencv_core
 
 FILES = $(wildcard $(SDIR)/*.cc)
 OBJS  := $(FILES:$(SDIR)/%.cc=$(ODIR)/%.o)

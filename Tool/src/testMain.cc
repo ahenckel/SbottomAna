@@ -148,14 +148,24 @@ int main(int argc, char* argv[])
   //clock to monitor the run time
   size_t t0 = clock();
   NTupleReader tr(fChain);
+  tr.setReThrow(false);
   tr.registerFunction(pdfs);
   tr.registerFunction(pileup);
   tr.registerFunction(btagcorr);
-  tr.registerFunction(boost::bind(passBaselineFunc, _1, filterstring));
-  tr.registerFunction(&passBaselineJECup);
-  tr.registerFunction(&passBaselineJECdn);
+  BaselineVessel blvT3(tr, "Type3");
+  BaselineVessel blvICHEP(tr, "ICHEP");
+  BaselineVessel blvMVA(tr, "MVA");
+  blvT3.SetupTopTagger(false);
+  blvICHEP.SetupTopTagger(true, "ICHEPTaggerConfig.cfg");
+  blvMVA.SetupTopTagger(true, "TopTaggerConfig.cfg");
 
-  tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
+  tr.registerFunction(blvT3);
+  tr.registerFunction(blvICHEP);
+  tr.registerFunction(blvMVA);
+  //tr.registerFunction(&passBaselineJECup);
+  //tr.registerFunction(&passBaselineJECdn);
+
+  //tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
@@ -175,7 +185,11 @@ int main(int argc, char* argv[])
   //                           Prepare the analysis                           //
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
-  AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  AnaMap["StopType3"] = new StopAna("StopType3", &tr, OutFile, "Type3");
+  AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
+  AnaMap["StopMVA"] = new StopAna("StopMVA", &tr, OutFile, "MVA");
+
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile);
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
@@ -209,7 +223,7 @@ int main(int argc, char* argv[])
   //SysMap["PDF_down"] = std::make_pair("11", "PDF_Unc_Down"); // as shape uncertainty
   SysMap["Scale_up"] = std::make_pair("11", "Scaled_Variations_Up"); // as shape uncertainty
   SysMap["Scale_down"] = std::make_pair("11", "Scaled_Variations_Down"); // as shape uncertainty
-  DefSysComAnd(SysMap, AnaMap);
+  //DefSysComAnd(SysMap, AnaMap);
   //AnaMap["Stop_PU_up"] = new StopAna("Stop_PU_up", &tr, OutFile);
   //AnaMap["Stop_PU_down"] = new StopAna("Stop_PU_down", &tr, OutFile);
 
@@ -309,7 +323,7 @@ int main(int argc, char* argv[])
   his->WriteTPro();
   his->WriteTH1();
   OutFile->Close();
-
+  fChain->Reset();
   return 0;
 }
 

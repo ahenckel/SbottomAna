@@ -81,8 +81,6 @@ bool StopAna::BookHistograms()
   BookTLVHistos("RecoTop");
   his->AddTH1C("hSearchBinsStat" , "Search Bins Stat;Search Bin;Events" , 59 , 0 , 59);
   his->AddTH1C("hSearchBins"     , "Search Bins;Search Bin;Events"      , 59 , 0 , 59);
-  his->AddTH1C("PDFupBin32"     , "PDFBin32 Bins;PDF Weight;Bin32"      , 100 , -5, 5);
-  his->AddTH1C("PDFdowBin32"     , "PDFBin32 Bins;PDF Weight;Bin32"      , 100 , -5, 5);
   //his->AddTH1C("SearchBinsStat" , "Search Bins Stat;Search Bin;Events" , 45 , 0 , 45);
   //his->AddTH1C("hSearchBins"    , "Search Bins;Search Bin;Events"      , 45 , 0 , 45);
 
@@ -128,8 +126,8 @@ bool StopAna::InitCutOrder(std::string ana)
   CutOrder.push_back("Tagger");
   CutOrder.push_back("MT2");
   CutOrder.push_back("HT");
-  CutOrder.push_back("GenZLepVeto");
-  CutOrder.push_back("GenWLepVeto");
+  //CutOrder.push_back("GenZLepVeto");
+  //CutOrder.push_back("GenWLepVeto");
   //CutOrder.push_back("Baseline");
 
   //Set the cutbit of each cut
@@ -145,8 +143,8 @@ bool StopAna::InitCutOrder(std::string ana)
   CutMap["Tagger"]      = "00000000111111111";
   CutMap["MT2"]         = "00000001111111111";
   CutMap["HT"]          = "00000011111111111";
-  CutMap["GenZLepVeto"] = "00000111111111111";
-  CutMap["GenWLepVeto"] = "00001111111111111";
+  //CutMap["GenZLepVeto"] = "00000111111111111";
+  //CutMap["GenWLepVeto"] = "00001111111111111";
   //CutMap["Baseline"] = "00000111111111111";
 
   assert(CutOrder.size() == CutMap.size());
@@ -222,12 +220,6 @@ bool StopAna::FillSearchBins(int NCut)
   
   int searchbin_id = sb.find_Binning_Index( tr->getVar<int>(Label["cntCSVS"]), tr->getVar<int>(Label["nTopCandSortedCnt"]), 
       tr->getVar<double>(Label["best_had_brJet_MT2"]), tr->getVar<double>(METLabel));
-
-  if (searchbin_id == 32)
-  {
-    his->FillTH1(NCut, "PDFupBin32", tr->getVar<double>(Label["NNPDF_From_Median_Up"]));
-    his->FillTH1(NCut, "PDFdowBin32", tr->getVar<double>(Label["NNPDF_From_Median_Down"]));
-  }
 
   if( searchbin_id >= 0 )
   {

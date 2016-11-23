@@ -368,6 +368,7 @@ void passBaselineTTZ(NTupleReader &tr, std::string leps, int JEC)
     blv.CSVVecLabel = "recoJetsBtagLepCleaned_jecDn";
   }
   blv.PassBaseline();
+  blv.GetMHT();
   TopWithoutBVeto(tr, ss.str());
 }
 
@@ -385,6 +386,7 @@ void passBaselineMHT(NTupleReader &tr)
   blv.METPhiLabel = "MHTPhi";
 
   blv.PassBaseline();
+  blv.GetMHT();
 }       // -----  end of function passBaselineMHT  -----
 
 // ===  FUNCTION  ============================================================
@@ -425,6 +427,7 @@ void passBaselineJECup(NTupleReader &tr)
   blv.CSVVecLabel = "recoJetsBtag_jecUp";
 
   blv.PassBaseline();
+  blv.GetMHT();
 }       // -----  end of function passBaselineJECup  -----
 
 // ===  FUNCTION  ============================================================
@@ -438,6 +441,7 @@ void passBaselineJECdn(NTupleReader &tr)
   blv.jetVecLabel = "jetLVec_jecDn";
   blv.CSVVecLabel = "recoJetsBtag_jecDn";
   blv.PassBaseline();
+  blv.GetMHT();
   return ;
 }       // -----  end of function passBaselineJECdn  -----
 
@@ -468,6 +472,7 @@ void passBaselineZinv(NTupleReader &tr, std::string leps)
   blv.METLabel = "cleanMetPt" + ss.str();
   blv.METPhiLabel = "cleanMetPhi" + ss.str();
   blv.PassBaseline();
+  blv.GetMHT();
 }       // -----  end of function passBaselineZinv  -----
 
 // ===  FUNCTION  ============================================================
