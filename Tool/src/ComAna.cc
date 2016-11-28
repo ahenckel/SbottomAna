@@ -57,9 +57,9 @@ bool ComAna::DefineLabels(std::string spec)
   Label["metphi"]                 = "metphi"                 ;
   Label["jetsLVec"]               = "jetsLVec"               ;
   Label["recoJetsBtag_0"]         = "recoJetsBtag_0"         ;
-  Label["nMuons_Base"]            = "nMuons_Cut"            ;
-  Label["nElectrons_Base"]        = "nElectrons_Cut"        ;
-  Label["nIsoTrks_Base"]          = "nIsoTrks_Cut"          ;
+  Label["nMuons_Base"]            = "nMuons_CUT"            ;
+  Label["nElectrons_Base"]        = "nElectrons_CUT"        ;
+  Label["nIsoTrks_Base"]          = "nIsoTrks_CUT"          ;
   Label["cntNJetsPt50Eta24"]      = "cntNJetsPt50Eta24"      ;
   Label["cntNJetsPt30Eta24"]      = "cntNJetsPt30Eta24"      ;
   Label["dPhiVec"]                = "dPhiVec"                ;

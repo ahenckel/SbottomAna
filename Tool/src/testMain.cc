@@ -156,8 +156,8 @@ int main(int argc, char* argv[])
   BaselineVessel blvICHEP(tr, "ICHEP");
   BaselineVessel blvMVA(tr, "MVA");
   blvT3.SetupTopTagger(false);
-  blvICHEP.SetupTopTagger(true, "ICHEPTaggerConfig.cfg");
-  blvMVA.SetupTopTagger(true, "TopTaggerConfig.cfg");
+  blvICHEP.SetupTopTagger(true, "Example_Legacy_TopTagger.cfg");
+  blvMVA.SetupTopTagger(true, "Example_TopTagger.cfg");
 
   tr.registerFunction(blvT3);
   tr.registerFunction(blvICHEP);
