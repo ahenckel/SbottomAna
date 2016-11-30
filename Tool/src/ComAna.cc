@@ -24,7 +24,7 @@
 // Description:  constructor
 //----------------------------------------------------------------------------
 ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile_, std::string spec_):
-  isData(false), tr(tr_), spec(spec_), NBaseWeight(1.0), OutFile(OutFile_)
+  isData(false), AnaName(name), tr(tr_), spec(spec_), NBaseWeight(1.0), OutFile(OutFile_)
 {
   his = new HistTool(OutFile, "", name);
   DefineLabels(spec);
@@ -326,6 +326,10 @@ bool ComAna::FillCut()
 // ===========================================================================
 bool ComAna::RunEvent()
 {
+  if (tr->isFirstEvent())
+  {
+    isData = IsData();
+  }
   j30count = CountJets(30);
   GetLeadingJets();
   //GetType3TopTagger();
@@ -628,43 +632,58 @@ bool ComAna::IsData()
 //         Name:  ComAna::PassTrigger
 //  Description:  
 // ===========================================================================
-bool ComAna::PassTrigger()
+bool ComAna::PassTrigger( std::vector<std::string> Trigstr_)
 {
+  bool pass=false;
+  std::vector<std::string> Trigstr;
+
   if (isData)
   {
-    std::map<std::string, unsigned int> HLTIdx;
-    const std::vector<std::string> &triggerName = tr->getVec<std::string>("TriggerNames");
+    if (Trigstr_.empty())
+      Trigstr = HLTstr;
+    else
+      Trigstr = Trigstr_;
+
     const std::vector<int> &triggerPass = tr->getVec<int>("PassTrigger");
-    assert(triggerName.size() == triggerPass.size());
     // Get trigger index
-    for(auto &hlt : HLTstr)
+    for(auto &hlt : Trigstr)
     {
-      auto found = std::find(triggerName.begin(), triggerName.end(), hlt);
-      if (found != triggerName.end())
+      if (HLTIdx.find(hlt) == HLTIdx.end())
       {
-        //std::cout <<  hlt <<"  "<<  found - triggerName.begin()  << std::endl;
-        HLTIdx[hlt] = found - triggerName.begin();
+        const std::vector<std::string> &triggerName = tr->getVec<std::string>("TriggerNames");
+        for(unsigned int i=0; i < triggerName.size(); ++i)
+        {
+          if (std::regex_match(triggerName.at(i), std::regex(hlt)))
+          {
+            //std::cout << hlt<<" " << triggerName.at(i) << std::endl;
+            HLTIdx[hlt].insert(i);
+          }
+        }
       }
     }
     
-    bool pass=false;
-    for(auto &hlt : HLTIdx)
+    for(auto &hlt : Trigstr)
     {
       //std::cout << pass << " " << hlt.first<< " " << triggerPass.at(hlt.second)<< std::endl;
-      pass = pass || triggerPass.at(hlt.second);
+      for(auto bit : HLTIdx[hlt])
+      {
+        pass = pass || triggerPass.at(bit);
+      }
     }
-    return pass;
+
   } else{
-    bool pass=false;
-    for(auto &mctrig : MCTrigstr)
+    if (Trigstr_.empty())
+      Trigstr = MCTrigstr;
+    else
+      Trigstr = Trigstr_;
+
+    for(auto &mctrig : Trigstr)
     {
       pass = pass || tr->getVar<bool>(mctrig);
-
     }
-    return pass;
   }
 
-  return false;
+  return pass;
 }       // -----  end of function ComAna::PassTrigger  -----
 
 // ===  FUNCTION  ============================================================

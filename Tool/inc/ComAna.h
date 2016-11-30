@@ -22,6 +22,7 @@
 #include <sstream>
 #include <bitset>
 #include <memory>
+#include <regex>
 #include "boost/bimap.hpp"
 
 #include "HistTool.hh"
@@ -79,7 +80,7 @@ class ComAna
     bool Fill2TLVHistos(int NCut, std::string name, TLorentzVector LV1, TLorentzVector LV2);
 
     bool DefineLabels(std::string spec);
-    bool PassTrigger();
+    bool PassTrigger( std::vector<std::string> Trigstr_ = {});
     bool IsData();
     bool CheckLeadingLeptons(int NCut);
     // ====================  DATA MEMBERS  ===============================
@@ -97,8 +98,10 @@ class ComAna
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input Labels ~~~~~
     bool isData;
     std::string spec;
+    std::string AnaName;
     std::vector<std::string> HLTstr;
     std::vector<std::string> MCTrigstr;
+    std::map<std::string, std::set<unsigned int> > HLTIdx;
     // Label defined in derived, which changed by spec name
     std::map<std::string, std::string> Label;
     std::shared_ptr<TFile> OutFile;

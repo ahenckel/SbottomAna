@@ -151,7 +151,7 @@ bool TTZDiLep::CheckCut()
   
   cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
 
-  cutbit.set(1 , PassTrigger());
+  cutbit.set(1 , ComAna::PassTrigger());
 
   cutbit.set(2 , tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size() >= 4);
 

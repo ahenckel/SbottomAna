@@ -154,7 +154,7 @@ bool TTZ3Lep::CheckCut()
 
   // Check event has Z
   //cutbit.set(1 , HasZ());
-  cutbit.set(1 , PassTrigger());
+  cutbit.set(1 , ComAna::PassTrigger());
 
   cutbit.set(2 , tr->getVar<bool>(Label["passnJets"]));
 

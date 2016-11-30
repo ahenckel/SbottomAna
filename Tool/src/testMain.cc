@@ -47,6 +47,7 @@
 #include "StopAna.h"
 #include "TTZDiLep.h"
 #include "TTZ3Lep.h"
+#include "TriggerAna.h"
 
 // SusyAnaTools
 #include "SusyAnaTools/Tools/baselineDef.h"
@@ -149,19 +150,27 @@ int main(int argc, char* argv[])
   size_t t0 = clock();
   NTupleReader tr(fChain);
   tr.setReThrow(false);
-  tr.registerFunction(pdfs);
-  tr.registerFunction(pileup);
-  tr.registerFunction(btagcorr);
-  BaselineVessel blvT3(tr, "Type3");
-  BaselineVessel blvICHEP(tr, "ICHEP");
-  BaselineVessel blvMVA(tr, "MVA");
-  blvT3.SetupTopTagger(false);
-  blvICHEP.SetupTopTagger(true, "Example_Legacy_TopTagger.cfg");
-  blvMVA.SetupTopTagger(true, "Example_TopTagger.cfg");
+  //tr.registerFunction(pdfs);
+  //tr.registerFunction(pileup);
+  //tr.registerFunction(btagcorr);
 
-  tr.registerFunction(blvT3);
-  tr.registerFunction(blvICHEP);
-  tr.registerFunction(blvMVA);
+  // TopTagger
+  //BaselineVessel blvT3(tr, "Type3");
+  //BaselineVessel blvICHEP(tr, "ICHEP");
+  //BaselineVessel blvMVA(tr, "MVA");
+  //blvT3.SetupTopTagger(false);
+  //blvICHEP.SetupTopTagger(true, "Example_Legacy_TopTagger.cfg");
+  //blvMVA.SetupTopTagger(true, "Example_TopTagger.cfg");
+  //tr.registerFunction(blvT3);
+  //tr.registerFunction(blvICHEP);
+  //tr.registerFunction(blvMVA);
+  
+  BaselineVessel blv(tr);
+  blv.jetVecLabel = "jetsLVecLepCleaned";
+  blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+  tr.registerFunction(blv);
+  //tr.registerFunction(blvICHEP);
+  //tr.registerFunction(blvMVA);
   //tr.registerFunction(&passBaselineJECup);
   //tr.registerFunction(&passBaselineJECdn);
 
@@ -186,10 +195,10 @@ int main(int argc, char* argv[])
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
   //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
-  AnaMap["StopType3"] = new StopAna("StopType3", &tr, OutFile, "Type3");
-  AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
-  AnaMap["StopMVA"] = new StopAna("StopMVA", &tr, OutFile, "MVA");
-
+  //AnaMap["StopType3"] = new StopAna("StopType3", &tr, OutFile, "Type3");
+  //AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
+  //AnaMap["StopMVA"] = new StopAna("StopMVA", &tr, OutFile, "MVA");
+  AnaMap["TrigEle"] = new TriggerAna("TrigEle", &tr, OutFile);
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile);
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
