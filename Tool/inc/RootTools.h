@@ -23,6 +23,7 @@
 #include <bitset>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <stdexcept>
 
 // boost
@@ -64,10 +65,9 @@ bool GetGenTops(NTupleReader &tr, std::vector<TLorentzVector> &vGenTops, std::ve
 //**************************************************************************//
 //                            Register Functions                            //
 //**************************************************************************//
-bool TopWithoutBVeto(NTupleReader &tr, std::string spec);
 std::string ChooseLepPath(std::string leps);
 void passBaselineZinv(NTupleReader &tr, std::string leps);
-void passBaselineTTZ(NTupleReader &tr, std::string leps, int JEC=0);
+void passBaselineTTZ(NTupleReader &tr, std::map<std::string, BaselineVessel*> &blvMap, std::string leps, int JEC=0);
 void passBaselineMHT(NTupleReader &tr);
 void passBaselineJECdn(NTupleReader &tr);
 void passBaselineJECup(NTupleReader &tr);

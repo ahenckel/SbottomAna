@@ -340,36 +340,44 @@ int HasTLV(TLorentzVector &obj, std::vector<TLorentzVector> &TLVs)
 //**************************************************************************//
 //                            Register Functions                            //
 //**************************************************************************//
-void passBaselineTTZ(NTupleReader &tr, std::string leps, int JEC)
+void passBaselineTTZ(NTupleReader &tr, std::map<std::string, BaselineVessel*> &blvMap,
+    std::string leps, int JEC)
 {
   std::stringstream ss;
   ss <<"TTZ" << ChooseLepPath(leps);
   if (JEC > 0) ss <<"JECup";
   if (JEC < 0) ss <<"JECdn";
 
+
+  if (blvMap.find(ss.str()) == blvMap.end())
+  {
+    
+    std::cout << ss.str() << std::endl;
+    blvMap[ss.str()] =  new BaselineVessel(tr, ss.str());
+    
+    if (JEC == 0)
+    {
+      blvMap[ss.str()]->jetVecLabel = "jetsLVecLepCleaned";
+      blvMap[ss.str()]->CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+    }
+    if (JEC > 0)
+    {
+      blvMap[ss.str()]->jetVecLabel = "jetLVecLepCleaned_jecUp";
+      blvMap[ss.str()]->CSVVecLabel = "recoJetsBtagLepCleaned_jecUp";
+    }
+    if (JEC <0)
+    {
+      blvMap[ss.str()]->jetVecLabel = "jetLVecLepCleaned_jecDn";
+      blvMap[ss.str()]->CSVVecLabel = "recoJetsBtagLepCleaned_jecDn";
+    }
+  }
+ 
+  blvMap[ss.str()]->PassBaseline();
+  blvMap[ss.str()]->GetMHT();
+
   VarPerEvent var(&tr);
   var.GetRecoZ(ss.str(), leps);
   var.GetNoLepJEC(JEC);
-
-  BaselineVessel blv(tr, ss.str());
-  if (JEC == 0)
-  {
-    blv.jetVecLabel = "jetsLVecLepCleaned";
-    blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
-  }
-  if (JEC > 0)
-  {
-    blv.jetVecLabel = "jetLVecLepCleaned_jecUp";
-    blv.CSVVecLabel = "recoJetsBtagLepCleaned_jecUp";
-  }
-  if (JEC <0)
-  {
-    blv.jetVecLabel = "jetLVecLepCleaned_jecDn";
-    blv.CSVVecLabel = "recoJetsBtagLepCleaned_jecDn";
-  }
-  blv.PassBaseline();
-  blv.GetMHT();
-  TopWithoutBVeto(tr, ss.str());
 }
 
 // ===  FUNCTION  ============================================================
@@ -388,29 +396,6 @@ void passBaselineMHT(NTupleReader &tr)
   blv.PassBaseline();
   blv.GetMHT();
 }       // -----  end of function passBaselineMHT  -----
-
-// ===  FUNCTION  ============================================================
-//         Name:  TopWithoutBVeto
-//  Description:  
-// ===========================================================================
-bool TopWithoutBVeto(NTupleReader &tr, std::string spec)
-{
-  const std::vector<TLorentzVector> &jetsforTT = tr.getVec<TLorentzVector>("jetsLVec_forTagger" + spec);
-  const std::vector<double> &bjsforTT = tr.getVec<double>("recoJetsBtag_forTagger" + spec);
-  if (jetsforTT.size() < 4)
-  {
-    tr.registerDerivedVar("NTopsB"+spec, -1);
-    return false;
-  }
-  topTagger::type3TopTagger type3Ptr;
-  type3Ptr.setdobTagCheck(false);
-  type3Ptr.setnJetsSel(AnaConsts::nJetsSel);
-  type3Ptr.setCSVS(AnaConsts::cutCSVS);
-  type3Ptr.runOnlyTopTaggerPart(jetsforTT, bjsforTT);
-  int nTops = type3Ptr.findnTopCands(jetsforTT, bjsforTT);
-  tr.registerDerivedVar("NTopsB"+spec, nTops);
-  return true;
-}       // -----  end of function TopWithoutBVeto  -----
 
 // ===  FUNCTION  ============================================================
 //         Name:  passBaselineJECup

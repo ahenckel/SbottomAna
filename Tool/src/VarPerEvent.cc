@@ -340,7 +340,7 @@ bool VarPerEvent::GetJetsNoMu() const
 bool VarPerEvent::PassDiMuonTrigger(std::string spec) const
 {
   const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec"+spec);
-  assert(cutMuVec.size() == tr->getVar<int>("nMuons_Base"));
+  assert(cutMuVec.size() == tr->getVar<int>("nMuons_CUT"));
   const double minMuPt = 20.0;
   const double highMuPt = 45.0;
   bool pass = (cutMuVec.size() >= 2 && (cutMuVec)[0].Pt() > highMuPt && (cutMuVec)[1].Pt() > minMuPt);
@@ -355,7 +355,7 @@ bool VarPerEvent::PassDiMuonTrigger(std::string spec) const
 bool VarPerEvent::PassDiEleTrigger(std::string spec) const
 {
   const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>("cutEleVec"+spec);
-  assert(cutEleVec.size() == tr->getVar<int>("nElectrons_Base"));
+  assert(cutEleVec.size() == tr->getVar<int>("nElectrons_CUT"));
   const double minElePt = 35.0;
   const double highElePt = 35.0;
   bool pass = (cutEleVec.size() >= 2 && (cutEleVec)[0].Pt() > highElePt && (cutEleVec)[1].Pt() > minElePt);
@@ -795,9 +795,9 @@ bool VarPerEvent::GetEleMuZ(std::vector<TLorentzVector>* recoZVec, TypeZLepIdx *
 bool VarPerEvent::PassEleMuTrigger(std::string spec) const
 {
   const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>("cutEleVec"+spec);
-  assert(cutEleVec.size() == tr->getVar<int>("nElectrons_Base"));
+  assert(cutEleVec.size() == tr->getVar<int>("nElectrons_CUT"));
   const std::vector<TLorentzVector> &cutMuVec = tr->getVec<TLorentzVector>("cutMuVec"+spec);
-  assert(cutMuVec.size() == tr->getVar<int>("nMuons_Base"));
+  assert(cutMuVec.size() == tr->getVar<int>("nMuons_CUT"));
 
   const double highMuPt = 45.0;
   const double minElePt = 20.0;

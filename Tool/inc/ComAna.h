@@ -29,6 +29,7 @@
 #include "RootTools.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
+#include "SusyAnaTools/Tools/SATException.h"
 #include "SusyAnaTools/TopTagger/interface/Type3TopTagger.h"
 
 #define NBITS 20

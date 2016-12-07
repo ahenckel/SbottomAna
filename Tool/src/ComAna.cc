@@ -116,7 +116,6 @@ bool ComAna::DefineLabels(std::string spec)
   Label["PassDiMuonTrigger"]      = "PassDiMuonTrigger"      ; 
   Label["PassDiEleTrigger"]       = "PassDiEleTrigger"       ; 
   Label["PassEleMuTrigger"]       = "PassEleMuTrigger"       ; 
-  Label["NTopsB"]                 = "NTopsB"                 ; 
   Label["NbNjReweight"]           = "NbNjReweight"           ; 
 
   if (spec != "")
@@ -700,14 +699,16 @@ bool ComAna::CheckLeadingLeptons(int NCut)
   {
     cutMuVec = tr->getVec<TLorentzVector>(Label["cutMuVec"]);
   }
-  catch (std::string &var) {
+  catch (const SATException& e) {
   }
 
   try
   {
     cutEleVec = tr->getVec<TLorentzVector>(Label["cutEleVec"]);
   }
-  catch (std::string &var) {;}
+  catch (const SATException& e) {
+    e.print();
+  }
 
   if (cutMuVec.size() > 0)
   {

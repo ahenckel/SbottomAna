@@ -135,16 +135,16 @@ int main(int argc, char* argv[])
 
   std::cout << " Sample is  " << filterstring << std::endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setup Global Object ~~~~~
-  LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
-  PDFUncertainty pdfs;  //PDF 
-  Pileup_Sys pileup;
-  ExternObj Gobj;
-  BTagCorrector btagcorr;
-  if (filterstring == "fastsim")
-  {
-    btagcorr.SetFastSim(true);
-    btagcorr.SetCalibFastSim("CSV_13TEV_Combined_20_11_2015.csv");
-  }
+  //LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
+  //PDFUncertainty pdfs;  //PDF 
+  //Pileup_Sys pileup;
+  //ExternObj Gobj;
+  //BTagCorrector btagcorr;
+  //if (filterstring == "fastsim")
+  //{
+    //btagcorr.SetFastSim(true);
+    //btagcorr.SetCalibFastSim("CSV_13TEV_Combined_20_11_2015.csv");
+  //}
 
   //clock to monitor the run time
   size_t t0 = clock();
@@ -155,50 +155,43 @@ int main(int argc, char* argv[])
   //tr.registerFunction(btagcorr);
 
   // TopTagger
-  //BaselineVessel blvT3(tr, "Type3");
-  //BaselineVessel blvICHEP(tr, "ICHEP");
-  //BaselineVessel blvMVA(tr, "MVA");
-  //blvT3.SetupTopTagger(false);
-  //blvICHEP.SetupTopTagger(true, "Example_Legacy_TopTagger.cfg");
-  //blvMVA.SetupTopTagger(true, "Example_TopTagger.cfg");
-  //tr.registerFunction(blvT3);
-  //tr.registerFunction(blvICHEP);
-  //tr.registerFunction(blvMVA);
-  
-  BaselineVessel blv(tr);
-  blv.jetVecLabel = "jetsLVecLepCleaned";
-  blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
-  tr.registerFunction(blv);
-  //tr.registerFunction(blvICHEP);
-  //tr.registerFunction(blvMVA);
+//**************************************************************************//
+//                         Prepare Baseline Classes                         //
+//**************************************************************************//
+  std::map<std::string, BaselineVessel*> blvMap;
+  blvMap["Default"] = new BaselineVessel(tr);
+  //BaselineVessel blv(tr);
+  //blv.jetVecLabel = "jetsLVecLepCleaned";
+  //blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+  //tr.registerFunction(blv);
   //tr.registerFunction(&passBaselineJECup);
   //tr.registerFunction(&passBaselineJECdn);
 
+  for(auto blv : blvMap)
+  {
+    tr.registerFunction(*blv.second);
+  }
   //tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
-  //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01", 0)); // bit : EM
+  tr.registerFunction(boost::bind(passBaselineTTZ, _1, blvMap, "01", 0)); // bit : EM
   //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01", 1)); // bit : EM
-  //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01", -1)); // bit : EM
-  //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "10")); // bit : EM
 
   //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
   //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvT", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
   //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "ZinvM", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvM_NbNjWeight")))); 
   //tr.registerFunction(boost::bind(RegisterDefaultAllSpecs<double>, _1, "NbNjReweight", 1.0));
 
-  //first loop, to generate Acc, reco and Iso effs and also fill expected histgram
-
   //**************************************************************************//
   //                           Prepare the analysis                           //
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
-  //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
   //AnaMap["StopType3"] = new StopAna("StopType3", &tr, OutFile, "Type3");
   //AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
   //AnaMap["StopMVA"] = new StopAna("StopMVA", &tr, OutFile, "MVA");
-  AnaMap["TrigEle"] = new TriggerAna("TrigEle", &tr, OutFile);
+  //AnaMap["TrigEle"] = new TriggerAna("TrigEle", &tr, OutFile);
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile);
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
@@ -206,17 +199,17 @@ int main(int argc, char* argv[])
   //AnaMap["StopMHT"] = new StopAna("StopMHT", &tr, OutFile, "MHT");
   //AnaMap["StopMHT"]->METLabel = "MHT";
   //AnaMap["StopMHT"]->METPhiLabel = "MHTPhi";
-
   //AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
   //AnaMap["STRM"] = new STRM("STRM", &tr, OutFile);
   //AnaMap["STZinvM"] = new STZinv("STZinvM", &tr, OutFile,"ZinvM");
   //AnaMap["STZinvE"] = new STZinv("STZinvE", &tr, OutFile,"ZinvE");
   //AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
-  //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
+  //AnaMap["TTZ3LepT"] = new TTZ3Lep("TTZ3LepT", &tr, OutFile, "TTZT");
+  AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZDiLepE"] = new TTZDiLep("TTZDiLepE", &tr, OutFile, "TTZE");
-  //AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "TTZ");
+  //AnaMap["TTZ3Lep"] = new TTZ3Lep("TTZ3Lep", &tr, OutFile, "TTZM");
   //AnaMap["SBDJ"] = new SBDiJet("SBDJ", &tr, OutFile);
   //AnaMap["SBISR"] = new SBISR("SBISR", &tr, OutFile);
   //AnaMap["SBMulti"] = new SBMulti("SBMulti", &tr, OutFile);
