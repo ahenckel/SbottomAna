@@ -173,8 +173,8 @@ bool StopAna::CheckCut()
   cutbit.set(9 , tr->getVar<bool>(Label["passMT2"]));
   cutbit.set(10, tr->getVar<bool>(Label["passHT"]));
   //cutbit.set(11, tr->getVar<bool>(Label["passBaseline"]));
-  cutbit.set(11, ! IsGenZLep());
-  cutbit.set(12, ! IsGenWLep());
+  cutbit.set(11, !isData && ! IsGenZLep());
+  cutbit.set(12, !isData && ! IsGenWLep());
 
   return true;
 }       // -----  end of function StopAna::CheckCut  -----
@@ -189,8 +189,8 @@ bool StopAna::FillCut()
 //----------------------------------------------------------------------------
 //  Check cut and fill cut-based plots
 //----------------------------------------------------------------------------
-  CheckCut();
   ComAna::RunEvent();
+  CheckCut();
   bool passcuts = false;
 
   for (unsigned int i = 0; i < CutOrder.size(); ++i)

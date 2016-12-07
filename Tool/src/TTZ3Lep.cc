@@ -210,9 +210,9 @@ bool TTZ3Lep::FillCut()
     }
 
     ComAna::FillCut(i);
-    //ComAna::CheckLeadingLeptons(i);
+    ComAna::CheckLeadingLeptons(i);
 
-    //Check3rdLep(i);
+    Check3rdLep(i);
     if (i+1 == CutOrder.size()) 
     {
       passcuts = true;
@@ -297,18 +297,11 @@ bool TTZ3Lep::Check3rdLep(int NCut)
   std::vector<TLorentzVector> cutMuVec;
   std::vector<TLorentzVector> cutEleVec;
 
-  try
-  {
+  if (tr->HasVar(Label["cutMuVec"]))
     cutMuVec = tr->getVec<TLorentzVector>(Label["cutMuVec"]);
-  }
-  catch (std::string &var) {
-  }
 
-  try
-  {
+  if (tr->HasVar(Label["cutEleVec"]))
     cutEleVec = tr->getVec<TLorentzVector>(Label["cutEleVec"]);
-  }
-  catch (std::string &var) {;}
 
 
   if((cutEleVec.size() + cutMuVec.size())  - (EleinZ.size() + MuinZ.size() ) != 1)

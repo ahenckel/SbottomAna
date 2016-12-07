@@ -695,20 +695,11 @@ bool ComAna::CheckLeadingLeptons(int NCut)
   std::vector<TLorentzVector> cutMuVec;
   std::vector<TLorentzVector> cutEleVec;
 
-  try
-  {
+  if (tr->HasVar(Label["cutMuVec"]))
     cutMuVec = tr->getVec<TLorentzVector>(Label["cutMuVec"]);
-  }
-  catch (const SATException& e) {
-  }
 
-  try
-  {
+  if (tr->HasVar(Label["cutEleVec"]))
     cutEleVec = tr->getVec<TLorentzVector>(Label["cutEleVec"]);
-  }
-  catch (const SATException& e) {
-    e.print();
-  }
 
   if (cutMuVec.size() > 0)
   {
