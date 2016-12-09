@@ -6,53 +6,54 @@ import re
 import time
 import subprocess
 import glob
+import tarfile
 
 DelExe    = '../testMain'
 OutDir = '/store/user/benwu/Stop16/TTZ/'
 
 tempdir = ''
 UserEMAIL = 'benwu@fnal.gov'
-ProjectName = 'PreApproval0'
+ProjectName = 'TTZ3Lepv0'
 Process = {
 # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SM ~~~~~
     # "WJetsToLNu_HT_600toInf"   : ['',6],
-    # "WJetsToLNu_HT_100to200"   : ['',30],
-    # "WJetsToLNu_HT_200to400"   : ['',17],
-    # "WJetsToLNu_HT_400to600"   : ['',10],
-    # "WJetsToLNu_HT_600to800"   : ['',15],
-    # "WJetsToLNu_HT_800to1200"  : ['',11],
-    # "WJetsToLNu_HT_1200to2500" : ['',7],
-    # "WJetsToLNu_HT_2500toInf"  : ['',7],
+    "WJetsToLNu_HT_100to200"   : ['',35],
+    "WJetsToLNu_HT_200to400"   : ['',20],
+    "WJetsToLNu_HT_400to600"   : ['',15],
+    "WJetsToLNu_HT_600to800"   : ['',30],
+    "WJetsToLNu_HT_800to1200"  : ['',11],
+    "WJetsToLNu_HT_1200to2500" : ['',7],
+    "WJetsToLNu_HT_2500toInf"  : ['',7],
 
-    # "DYJetsToLL_HT_600toInf"   : ['',10],
-    # "DYJetsToLL_HT_400to600"   : ['',10],
-    # "DYJetsToLL_HT_200to400"   : ['',10],
-    # "DYJetsToLL_HT_100to200"   : ['',10],
-    # # #"ZJetsToNuNu_HT_600toInf"  : ['',10],
-    # # #"ZJetsToNuNu_HT_400to600"  : ['',7],
-    # # #"ZJetsToNuNu_HT_200to400"  : ['',40],
-    # # #"ZJetsToNuNu_HT_100to200"  : ['',40],
+    "DYJetsToLL_HT_100to200"   : ['',20],
+    "DYJetsToLL_HT_200to400"   : ['',20],
+    "DYJetsToLL_HT_400to600"   : ['',10],
+    "DYJetsToLL_HT_600toInf"   : ['',10],
+
+    "ZJetsToNuNu_HT_100to200"  : ['',40],
+    "ZJetsToNuNu_HT_200to400"  : ['',50],
+    "ZJetsToNuNu_HT_400to600"  : ['',14],
+    "ZJetsToNuNu_HT_600to800"  : ['',14],
+    "ZJetsToNuNu_HT_800to1200"  : ['',5],
+    "ZJetsToNuNu_HT_1200to2500"  : ['',2],
+    "ZJetsToNuNu_HT_2500toInf"  : ['',1],
 
     # "TTbarInc"                 : ['',30],
-    # "TTbarDiLep"               : ['',60],
-    # # #"TTbar_HT_600to800"         : ['',40],
-    # # #"TTbar_HT_800to1200"        : ['',8],
-    # # #"TTbar_HT_1200to2500"       : ['',4],
-    # # #"TTbar_HT_2500toInf"        : ['',4],
-    # "TTbarSingleLepTbar"        : ['',140],
-    # "TTbarSingleLepT"           : ['',40],
+    "TTbarDiLep"               : ['',70],
+    "TTbarSingleLepTbar"        : ['',140],
+    "TTbarSingleLepT"           : ['',70],
 
-    # "QCD_HT100to200"           : ['',100],
-    # "QCD_HT200to300"           : ['',50],
-    # "QCD_HT300to500"           : ['',50],
-    # "QCD_HT500to700"           : ['',50],
-    # "QCD_HT700to1000"          : ['',40],
-    # "QCD_HT1000to1500"         : ['',10],
-    # "QCD_HT1500to2000"         : ['',10],
-    # "QCD_HT2000toInf"          : ['',10],
+    "QCD_HT100to200"           : ['',25],
+    "QCD_HT200to300"           : ['',50],
+    "QCD_HT300to500"           : ['',70],
+    "QCD_HT500to700"           : ['',70],
+    "QCD_HT700to1000"          : ['',50],
+    "QCD_HT1000to1500"         : ['',20],
+    "QCD_HT1500to2000"         : ['',15],
+    "QCD_HT2000toInf"          : ['',14],
 
-    # "tW_top"                   : ['',4],
-    # "tW_antitop"               : ['',4],
+    "tW_top"                   : ['',4],
+    "tW_antitop"               : ['',4],
     "TTZToLLNuNu"              : ['',4],
     "TTZToQQ"                  : ['',4],
     "TTWJetsToLNu"             : ['',4],
@@ -81,7 +82,7 @@ Process = {
     # #"Data_HTMHT_2015C"                     : ['',4],
     # #"Data_HTMHT_2015D_05Oct2015"           : ['',4],
 
-    # "Data_SingleMuon_2016" : ['',100],
+    "Data_SingleMuonG" : ['../FileList/SingleMuon_Run2016G.txt',200],
 # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Signal ~~~~~
     # #"Signal_T1tttt_mGluino1200_mLSP800" : ['',1],
     # #"Signal_T1tttt_mGluino1500_mLSP100" : ['',1],
@@ -281,15 +282,18 @@ def my_process():
             arg = "\nArguments = %s.list %s.root \n Queue\n" % (key, key)
 
         npro.append(os.path.abspath(DelExe))
-        npro += GetBeamHaloList(key)
-        tranferfiles = ", ".join(npro)
+        npro += GetNeededFileList(key)
+        tarballname ="%s/%s.tar.gz" % (tempdir, key)
+        with tarfile.open(tarballname, "w:gz", dereference=True) as tar:
+            [tar.add(f, arcname=f.split('/')[-1]) for f in npro]
+            tar.close()
         ## Prepare the condor file
         condorfile = tempdir + "/" + "condor_" + ProjectName +"_" + key
         with open(condorfile, "wt") as outfile:
             for line in open("condor_template", "r"):
                 line = line.replace("EXECUTABLE", os.path.abspath(RunHTFile))
                 #line = line.replace("DELDIR", os.environ['CMSSW_BASE'])
-                line = line.replace("TARFILES", tranferfiles)
+                line = line.replace("TARFILES", tarballname)
                 line = line.replace("TEMPDIR", tempdir)
                 line = line.replace("PROJECTNAME", ProjectName)
                 line = line.replace("ARGUMENTS", arg)
@@ -303,9 +307,23 @@ def GetProcess(key, value):
     else :
         return SplitPro(key, value[0], value[1])
 
-def GetBeamHaloList(key):
+def GetNeededFileList(key):
+    relist = []
     g = glob.glob("../FileList/*.tar.gz")
-    return [os.path.abspath(h) for h in g]
+    relist += [os.path.abspath(h) for h in g]
+    g = glob.glob("../*root")
+    relist += [os.path.abspath(h) for h in g]
+    g = glob.glob("../*csv")
+    relist += [os.path.abspath(h) for h in g]
+    g = glob.glob("../*cfg")
+    relist += [os.path.abspath(h) for h in g]
+    g = glob.glob("../*model")
+    relist += [os.path.abspath(h) for h in g]
+    process = subprocess.Popen( "ldd %s " % os.path.abspath(DelExe) , shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    for l in process.stdout:
+        if os.getenv('USER') in l:
+            relist.append(l.strip().split(' ')[2])
+    return relist
 
 if __name__ == "__main__":
     my_process()

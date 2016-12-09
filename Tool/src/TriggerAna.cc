@@ -66,6 +66,8 @@ bool TriggerAna::BookHistograms()
 {
   his->AddTH1C("TrigMET_Denominator" , "TrigMET_Denominator" , "MET [GeV]" , "Denominator" , 200, 0, 800);
   his->AddTH1C("TrigMET_Numerator"   , "TrigMET_Numerator"   , "MET [GeV]" , "Numerator"   , 200, 0, 800);
+  his->AddTH1C("TrigHT_Denominator" , "TrigHT_Denominator" , "HT [GeV]" , "Denominator" , 200, 0, 800);
+  his->AddTH1C("TrigHT_Numerator"   , "TrigHT_Numerator"   , "HT [GeV]" , "Numerator"   , 200, 0, 800);
   return true;
 }       // -----  end of function TriggerAna::BookHistograms  -----
 
@@ -103,7 +105,7 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutMap["nJets"]   = "00000000000001111";
     CutMap["BJets"]   = "00000000000011111";
     CutMap["MET"]     = "00000000000111111";
-    CutMap["HT"]      = "00000000001111111";
+    CutMap["HT"]      = "00000000001011111";
   }
 
   assert(CutOrder.size() == CutMap.size());
@@ -170,12 +172,19 @@ bool TriggerAna::FillMETEff(int NCut)
 {
   // Denominator
   his->FillTH1(NCut, "TrigMET_Denominator", tr->getVar<double>(METLabel));
+  his->FillTH1(NCut, "TrigHT_Denominator", tr->getVar<double>(Label["HT"]));
 
   std::vector<std::string> METHLT;
+  METHLT.push_back("HLT_PFMET100_PFMHT100_IDTight_v\\d");
+  METHLT.push_back("HLT_PFMET110_PFMHT110_IDTight_v\\d");
   METHLT.push_back("HLT_PFMET120_PFMHT120_IDTight_v\\d");
+  METHLT.push_back("HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_v\\d");
+  METHLT.push_back("HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_v\\d");
+  METHLT.push_back("HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v\\d");
   if (PassTrigger(METHLT))
   {
     his->FillTH1(NCut, "TrigMET_Numerator", tr->getVar<double>(METLabel));
+    his->FillTH1(NCut, "TrigHT_Numerator", tr->getVar<double>(Label["HT"]));
   }
 
   return true;

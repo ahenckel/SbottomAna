@@ -695,10 +695,10 @@ bool ComAna::CheckLeadingLeptons(int NCut)
   std::vector<TLorentzVector> cutMuVec;
   std::vector<TLorentzVector> cutEleVec;
 
-  if (tr->HasVar(Label["cutMuVec"]))
+  if (tr->hasVar(Label["cutMuVec"]))
     cutMuVec = tr->getVec<TLorentzVector>(Label["cutMuVec"]);
 
-  if (tr->HasVar(Label["cutEleVec"]))
+  if (tr->hasVar(Label["cutEleVec"]))
     cutEleVec = tr->getVec<TLorentzVector>(Label["cutEleVec"]);
 
   if (cutMuVec.size() > 0)

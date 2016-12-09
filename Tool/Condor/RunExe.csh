@@ -17,7 +17,11 @@ foreach tarfile (`ls *gz FileList/*gz`)
   tar -xzf $tarfile 
 end
 
-source $CMSSW_BASE/src/SusyAnaTools/Tools/setup.csh
+if ! $?LD_LIBRARY_PATH then
+    setenv LD_LIBRARY_PATH ./
+else
+    setenv LD_LIBRARY_PATH ./:${LD_LIBRARY_PATH}
+endif
 
 #============================================================================#
 #--------------------------   To Run the Process   --------------------------#
