@@ -259,21 +259,24 @@ bool STTagger::CheckCut()
 // ===  FUNCTION  ============================================================
 //         Name:  STTagger::FillCut
 //  Description:  
-// ===========================================================================
+// ===========================================================================  
 bool STTagger::FillCut()
 {
 
 //----------------------------------------------------------------------------
 //  Check cut and fill cut-based plots
 //----------------------------------------------------------------------------
-  GetMuon45();
-  GetHTLep();
+  ComAna::RunEvent();
+  if (DataMCSF)
+  {
+    GetMuon45();
+    GetHTLep();
+  }
   GetGenTop();
   GetRecoTops();
-  ComAna::RunEvent();
   CheckCut();
 
-  bool passcuts = false;
+  bool passcuts = false
 
   for (unsigned int i = 0; i < CutOrder.size(); ++i)
   {
@@ -308,6 +311,7 @@ bool STTagger::FillCut()
 // ===========================================================================
 bool STTagger::GetGenTop()
 {
+  if (isData) return false;
   genDecayLVec.clear();
   genDecayIdxVec.clear();    
   genDecayPdgIdVec.clear();  

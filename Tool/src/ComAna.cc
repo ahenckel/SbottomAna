@@ -676,9 +676,19 @@ bool ComAna::PassTrigger( std::vector<std::string> Trigstr_)
     else
       Trigstr = Trigstr_;
 
+    bool updated = false;
     for(auto &mctrig : Trigstr)
     {
-      pass = pass || tr->getVar<bool>(mctrig);
+      if (tr->hasVar(mctrig))
+      {
+        pass = pass || tr->getVar<bool>(mctrig);
+        updated=true;
+      }
+    }
+
+    if (!updated)
+    {
+      pass =true;
     }
   }
 

@@ -160,9 +160,8 @@ int main(int argc, char* argv[])
 //**************************************************************************//
   std::map<std::string, BaselineVessel*> blvMap;
   blvMap["Default"] = new BaselineVessel(tr);
-  //BaselineVessel blv(tr);
-  //blv.jetVecLabel = "jetsLVecLepCleaned";
-  //blv.CSVVecLabel = "recoJetsBtag_0_LepCleaned";
+  blvMap["ICHEP"] = new BaselineVessel(tr, "ICHEP");
+  blvMap["ICHEP"]->SetupTopTagger(false);
   //tr.registerFunction(blv);
   //tr.registerFunction(&passBaselineJECup);
   //tr.registerFunction(&passBaselineJECdn);
@@ -188,17 +187,13 @@ int main(int argc, char* argv[])
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
   AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
-  //AnaMap["StopType3"] = new StopAna("StopType3", &tr, OutFile, "Type3");
-  //AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
-  //AnaMap["StopMVA"] = new StopAna("StopMVA", &tr, OutFile, "MVA");
-  //AnaMap["TrigEle"] = new TriggerAna("TrigEle", &tr, OutFile);
-  //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile);
+  AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
+  AnaMap["TrigEle"] = new TriggerAna("TrigEle", &tr, OutFile);
+  AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile);
+  AnaMap["TaggerICHEP"] = new STTagger("Tagger", &tr, OutFile, "ICHEP");
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
   //AnaMap["Tagger_Dn"] = new STTagger("TaggerDn", &tr, OutFile, "TTZMJECdn");
-  //AnaMap["StopMHT"] = new StopAna("StopMHT", &tr, OutFile, "MHT");
-  //AnaMap["StopMHT"]->METLabel = "MHT";
-  //AnaMap["StopMHT"]->METPhiLabel = "MHTPhi";
   //AnaMap["STISR"] = new STISR("STISR", &tr, OutFile);
   //AnaMap["STRM"] = new STRM("STRM", &tr, OutFile);
   //AnaMap["STZinvM"] = new STZinv("STZinvM", &tr, OutFile,"ZinvM");
