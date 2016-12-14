@@ -13,10 +13,9 @@ OutDir = '/store/user/benwu/Stop16/TTZ/'
 
 tempdir = ''
 UserEMAIL = 'benwu@fnal.gov'
-ProjectName = 'TTZ3Lepv0'
+ProjectName = 'TagTrigTTZ_v0'
 Process = {
 # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SM ~~~~~
-    # "WJetsToLNu_HT_600toInf"   : ['',6],
     "WJetsToLNu_HT_100to200"   : ['',35],
     "WJetsToLNu_HT_200to400"   : ['',20],
     "WJetsToLNu_HT_400to600"   : ['',15],
@@ -38,7 +37,6 @@ Process = {
     "ZJetsToNuNu_HT_1200to2500"  : ['',2],
     "ZJetsToNuNu_HT_2500toInf"  : ['',1],
 
-    # "TTbarInc"                 : ['',30],
     "TTbarDiLep"               : ['',70],
     "TTbarSingleLepTbar"        : ['',140],
     "TTbarSingleLepT"           : ['',70],
@@ -67,7 +65,10 @@ Process = {
 
 
 # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Data ~~~~~
-    # # "Data_DoubleEG_2015C"                  : ['',40],
+    # "Data_HTMHT_2016"          : ['',500],
+    "Data_SingleElectron_2016" : ['',500],
+    "Data_SingleMuon_2016"     : ['',500],
+
     # # "Data_DoubleEG_2015D_05Oct2015"        : ['',40],
     # # "Data_DoubleEG_2015D_PromptReco"       : ['',40],
     # # "Data_DoubleMuon_2015C"                : ['',40],
@@ -79,10 +80,10 @@ Process = {
     # # "Data_SingleMuon_2015C"                : ['',40],
     # # "Data_SingleMuon_2015D_05Oct2015"      : ['',40],
     # # "Data_SingleMuon_2015D_PromptReco"     : ['',40],
-    # #"Data_HTMHT_2015C"                     : ['',4],
     # #"Data_HTMHT_2015D_05Oct2015"           : ['',4],
 
-    "Data_SingleMuonG" : ['../FileList/SingleMuon_Run2016G.txt',200],
+    # "Data_SingleMuonG" : ['../FileList/SingleMuon_Run2016G.txt',1],
+    # "Data_SingleMuonG" : ['../FileList/SingleMuon_Run2016G.txt',200],
 # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Signal ~~~~~
     # #"Signal_T1tttt_mGluino1200_mLSP800" : ['',1],
     # #"Signal_T1tttt_mGluino1500_mLSP100" : ['',1],
