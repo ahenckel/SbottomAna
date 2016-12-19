@@ -32,13 +32,12 @@ TTZ3Lep::TTZ3Lep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
     CSVVecLabel = "recoJetsBtag_0_LepCleaned";
     if (strcmp(&(spec.back()), "M") == 0)
     {
-      HLTstr.push_back("HLT_Mu45_eta2p1_v2");
+      HLTstr.push_back("HLT_Mu45_eta2p1_v\\d");
       MCTrigstr.push_back(Label["PassDiMuonTrigger"]);
     }
     if (strcmp(&(spec.back()), "E") == 0)
     {
-      HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v2");
-      HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v3");
+      HLTstr.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v\\d");
       MCTrigstr.push_back(Label["PassDiEleTrigger"]);
     }
   }

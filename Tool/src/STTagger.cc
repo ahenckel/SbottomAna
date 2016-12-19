@@ -276,7 +276,7 @@ bool STTagger::FillCut()
   GetRecoTops();
   CheckCut();
 
-  bool passcuts = false
+  bool passcuts = false;
 
   for (unsigned int i = 0; i < CutOrder.size(); ++i)
   {

@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
   AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
   AnaMap["TrigEle"] = new TriggerAna("TrigEle", &tr, OutFile);
   AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile);
-  AnaMap["TaggerICHEP"] = new STTagger("Tagger", &tr, OutFile, "ICHEP");
+  AnaMap["TaggerICHEP"] = new STTagger("TaggerICHEP", &tr, OutFile, "ICHEP");
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
   //AnaMap["Tagger_Dn"] = new STTagger("TaggerDn", &tr, OutFile, "TTZMJECdn");
