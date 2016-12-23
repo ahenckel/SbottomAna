@@ -245,6 +245,7 @@ bool TriggerAna::FillMETEff(int NCut)
 bool TriggerAna::FillMuonEff(int NCut)
 {
   const std::vector<TLorentzVector> &muonsLVec   = tr->getVec<TLorentzVector>("cutMuVec");
+  if (muonsLVec.empty()) return false;
   double LeadingPt = muonsLVec.front().Pt();
 
   his->FillTH1(NCut, "TrigMuon_Denominator", LeadingPt);
