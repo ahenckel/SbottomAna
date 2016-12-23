@@ -60,6 +60,7 @@ class TriggerAna : public ComAna
   protected:
     // ====================  METHODS       ===============================
     bool FillMETEff(int NCut);
+    bool FillMuonEff(int NCut);
 
     // ====================  DATA MEMBERS  ===============================
 

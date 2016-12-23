@@ -188,7 +188,8 @@ int main(int argc, char* argv[])
   std::map<std::string, ComAna*> AnaMap;
   AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
   AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
-  AnaMap["TrigEle"] = new TriggerAna("TrigEle", &tr, OutFile);
+  AnaMap["TrigStop"] = new TriggerAna("TrigStop", &tr, OutFile);
+  AnaMap["TrigQCD"] = new TriggerAna("TrigQCD", &tr, OutFile);
   AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile);
   AnaMap["TaggerICHEP"] = new STTagger("TaggerICHEP", &tr, OutFile, "ICHEP");
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
