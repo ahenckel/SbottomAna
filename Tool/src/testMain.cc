@@ -159,8 +159,8 @@ int main(int argc, char* argv[])
 //                         Prepare Baseline Classes                         //
 //**************************************************************************//
   std::map<std::string, BaselineVessel*> blvMap;
-  blvMap["Default"] = new BaselineVessel(tr);
-  blvMap["ICHEP"] = new BaselineVessel(tr, "ICHEP");
+  blvMap["Default"] = new BaselineVessel(tr, "", filterstring);
+  blvMap["ICHEP"] = new BaselineVessel(tr, "ICHEP", filterstring);
   blvMap["ICHEP"]->SetupTopTagger(false);
   //tr.registerFunction(blv);
   //tr.registerFunction(&passBaselineJECup);
@@ -190,8 +190,11 @@ int main(int argc, char* argv[])
   AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
   AnaMap["TrigStop"] = new TriggerAna("TrigStop", &tr, OutFile);
   AnaMap["TrigQCD"] = new TriggerAna("TrigQCD", &tr, OutFile);
-  AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile);
-  AnaMap["TaggerICHEP"] = new STTagger("TaggerICHEP", &tr, OutFile, "ICHEP");
+  for (int i = 0; i < 4; ++i)
+  {
+    AnaMap["Tagger"+std::to_string(i)] = new STTagger("Tagger"+std::to_string(i), &tr, OutFile, "", i);
+    //AnaMap["TaggerICHEP"+std::to_string(i)] = new STTagger("TaggerICHEP"+std::to_string(i), &tr, OutFile, "ICHEP", i);
+  }
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
   //AnaMap["Tagger_Dn"] = new STTagger("TaggerDn", &tr, OutFile, "TTZMJECdn");

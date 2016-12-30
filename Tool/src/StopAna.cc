@@ -204,7 +204,7 @@ bool StopAna::FillCut()
 
     if (i+1 == CutOrder.size()) 
     {
-      assert(tr->getVar<bool>(Label["passBaseline"]));
+      //assert(tr->getVar<bool>(Label["passBaseline"]));
       passcuts = true;
     }
   }

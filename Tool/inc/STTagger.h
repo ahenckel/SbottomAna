@@ -40,7 +40,7 @@ class STTagger : public ComAna
   public:
 
     // ====================  LIFECYCLE     ===============================
-    STTagger (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_="");              // constructor
+    STTagger (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_="", int nJets = 0);              // constructor
     STTagger ( const STTagger &other );   // copy constructor
     ~STTagger ();                            // destructor
 
@@ -97,6 +97,7 @@ class STTagger : public ComAna
     std::vector<TLorentzVector> vMuon45;
     double HTLep;
     bool DataMCSF;
+    int nTopJets;
 }; // -----  end of class STTagger  -----
 
 

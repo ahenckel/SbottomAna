@@ -21,8 +21,8 @@
 //      Method:  STTagger
 // Description:  constructor
 //----------------------------------------------------------------------------
-STTagger::STTagger (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_)
-  : ComAna(name, tr_, OutFile, spec_)
+STTagger::STTagger (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_, int nJets_)
+  : ComAna(name, tr_, OutFile, spec_), nTopJets(nJets_)
 {
   InitCutOrder(name);
   BookHistograms();
@@ -298,8 +298,8 @@ bool STTagger::FillCut()
 
   if (passcuts && DataMCSF)
   {
-    FillJMEEff();
     FillGenTop();
+    FillJMEEff();
     CalTaggerEff();
   }
   return passcuts;
@@ -375,7 +375,20 @@ bool STTagger::GetGenTop()
 bool STTagger::GetRecoTops() 
 {
   vRecoTops.clear();
-  vRecoTops = tr->getVec<TLorentzVector>("vTops");
+  if (nTopJets == 0)
+    vRecoTops = tr->getVec<TLorentzVector>("vTops");
+  else
+  {
+    const std::map<int, std::vector<TLorentzVector> > &mtopjets = tr->getMap<int, std::vector<TLorentzVector> >(Label["mTopJets"]);
+    for(auto &topit  : mtopjets)
+    {
+      if (topit.second.size() == nTopJets)
+      {
+        vRecoTops.push_back(tr->getVec<TLorentzVector>("vTops").at(topit.first));
+      }
+    }
+  }
+
   for(auto t : vRecoTops)
   {
     his->FillTH1("RecoTopPT", t.Pt());
