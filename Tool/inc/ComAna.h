@@ -84,12 +84,14 @@ class ComAna
     bool PassTrigger( std::vector<std::string> Trigstr_ = {});
     bool IsData();
     bool CheckLeadingLeptons(int NCut);
+    bool IsUpdateHLT();
     // ====================  DATA MEMBERS  ===============================
     std::vector<std::string> CutOrder;
     std::bitset<NBITS> cutbit;
     std::map<std::string, std::string>  CutMap;
     HistTool *his;
     NTupleReader *tr;
+    std::vector<std::string> PretriggerName;
 
     TLorentzVector Jet1;
     TLorentzVector Jet2;

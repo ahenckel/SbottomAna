@@ -115,6 +115,7 @@ bool StopAna::InitCutOrder(std::string ana)
 
   //Add name and order of the cutflow
   CutOrder.push_back("NoCut");
+  CutOrder.push_back("Trigger");
   CutOrder.push_back("Filter");
   CutOrder.push_back("nJets");
   CutOrder.push_back("MuonVeto");
@@ -126,30 +127,39 @@ bool StopAna::InitCutOrder(std::string ana)
   CutOrder.push_back("Tagger");
   CutOrder.push_back("MT2");
   CutOrder.push_back("HT");
-  //CutOrder.push_back("GenZLepVeto");
-  //CutOrder.push_back("GenWLepVeto");
+  CutOrder.push_back("GenZLepVeto");
+  CutOrder.push_back("GenWLepVeto");
   //CutOrder.push_back("Baseline");
 
   //Set the cutbit of each cut
   CutMap["NoCut"]       = "00000000000000000";
-  CutMap["Filter"]      = "00000000000000001";
-  CutMap["nJets"]       = "00000000000000011";
-  CutMap["MuonVeto"]    = "00000000000000111";
-  CutMap["EleVeto"]     = "00000000000001111";
-  CutMap["IskVeto"]     = "00000000000011111";
-  CutMap["dPhis"]       = "00000000000111111";
-  CutMap["BJets"]       = "00000000001111111";
-  CutMap["MET"]         = "00000000011111111";
-  CutMap["Tagger"]      = "00000000111111111";
-  CutMap["MT2"]         = "00000001111111111";
-  CutMap["HT"]          = "00000011111111111";
-  //CutMap["GenZLepVeto"] = "00000111111111111";
-  //CutMap["GenWLepVeto"] = "00001111111111111";
+  CutMap["Trigger"]     = "00000000000000001";
+  CutMap["Filter"]      = "00000000000000011";
+  CutMap["nJets"]       = "00000000000000111";
+  CutMap["MuonVeto"]    = "00000000000001111";
+  CutMap["EleVeto"]     = "00000000000011111";
+  CutMap["IskVeto"]     = "00000000000111111";
+  CutMap["dPhis"]       = "00000000001111111";
+  CutMap["BJets"]       = "00000000011111111";
+  CutMap["MET"]         = "00000000111111111";
+  CutMap["Tagger"]      = "00000001111111111";
+  CutMap["MT2"]         = "00000011111111111";
+  CutMap["HT"]          = "00000111111111111";
+  CutMap["GenZLepVeto"] = "00001111111111111";
+  CutMap["GenWLepVeto"] = "00011111111111111";
   //CutMap["Baseline"] = "00000111111111111";
 
   assert(CutOrder.size() == CutMap.size());
 
+
   his->Cutorder(ana, CutOrder, static_cast<unsigned int>(NBITS));
+
+  HLTstr.push_back("HLT_PFMET100_PFMHT100_IDTight_v\\d");
+  HLTstr.push_back("HLT_PFMET110_PFMHT110_IDTight_v\\d");
+  HLTstr.push_back("HLT_PFMET120_PFMHT120_IDTight_v\\d");
+  HLTstr.push_back("HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_v\\d");
+  HLTstr.push_back("HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_v\\d");
+  HLTstr.push_back("HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v\\d");
   return true;
 }       // -----  end of function StopAna::InitCutOrder  -----
 
@@ -161,20 +171,20 @@ bool StopAna::CheckCut()
 {
   cutbit.reset();
 
-  cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
-  cutbit.set(1 , tr->getVar<bool>(Label["passnJets"]));
-  cutbit.set(2 , tr->getVar<bool>(Label["passMuonVeto"]));
-  cutbit.set(3 , tr->getVar<bool>(Label["passEleVeto"]));
-  cutbit.set(4 , tr->getVar<bool>(Label["passIsoTrkVeto"]));
-  cutbit.set(5 , tr->getVar<bool>(Label["passdPhis"]));
-  cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
-  cutbit.set(7 , tr->getVar<bool>(Label["passMET"]));
-  cutbit.set(8 , tr->getVar<bool>(Label["passTagger"]));
-  cutbit.set(9 , tr->getVar<bool>(Label["passMT2"]));
-  cutbit.set(10, tr->getVar<bool>(Label["passHT"]));
-  //cutbit.set(11, tr->getVar<bool>(Label["passBaseline"]));
-  cutbit.set(11, !isData && ! IsGenZLep());
-  cutbit.set(12, !isData && ! IsGenWLep());
+  cutbit.set(0 , PassTrigger());
+  cutbit.set(1 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
+  cutbit.set(2 , tr->getVar<bool>(Label["passnJets"]));
+  cutbit.set(3 , tr->getVar<bool>(Label["passMuonVeto"]));
+  cutbit.set(4 , tr->getVar<bool>(Label["passEleVeto"]));
+  cutbit.set(5 , tr->getVar<bool>(Label["passIsoTrkVeto"]));
+  cutbit.set(6 , tr->getVar<bool>(Label["passdPhis"]));
+  cutbit.set(7 , tr->getVar<bool>(Label["passBJets"]));
+  cutbit.set(8 , tr->getVar<bool>(Label["passMET"]));
+  cutbit.set(9 , tr->getVar<bool>(Label["passTagger"]));
+  cutbit.set(10, tr->getVar<bool>(Label["passMT2"]));
+  cutbit.set(11, tr->getVar<bool>(Label["passHT"]));
+  cutbit.set(12, !isData && ! IsGenZLep());
+  cutbit.set(13, !isData && ! IsGenWLep());
 
   return true;
 }       // -----  end of function StopAna::CheckCut  -----
@@ -189,6 +199,7 @@ bool StopAna::FillCut()
 //----------------------------------------------------------------------------
 //  Check cut and fill cut-based plots
 //----------------------------------------------------------------------------
+  if (ComAna::IsUpdateHLT()) HLTIdx.clear();
   ComAna::RunEvent();
   CheckCut();
   bool passcuts = false;

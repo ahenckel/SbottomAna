@@ -144,7 +144,7 @@ bool STTagger::BookHistograms()
   his->AddTH1("TopTagdPhiJ2_Efficiency",     "TopTagdPhiJ2_Efficiency",    "dPhi(J2, MET)", "Efficiency"      ,  200, 0, 4);
 
   BookJMEHist();
-  ComAna::BookHistograms();
+  //ComAna::BookHistograms();
   return true;
 }       // -----  end of function STTagger::BookHistograms  -----
 
@@ -286,7 +286,7 @@ bool STTagger::FillCut()
     his->FillTH1("CutFlow", int(i)); 
     his->FillTH1(int(i), "HTLep", HTLep);
 
-    ComAna::FillCut(i);
+    //ComAna::FillCut(i);
     CalTaggerEff(i);
     FillGenTop(i);
 
@@ -900,6 +900,7 @@ bool STTagger::FillJMEEff()
 TLorentzVector STTagger::GetBestComb()
 {
   const std::vector<TLorentzVector> &vCombs = tr->getVec<TLorentzVector>(Label["vCombs"]);
+  const std::map<int, std::vector<TLorentzVector> > &mCombJets = tr->getMap<int, std::vector<TLorentzVector> >(Label["mCombJets"]);
   if (vCombs.size() == 0)
   {
     std::cout << "This is fucked so big!!! " << tr->getVar<double>(METLabel)<< std::endl;
@@ -909,10 +910,15 @@ TLorentzVector STTagger::GetBestComb()
   //Get Pt order jet list, passing the requirement
   boost::bimap<int, double > topdm;
 
-  for(unsigned int i=0; i < vCombs.size(); ++i)
+  for(int i=0; i < vCombs.size(); ++i)
   {
     TLorentzVector itop = vCombs.at(i);
+    if (nTopJets > 0 && mCombJets.at(i).size() != nTopJets)
+      continue;
     topdm.insert(boost::bimap<int, double >::value_type(i, fabs(itop.M() - 172.5)));
   }
-  return vCombs.at(topdm.right.begin()->second);
+
+  if(topdm.size()  == 0 )  return TLorentzVector(0, 0,0,0);
+  else
+    return vCombs.at(topdm.right.begin()->second);
 }       // -----  end of function STTagger::GetBestComb  -----

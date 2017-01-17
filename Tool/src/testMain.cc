@@ -125,18 +125,19 @@ int main(int argc, char* argv[])
     his->FillTPro("XS", static_cast<int>(i), SamplePro[binlabel]);
   }
 
-  const std::string proname = GetProcName(SamplePro);
   std::string filterstring = "";
   if (strcmp(fastsim, "fastsim") == 0)
   {
     filterstring =  "fastsim";
   }
+  if(strstr(inputFileList, "Fastsim") != NULL)
+    filterstring =  "fastsim";
   
 
   std::cout << " Sample is  " << filterstring << std::endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setup Global Object ~~~~~
-  //LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
-  //PDFUncertainty pdfs;  //PDF 
+  LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
+  PDFUncertainty pdfs;  //PDF 
   //Pileup_Sys pileup;
   //ExternObj Gobj;
   //BTagCorrector btagcorr;
@@ -150,7 +151,7 @@ int main(int argc, char* argv[])
   size_t t0 = clock();
   NTupleReader tr(fChain);
   tr.setReThrow(false);
-  //tr.registerFunction(pdfs);
+  tr.registerFunction(pdfs);
   //tr.registerFunction(pileup);
   //tr.registerFunction(btagcorr);
 
@@ -160,8 +161,8 @@ int main(int argc, char* argv[])
 //**************************************************************************//
   std::map<std::string, BaselineVessel*> blvMap;
   blvMap["Default"] = new BaselineVessel(tr, "", filterstring);
-  blvMap["ICHEP"] = new BaselineVessel(tr, "ICHEP", filterstring);
-  blvMap["ICHEP"]->SetupTopTagger(false);
+  //blvMap["ICHEP"] = new BaselineVessel(tr, "ICHEP", filterstring);
+  //blvMap["ICHEP"]->SetupTopTagger(false);
   //tr.registerFunction(blv);
   //tr.registerFunction(&passBaselineJECup);
   //tr.registerFunction(&passBaselineJECdn);
@@ -170,7 +171,7 @@ int main(int argc, char* argv[])
   {
     tr.registerFunction(*blv.second);
   }
-  //tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
+  tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
@@ -187,9 +188,10 @@ int main(int argc, char* argv[])
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
   AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
-  AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
-  AnaMap["TrigStop"] = new TriggerAna("TrigStop", &tr, OutFile);
-  AnaMap["TrigQCD"] = new TriggerAna("TrigQCD", &tr, OutFile);
+  //AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
+  //AnaMap["TrigStop"] = new TriggerAna("TrigStop", &tr, OutFile);
+  //AnaMap["TrigQCD"]  = new TriggerAna("TrigQCD",  &tr, OutFile);
+  //AnaMap["TrigMuon"] = new TriggerAna("TrigMuon", &tr, OutFile);
   for (int i = 0; i < 4; ++i)
   {
     AnaMap["Tagger"+std::to_string(i)] = new STTagger("Tagger"+std::to_string(i), &tr, OutFile, "", i);
@@ -238,7 +240,6 @@ int main(int argc, char* argv[])
   //                            Start Event Looping                           //
   //**************************************************************************//
   std::cout << "First loop begin: " << std::endl;
-  double vm, rss;
   while(tr.getNextEvent())
   {
     if (tr.isFirstEvent() && tr.getVar<int>("run")!= 1)
@@ -250,8 +251,7 @@ int main(int argc, char* argv[])
     //if (tr.getEvtNum() > 20000 ) break;
     if (tr.getEvtNum() % 20000 == 0)
     {
-      process_mem_usage(vm, rss);
-      std::cout << tr.getEvtNum() << "\t" << ((clock() - t0) / 1000000.0) <<"\tVM:" << vm <<"\tRSS:" << rss<< std::endl;
+      std::cout << "Processed Events: " << tr.getEvtNum() << std::endl;
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ testing Zone ~~~~~
@@ -278,7 +278,7 @@ int main(int argc, char* argv[])
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
     //evtWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
-    //evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
+    evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
     //evtWeight *= tr.getVar<double>("NbNjReweight"); // TopPtReweight, apply to shape, not rate
 
     his->FillTH1("NEvent", 1, rateWeight);

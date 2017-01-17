@@ -742,3 +742,30 @@ bool ComAna::SetSysVar(std::string &Sysbit_, std::string &SysVar_)
   Sysbit = std::bitset<2>(Sysbit_);
   return true;
 }       // -----  end of function ComAna::SetSysVar  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::IsUpdateHLT
+//  Description:  Since HLT change version over time, we need to check the HLT
+//  path per event using regex. However, this slows down the code. 
+//  Now do a check of the triggername vs the last even. Only update the HLTIdx
+//  if the triggername is changed.
+// ===========================================================================
+bool ComAna::IsUpdateHLT()
+{
+  if (PretriggerName.empty())
+  {
+    PretriggerName = tr->getVec<std::string>("TriggerNames");
+    return true;
+  }
+
+  std::vector<std::string> v3;
+  const std::vector<std::string> &triggerName = tr->getVec<std::string>("TriggerNames");
+  if (triggerName.size() != PretriggerName.size())
+    return true;
+  for(unsigned int i=0; i < PretriggerName.size(); ++i)
+  {
+    if (PretriggerName.at(i) != triggerName.at(i))
+      return true;
+  }
+  return false;
+}       // -----  end of function ComAna::IsUpdateHLT  -----

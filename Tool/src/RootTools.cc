@@ -374,6 +374,7 @@ void passBaselineTTZ(NTupleReader &tr, std::map<std::string, BaselineVessel*> &b
  
   blvMap[ss.str()]->PassBaseline();
   blvMap[ss.str()]->GetMHT();
+  blvMap[ss.str()]->GetLeptons();
 
   VarPerEvent var(&tr);
   var.GetRecoZ(ss.str(), leps);
@@ -614,10 +615,6 @@ bool GetGenTops(NTupleReader &tr, std::vector<TLorentzVector> &vGenTops,
 void GetTopPtReweight(NTupleReader &tr, std::map<std::string, double> &SamplePro)
 {
   double topPtWeight = 1;
-  std::vector<TLorentzVector> vGenTops;
-  std::vector<int> vGenTopCharge;
-  std::vector<TLorentzVector> vGenLeps;
-  GetGenTops(tr, vGenTops, vGenTopCharge, vGenLeps);
 
   std::string proname = "";
   for(auto &it : SamplePro)
@@ -630,31 +627,42 @@ void GetTopPtReweight(NTupleReader &tr, std::map<std::string, double> &SamplePro
   }
 
   // For data and not_TTbar MC, set the weight to 1.
-  if (tr.getVar<int>("run") != 1  || proname.find("TTbar") == std::string::npos || vGenTops.size() != 2)
+  if (tr.getVar<int>("run") != 1  || proname.find("TTbar") == std::string::npos)
   {
     tr.registerDerivedVar("TopPtReweight", topPtWeight);
     return;
   }
   
-  assert(vGenTops.size() == 2);
+  std::vector<TLorentzVector> vGenTops;
+  std::vector<int> vGenTopCharge;
+  std::vector<TLorentzVector> vGenLeps;
+  GetGenTops(tr, vGenTops, vGenTopCharge, vGenLeps);
+  if ( vGenTops.size() != 2)
+  {
+    tr.registerDerivedVar("TopPtReweight", topPtWeight);
+    return;
+  }
+
   // Getting the reweight factor SF(x)=exp(a+bx)
-  double a = 0;
-  double b = 0;
-  if (vGenLeps.size() == 1)  // Semileptonic
-  {
-    a = 0.159;
-    b = -0.00141;
-  }
-  if (vGenLeps.size() == 2)  // Dilepton
-  { 
-    a = 0.148;
-    b = -0.00129;
-  } 
-  if (vGenLeps.size() == 0)  // all combined, but use for all hadroinc case here
-  {
-    a = 0.156;
-    b = -0.00137;
-  }
+  double a = 0.0615; //13TeV
+  double b = -0.0005; //13TeV
+  /* 8TeV
+   *if (vGenLeps.size() == 1)  // Semileptonic
+   *{
+   *  a = 0.159;
+   *  b = -0.00141;
+   *}
+   *if (vGenLeps.size() == 2)  // Dilepton
+   *{ 
+   *  a = 0.148;
+   *  b = -0.00129;
+   *} 
+   *if (vGenLeps.size() == 0)  // all combined, but use for all hadroinc case here
+   *{
+   *  a = 0.156;
+   *  b = -0.00137;
+   *}
+   */
 
   // weight=sqrt(SF(top)SF(anti-top))
   double weight = 1.0;

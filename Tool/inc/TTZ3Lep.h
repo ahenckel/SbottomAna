@@ -63,6 +63,7 @@ class TTZ3Lep : public ComAna
 
   protected:
     // ====================  METHODS       ===============================
+    bool Pass3Leps(int pt1, int pt2, int pt3, bool isEle);
 
     // ====================  DATA MEMBERS  ===============================
 

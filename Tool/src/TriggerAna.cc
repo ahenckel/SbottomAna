@@ -64,10 +64,11 @@ TriggerAna::operator = ( const TriggerAna &other )
 // ===========================================================================
 bool TriggerAna::BookHistograms()
 {
-  his->AddTH1C("TrigMET_Denominator" , "TrigMET_Denominator" , "MET [GeV]" , "Denominator" , 250, 0, 500);
-  his->AddTH1C("TrigMET_Numerator"   , "TrigMET_Numerator"   , "MET [GeV]" , "Numerator"   , 250, 0, 500);
-  his->AddTH1C("TrigMETNoMu_Denominator" , "TrigMETNoMu_Denominator" , "METNoMu [GeV]" , "Denominator" , 250, 0, 500);
-  his->AddTH1C("TrigMETNoMu_Numerator"   , "TrigMETNoMu_Numerator"   , "METNoMu [GeV]" , "Numerator"   , 250, 0, 500);
+  his->AddTH1C("TrigMET_Denominator" , "TrigMET_Denominator" , "MET [GeV]" , "Denominator" , 100, 0, 500);
+  his->AddTH1C("TrigMET_Numerator"   , "TrigMET_Numerator"   , "MET [GeV]" , "Numerator"   , 100, 0, 500);
+  his->AddTH1C("TrigMETNoMu_Denominator" , "TrigMETNoMu_Denominator" , "METNoMu [GeV]" , "Denominator" , 100, 0, 500);
+  his->AddTH1C("TrigMETNoMu_Numerator"   , "TrigMETNoMu_Numerator"   , "METNoMu [GeV]" , "Numerator"   , 100, 0, 500);
+
 
   his->AddTH1C("TrigMuon_Denominator" , "TrigMuon_Denominator" , "MuonPT [GeV]" , "Denominator" , 250, 0, 500);
   his->AddTH1C("TrigMuon_Numerator"   , "TrigMuon_Numerator"   , "MuonPT [GeV]" , "Numerator"   , 250, 0, 500);
@@ -86,6 +87,36 @@ bool TriggerAna::InitCutOrder(std::string ana)
   HLTstr.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
 
   if (AnaName.find("Stop") != std::string::npos)
+  {
+    // Use this trigger as denominator
+
+    //Add name and order of the cutflow
+    //Default is the singleEle trigger pass
+    CutOrder.push_back("NoCut");
+    CutOrder.push_back("Filter");
+    CutOrder.push_back("EleTrig");
+    CutOrder.push_back("NEle");
+    CutOrder.push_back("NMuon");
+    CutOrder.push_back("nJets30");
+    CutOrder.push_back("nJets50");
+    CutOrder.push_back("BJets");
+    CutOrder.push_back("HT");
+    CutOrder.push_back("WithMuon");
+
+    //Set the cutbit of each cut
+    CutMap["NoCut"]   = "00000000000000000";
+    CutMap["Filter"]  = "00000000000000001";
+    CutMap["EleTrig"] = "00000000000000011";
+    CutMap["NEle"]    = "00000000000000111";
+    CutMap["NMuon"]   = "00000000000001111";
+    CutMap["nJets30"] = "00000000000011111";
+    CutMap["nJets50"] = "00000000000111111";
+    CutMap["BJets"]   = "00000000001111111";
+    CutMap["HT"]      = "00000000011111111";
+    CutMap["WithMuon"]= "00000000111110111";
+  }
+
+  if (AnaName.find("Muon") != std::string::npos)
   {
     // Use this trigger as denominator
 
@@ -165,7 +196,19 @@ bool TriggerAna::CheckCut()
     cutbit.set(5 , tr->getVar<int>(Label["cntNJetsPt50Eta24"]) > 1);
     cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
     cutbit.set(7 , tr->getVar<bool>(Label["passHT"]));
+    cutbit.set(8 , tr->getVar<int>(Label["nMuons_Base"]) >= 1);
+  }
 
+  if (AnaName.find("Muon") != std::string::npos)
+  {
+    cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
+    cutbit.set(1 , PassTrigger());
+    cutbit.set(2 , tr->getVar<int>(Label["nElectrons_Base"]) >= 1);
+    cutbit.set(3 , tr->getVar<int>(Label["nMuons_Base"]) >= 1 );
+    cutbit.set(4 , tr->getVar<int>(Label["cntNJetsPt30Eta24"]) > 3 );
+    cutbit.set(5 , tr->getVar<int>(Label["cntNJetsPt50Eta24"]) > 1);
+    cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
+    cutbit.set(7 , tr->getVar<bool>(Label["passHT"]));
   }
 
   if (AnaName.find("QCD") != std::string::npos)
@@ -190,9 +233,9 @@ bool TriggerAna::FillCut()
 //----------------------------------------------------------------------------
 //  Check cut and fill cut-based plots
 //----------------------------------------------------------------------------
-  HLTIdx.clear();
-  CheckCut();
+  if (ComAna::IsUpdateHLT()) HLTIdx.clear();
   ComAna::RunEvent();
+  CheckCut();
   bool passcuts = false;
 
   for (unsigned int i = 0; i < CutOrder.size(); ++i)
@@ -246,7 +289,12 @@ bool TriggerAna::FillMuonEff(int NCut)
 {
   const std::vector<TLorentzVector> &muonsLVec   = tr->getVec<TLorentzVector>("cutMuVec");
   if (muonsLVec.empty()) return false;
-  double LeadingPt = muonsLVec.front().Pt();
+  double LeadingPt =  -1;
+  for(auto i : muonsLVec)
+  {
+    if (fabs(i.Eta()) > 2.1) continue;
+    LeadingPt = i.Pt() > LeadingPt ? i.Pt() : LeadingPt;
+  }
 
   his->FillTH1(NCut, "TrigMuon_Denominator", LeadingPt);
 
