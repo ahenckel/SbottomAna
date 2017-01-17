@@ -157,10 +157,9 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
     CutOrder.push_back("3Leps");
     CutOrder.push_back("HasZ");
     CutOrder.push_back("nJets40");
-    CutOrder.push_back("nJets30");
+    CutOrder.push_back("nBs30");
     CutOrder.push_back("MET30");
     CutOrder.push_back("Tagger");
-    CutOrder.push_back("BJets");
 
     //Set the cutbit of each cut
     CutMap["NoCut"]   = "00000000000000000";
@@ -169,10 +168,9 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
     CutMap["3Leps"]   = "00000000000000111";
     CutMap["HasZ"]    = "00000000000001111";
     CutMap["nJets40"] = "00000000000011111";
-    CutMap["nJets30"] = "00000000000111111";
+    CutMap["nBs30"]   = "00000000000111111";
     CutMap["MET30"]   = "00000000001111111";
     CutMap["Tagger"]  = "00000000011111111";
-    CutMap["BJets"]   = "00000000111111111";
   }
   assert(CutOrder.size() == CutMap.size());
 
@@ -214,7 +212,11 @@ bool TTZ3Lep::CheckCut()
     cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
     cutbit.set(1 , ComAna::PassTrigger());
     cutbit.set(2 , Pass3Leps(40, 20, 20, true));
-    cutbit.set(3 , Pass3Leps(40, 20, 20, true));
+    cutbit.set(3 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
+    cutbit.set(4 , ComAna::CountJets(40) >= 4);
+    cutbit.set(5 , tr->getVar<int>(Label["cntCSVS"]) >= 2);
+    cutbit.set(6 , tr->getVar<double>(METLabel) > 30);
+    cutbit.set(7 , tr->getVar<int>(Label["nTopCandSortedCnt"]) >= 1);
   }
   return true;
 }       // -----  end of function TTZ3Lep::CheckCut  -----
@@ -292,7 +294,7 @@ bool TTZ3Lep::HasZ()
     if(cutMuVec.at(i).Pt() < minMuPt) continue;
     for(unsigned int j = 0; j < i && j < cutMuVec.size(); ++j)
     {
-      f(cutMuVec.at(j).Pt() < minMuPt) continue;
+      if(cutMuVec.at(j).Pt() < minMuPt) continue;
       double zm = (cutMuVec.at(i) + cutMuVec.at(j)).M();
       //if(zm > zMassMin && zm < zMassMax && fabs(zm - zMass) < fabs(zMassCurrent - zMass))
       if(fabs(zm - zMass) < fabs(zMassCurrent - zMass))
@@ -400,8 +402,9 @@ bool TTZ3Lep::Pass3Leps(int pt1, int pt2, int pt3, bool isEle)
   if (isEle && cutEleVec.front().Pt() < pt1) return false;
   if (!isEle && cutMuVec.front().Pt() < pt1) return false;
 
-  std::vector<TLorentzVector>  temp = cutMuVec  + cutEleVec;
-  std::sort(temp.begin(), temp.end(), [](const TLorentzVector &a, const TLorentzVector &b){return a.Pt() > b.Pt()});
+  std::vector<TLorentzVector>  temp = cutMuVec;
+  temp.insert(temp.end(), cutEleVec.begin(), cutEleVec.end());
+  std::sort(temp.begin(), temp.end(), [](const TLorentzVector &a, const TLorentzVector &b){return a.Pt() > b.Pt();});
   assert(temp.front().Pt() > temp.back().Pt());
   assert(temp.size() == 3);
   std::vector<TLorentzVector>::iterator tit = temp.begin();
@@ -414,12 +417,3 @@ bool TTZ3Lep::Pass3Leps(int pt1, int pt2, int pt3, bool isEle)
 }       // -----  end of function TTZ3Lep::Pass3Leps  -----
 
 
-// ===  FUNCTION  ============================================================
-//         Name:  TTZ3Lep::HasZBoson
-//  Description:  
-// ===========================================================================
-bool TTZ3Lep::HasZBoson( const std::vector<TLorentzVector> &LepVec, 
-    const std::vector<int> &LepChg, const int Zlowpt, const int Zhighpt) const
-{
-  const std::vector<int> &cutMuCharge = tr->getVec<int>(Label["cutMuCharge"]);
-}       // -----  end of function TTZ3Lep::HasZBoson  -----

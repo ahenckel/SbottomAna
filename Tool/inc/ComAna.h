@@ -85,6 +85,7 @@ class ComAna
     bool IsData();
     bool CheckLeadingLeptons(int NCut);
     bool IsUpdateHLT();
+    int CountJets(double jetPt) const;
     // ====================  DATA MEMBERS  ===============================
     std::vector<std::string> CutOrder;
     std::bitset<NBITS> cutbit;
@@ -116,7 +117,6 @@ class ComAna
   private:
     // ====================  METHODS       ===============================
     virtual bool CheckCut();
-    int CountJets(double jetPt) const;
     bool GetLeadingJets();
 
 
