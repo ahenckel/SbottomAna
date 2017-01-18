@@ -38,6 +38,7 @@ HistTool::HistTool (std::shared_ptr<TFile> OutFile_, std::string name, std::stri
   HWeight = -999.;
   CutSize = 0;
   SaveCutHists_=true;
+  SaveStatHists_=true;
 }  // ~~~~~  end of method HistTool::HistTool  (constructor)  ~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -137,8 +138,22 @@ int HistTool::AddTH1C(const std::string& name, const std::string& title, std::ve
       TString maptitle = title+" ("+order.at(i)+")";
       AddTH1(mapname.Data(), maptitle.Data(), BinLabels);
     }
+    if (SaveStatHists_)
+    {
+      for (Long_t i = 0; i < CutSize; ++i)
+      {
+        TString mapname = name+"_Stat_"+i;
+        TString maptitle = title+" ("+order.at(i)+")";
+        AddTH1(mapname.Data(), maptitle.Data(), BinLabels);
+      }
+    }
   }
   AddTH1(name.c_str(), title.c_str(), BinLabels);
+  if (SaveStatHists_)
+  {
+    TString mapname = name+"_Stat";
+    AddTH1(mapname.Data(), title.c_str(), BinLabels);
+  }
   return 1;
 }       // -----  end of function HistTool::AddTH1C  -----
 
@@ -158,9 +173,23 @@ int HistTool::AddTH1C(const std::string& name, const std::string& title,
       TString maptitle = title+" ("+order.at(i)+");"+xlabel+";"+ylabel;
       AddTH1(mapname.Data(), maptitle.Data(), BinLabels);
     }
+    if (SaveStatHists_)
+    {
+      for (Long_t i = 0; i < CutSize; ++i)
+      {
+        TString mapname = name+"_Stat_"+i;
+        TString maptitle = title+" ("+order.at(i)+");"+xlabel+";"+ylabel;
+        AddTH1(mapname.Data(), maptitle.Data(), BinLabels);
+      }
+    }
   }
   TString newtitle = title+";"+xlabel+";"+ylabel;
   AddTH1(name.c_str(), title.c_str(), BinLabels);
+  if (SaveStatHists_)
+  {
+    TString mapname = name+"_Stat";
+    AddTH1(mapname.Data(), title.c_str(), BinLabels);
+  }
   return 1;
 }       // -----  end of function HistTool::AddTH1C  -----
 
@@ -182,8 +211,23 @@ int HistTool::AddTH1C (const std::string& name, const std::string& title,
       TString maptitle = title+" ("+order.at(i)+")";
       AddTH1(mapname.Data(), maptitle.Data(), xlabel, ylabel, nxbins, xmin, xmax, logx, logy);
     }
+    if (SaveStatHists_)
+    {
+      for (Long_t i = 0; i < CutSize; ++i)
+      {
+        TString mapname = name+"_Stat_"+i;
+        TString maptitle = title+" ("+order.at(i)+")";
+      AddTH1(mapname.Data(), maptitle.Data(), xlabel, ylabel, nxbins, xmin, xmax, logx, logy);
+      }
+      
+    }
   }
   AddTH1(name.c_str(), title.c_str(), xlabel, ylabel, nxbins, xmin, xmax, logx, logy);
+  if (SaveStatHists_)
+  {
+    TString mapname = name+"_Stat";
+    AddTH1(mapname.Data(), title.c_str(), xlabel, ylabel, nxbins, xmin, xmax, logx, logy);
+  }
 
   return 1;
 }       // -----  end of function HistTool::AddTH1C  -----
@@ -203,8 +247,24 @@ int HistTool::AddTH1C (const std::string& name, const std::string& title,
       TString maptitle = title+" ("+order.at(i)+")";
       AddTH1(mapname.Data(), maptitle.Data(), nxbins, xmin, xmax);
     }
+    if (SaveStatHists_)
+    {
+      for (Long_t i = 0; i < CutSize; ++i)
+      {
+        TString mapname = name+"_Stat_"+i;
+        TString maptitle = title+" ("+order.at(i)+")";
+        AddTH1(mapname.Data(), maptitle.Data(), nxbins, xmin, xmax);
+      }
+      
+    }
   }
   AddTH1(name.c_str(), title.c_str(), nxbins, xmin, xmax);
+
+  if (SaveStatHists_)
+  {
+    TString mapname = name+"_Stat";
+    AddTH1(mapname.Data(), title.c_str(), nxbins, xmin, xmax);
+  }
   return 1;
 }       // -----  end of function HistTool::AddTH1C  -----
 
@@ -259,12 +319,19 @@ int HistTool::FillTH1(int Ncut, std::string HisName, double value, double weight
   TString mapname = HisName+"_"+static_cast<Long_t>(Ncut);
   if (HisMap.find(mapname.Data()) == HisMap.end())
     return 0;
+
+  double tempweight = 1;
   if (weight != -999.)
-    HisMap[mapname.Data()]->Fill(value, weight);
+    tempweight = weight;
   else if (HWeight != -999.)
-    HisMap[mapname.Data()]->Fill(value, HWeight);
-  else
-    HisMap[mapname.Data()]->Fill(value);
+    tempweight = HWeight;
+  HisMap[mapname.Data()]->Fill(value, tempweight);
+
+  // Filling stat error
+  mapname = HisName+"_Stat_"+static_cast<Long_t>(Ncut);
+  if (HisMap.find(mapname.Data()) == HisMap.end())
+    return 0;
+  HisMap[mapname.Data()]->Fill(value, tempweight >= 0 ? 1 : -1);
   return 1;
 }       // -----  end of function HistTool::::FillTH1  -----
 
@@ -275,25 +342,40 @@ int HistTool::FillTH1(int Ncut, std::string HisName, int value, double weight)
   TString mapname = HisName+"_"+static_cast<Long_t>(Ncut);
   if (HisMap.find(mapname.Data()) == HisMap.end())
     return 0;
+  double tempweight = 1;
   if (weight != -999.)
-    HisMap[mapname.Data()]->Fill(value, weight);
+    tempweight = weight;
   else if (HWeight != -999.)
-    HisMap[mapname.Data()]->Fill(value, HWeight);
-  else
-    HisMap[mapname.Data()]->Fill(value);
+    tempweight = HWeight;
+  HisMap[mapname.Data()]->Fill(value, tempweight);
+
+  // Filling stat error
+  mapname = HisName+"_Stat_"+static_cast<Long_t>(Ncut);
+  if (HisMap.find(mapname.Data()) == HisMap.end())
+    return 0;
+  HisMap[mapname.Data()]->Fill(value, tempweight >= 0 ? 1 : -1);
+
   return 1;
 }       // -----  end of function HistTool::::FillTH1  -----
 
 int HistTool::FillTH1(std::string HisName, int value, double weight)
 {
-  if (HisMap.find(HisName) == HisMap.end())
+  TString mapname = HisName;
+  if (HisMap.find(mapname.Data()) == HisMap.end())
     return 0;
+  double tempweight = 1;
   if (weight != -999.)
-    HisMap[HisName]->Fill(value, weight);
+    tempweight = weight;
   else if (HWeight != -999.)
-    HisMap[HisName]->Fill(value, HWeight);
-  else
-    HisMap[HisName]->Fill(value);
+    tempweight = HWeight;
+  HisMap[mapname.Data()]->Fill(value, tempweight);
+
+  // Filling stat error
+  mapname = HisName+"_Stat";
+  if (HisMap.find(mapname.Data()) == HisMap.end())
+    return 0;
+  HisMap[mapname.Data()]->Fill(value, tempweight >= 0 ? 1 : -1);
+
   return 1;
 }       // -----  end of function HistTool::::FillTH1  -----
 
@@ -301,12 +383,19 @@ int HistTool::FillTH1(std::string HisName, double value, double weight)
 {
   if (HisMap.find(HisName) == HisMap.end())
     return 0;
+  double tempweight = 1;
   if (weight != -999.)
-    HisMap[HisName]->Fill(value, weight);
+    tempweight = weight;
   else if (HWeight != -999.)
-    HisMap[HisName]->Fill(value, HWeight);
-  else
-    HisMap[HisName]->Fill(value);
+    tempweight = HWeight;
+  HisMap[HisName]->Fill(value, tempweight);
+
+  // Filling stat error
+  TString mapname = HisName+"_Stat";
+  if (HisMap.find(mapname.Data()) == HisMap.end())
+    return 0;
+  HisMap[mapname.Data()]->Fill(value, tempweight >= 0 ? 1 : -1);
+
   return 1;
 }       // -----  end of function HistTool::::FillTH1  -----
 

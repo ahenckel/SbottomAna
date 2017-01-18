@@ -161,6 +161,7 @@ class HistTool
     // ====================  DATA MEMBERS  ===============================
     int CutSize; // The size of the cutbit
     bool SaveCutHists_;
+    bool SaveStatHists_;
     double HWeight; // The weight of current event
     std::string cutflag; // Name of the cutflag
     std::string prefix; // Name of the process
