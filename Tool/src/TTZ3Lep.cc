@@ -26,7 +26,7 @@ TTZ3Lep::TTZ3Lep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
 : ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
-  if (spec.find("TTZ") != std::string::npos)
+  if (AnaName.find("TTZ") != std::string::npos)
   {
     jetVecLabel = "jetsLVecLepCleaned";
     CSVVecLabel = "recoJetsBtag_0_LepCleaned";
@@ -41,11 +41,11 @@ TTZ3Lep::TTZ3Lep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
       MCTrigstr.push_back(Label["PassDiEleTrigger"]);
     }
   }
-  if (spec.find("SUSY") != std::string::npos)
+  if (AnaName.find("SUSY") != std::string::npos)
   {
     jetVecLabel = "jetsLVecLepCleaned";
     CSVVecLabel = "recoJetsBtag_0_LepCleaned";
-    if (strcmp(&(spec.back()), "E") == 0)
+    if (strcmp(&(AnaName.back()), "E") == 0)
     {
       HLTstr.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
       //MCTrigstr.push_back(Label["PassDiEleTrigger"]);
@@ -122,7 +122,7 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
   CutOrder.clear();
   CutMap.clear();
 
-  if (spec.find("TTZ") != std::string::npos)
+  if (AnaName.find("TTZ") != std::string::npos)
   {
     //Add name and order of the cutflow
     CutOrder.push_back("NoCut");
@@ -148,7 +148,7 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
     CutMap["MET40"]   = "00000000011111111";
     CutMap["2B1T"]    = "00000000111111111";
   }
-  if (spec.find("SUSY") != std::string::npos)
+  if (AnaName.find("SUSY") != std::string::npos)
   {
     //Add name and order of the cutflow
     CutOrder.push_back("NoCut");
@@ -184,7 +184,7 @@ bool TTZ3Lep::InitCutOrder(std::string ana)
 // ===========================================================================
 bool TTZ3Lep::CheckCut()
 {
-  if (spec.find("TTZ") != std::string::npos)
+  if (AnaName.find("TTZ") != std::string::npos)
   {
     cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
 
@@ -207,7 +207,7 @@ bool TTZ3Lep::CheckCut()
     cutbit.set(8 , tr->getVar<int>(Label["cntCSVS"]) == 2);
   }
 
-  if (spec.find("SUSY") != std::string::npos)
+  if (AnaName.find("SUSY") != std::string::npos)
   {
     cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
     cutbit.set(1 , ComAna::PassTrigger());
@@ -399,8 +399,14 @@ bool TTZ3Lep::Pass3Leps(int pt1, int pt2, int pt3, bool isEle)
   const std::vector<TLorentzVector> &cutEleVec = tr->getVec<TLorentzVector>( Label["cutEleVec"] );
 
   if ((cutMuVec.size() + cutEleVec.size()) != 3) return false;
-  if (isEle && cutEleVec.front().Pt() < pt1) return false;
-  if (!isEle && cutMuVec.front().Pt() < pt1) return false;
+  if (isEle)
+  {
+    if (cutEleVec.size() == 0 || cutEleVec.front().Pt() < pt1)
+      return false;
+  } else{
+    if (cutMuVec.size() == 0 || cutMuVec.front().Pt() < pt1)
+      return false;
+  }
 
   std::vector<TLorentzVector>  temp = cutMuVec;
   temp.insert(temp.end(), cutEleVec.begin(), cutEleVec.end());
