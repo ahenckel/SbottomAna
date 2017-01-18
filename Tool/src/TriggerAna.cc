@@ -72,6 +72,8 @@ bool TriggerAna::BookHistograms()
 
   his->AddTH1C("TrigMuon_Denominator" , "TrigMuon_Denominator" , "MuonPT [GeV]" , "Denominator" , 250, 0, 500);
   his->AddTH1C("TrigMuon_Numerator"   , "TrigMuon_Numerator"   , "MuonPT [GeV]" , "Numerator"   , 250, 0, 500);
+  his->AddTH1C("TrigMuonEta_Denominator" , "TrigMuonEta_Denominator" , "MuonEta(PT > 50)" , "Denominator" , 60, -3, 3);
+  his->AddTH1C("TrigMuonEta_Numerator"   , "TrigMuonEta_Numerator"   , "MuonEta(PT > 50)" , "Numerator"   , 60, -3, 3);
   return true;
 }       // -----  end of function TriggerAna::BookHistograms  -----
 
@@ -290,20 +292,31 @@ bool TriggerAna::FillMuonEff(int NCut)
   const std::vector<TLorentzVector> &muonsLVec   = tr->getVec<TLorentzVector>("cutMuVec");
   if (muonsLVec.empty()) return false;
   double LeadingPt =  -1;
+  double LeadingEta =  -999;
   for(auto i : muonsLVec)
   {
-    if (fabs(i.Eta()) > 2.1) continue;
-    LeadingPt = i.Pt() > LeadingPt ? i.Pt() : LeadingPt;
+    //if (fabs(i.Eta()) > 2.1) continue;
+    if (i.Pt() > LeadingPt)
+    {
+      LeadingPt = i.Pt();
+      if (i.Pt() > 50)
+      {
+        LeadingEta = i.Eta();
+      }
+    }
   }
 
   his->FillTH1(NCut, "TrigMuon_Denominator", LeadingPt);
+  his->FillTH1(NCut, "TrigMuonEta_Denominator", LeadingEta);
 
   std::vector<std::string> MuonHLT;
-  MuonHLT.push_back("HLT_Mu45_eta2p1_v\\d");
+  MuonHLT.push_back("HLT_Mu50_v\\d");
+  //MuonHLT.push_back("HLT_Mu45_eta2p1_v\\d");
 
   if (PassTrigger(MuonHLT))
   {
     his->FillTH1(NCut, "TrigMuon_Numerator", LeadingPt);
+    his->FillTH1(NCut, "TrigMuonEta_Numerator", LeadingEta);
   }
   return true;
 }       // -----  end of function TriggerAna::FillMuonEff  -----
