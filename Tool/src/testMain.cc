@@ -206,7 +206,9 @@ int main(int argc, char* argv[])
   //AnaMap["STZinvE"] = new STZinv("STZinvE", &tr, OutFile,"ZinvE");
   //AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
   //AnaMap["TTZ3LepT"] = new TTZ3Lep("TTZ3LepT", &tr, OutFile, "TTZT");
+  //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
   AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
+  AnaMap["TTZ3SUSYE"] = new TTZ3Lep("SUSYE", &tr, OutFile);
   //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZDiLepE"] = new TTZDiLep("TTZDiLepE", &tr, OutFile, "TTZE");
@@ -269,7 +271,7 @@ int main(int argc, char* argv[])
     } catch (std::string var) {
     }
     if (stored_weight == -999) stored_weight = 1;
-    evtWeight = stored_weight >= 0 ? 1 : -1;
+    evtWeight = stored_weight;
     if (tr.getVar<int>("run") != 1) // Set weight to 1 for Data
       evtWeight = 1;
     rateWeight = evtWeight;
@@ -281,7 +283,7 @@ int main(int argc, char* argv[])
     evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
     //evtWeight *= tr.getVar<double>("NbNjReweight"); // TopPtReweight, apply to shape, not rate
 
-    his->FillTH1("NEvent", 1, rateWeight);
+    his->FillTH1("NEvent", 1, stored_weight >= 0 ? 1 : -1);
     his->FillTH1("Weight", stored_weight);
 
     //**************************************************************************//
