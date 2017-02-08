@@ -24,9 +24,9 @@
 STTagger::STTagger (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile, std::string spec_, int nJets_)
   : ComAna(name, tr_, OutFile, spec_), nTopJets(nJets_)
 {
+  DataMCSF = true;
   InitCutOrder(name);
   BookHistograms();
-  DataMCSF = false;
 }  // -----  end of method STTagger::STTagger  (constructor)  -----
 
 //----------------------------------------------------------------------------

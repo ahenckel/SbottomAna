@@ -84,6 +84,11 @@ bool TriggerAna::BookHistograms()
   his->AddTH1C("TrigMuonEta40_Numerator"   , "TrigMuonEta40_Numerator"   , "MuonEta(PT > 40)" , "Numerator"   , 60,  -3, 3);
   his->AddTH1C("TrigMuonEta50_Denominator" , "TrigMuonEta50_Denominator" , "MuonEta(PT > 50)" , "Denominator" , 60,  -3, 3);
   his->AddTH1C("TrigMuonEta50_Numerator"   , "TrigMuonEta50_Numerator"   , "MuonEta(PT > 50)" , "Numerator"   , 60,  -3, 3);
+
+  his->AddTH1C("TrigEle_Denominator"      , "TrigEle_Denominator"    , "ElePT [GeV]"     , "Denominator" , 250, 0,  500);
+  his->AddTH1C("TrigEle_Numerator"        , "TrigEle_Numerator"      , "ElePT [GeV]"     , "Numerator"   , 250, 0,  500);
+  his->AddTH1C("TrigEleEta40_Denominator" , "TrigEleEta40_Denominator" , "EleEta(PT > 40)" , "Denominator" , 60,  -3, 3);
+  his->AddTH1C("TrigEleEta40_Numerator"   , "TrigEleEta40_Numerator"   , "EleEta(PT > 40)" , "Numerator"   , 60,  -3, 3);
   return true;
 }       // -----  end of function TriggerAna::BookHistograms  -----
 
@@ -96,11 +101,12 @@ bool TriggerAna::InitCutOrder(std::string ana)
   //Clear the objects
   CutOrder.clear();
   CutMap.clear();
-  HLTstr.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
+  HLTstr.clear();
 
   if (AnaName.find("Stop") != std::string::npos)
   {
     // Use this trigger as denominator
+    HLTstr.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
 
     //Add name and order of the cutflow
     //Default is the singleEle trigger pass
@@ -131,6 +137,7 @@ bool TriggerAna::InitCutOrder(std::string ana)
   if (AnaName.find("Muon") != std::string::npos)
   {
     // Use this trigger as denominator
+    HLTstr.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
 
     //Add name and order of the cutflow
     //Default is the singleEle trigger pass
@@ -156,9 +163,35 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutMap["HT"]      = "00000000011111111";
   }
 
+  if (AnaName.find("Ele") != std::string::npos)
+  {
+    // Use this trigger as denominator
+    HLTstr.push_back("HLT_Mu50_v\\d");
+
+    //Add name and order of the cutflow
+    //Default is the singleEle trigger pass
+    CutOrder.push_back("NoCut");
+    CutOrder.push_back("Filter");
+    CutOrder.push_back("MuTrig");
+    CutOrder.push_back("NMuon");
+    CutOrder.push_back("NEle");
+    CutOrder.push_back("nJets30");
+    CutOrder.push_back("BJets");
+
+    //Set the cutbit of each cut
+    CutMap["NoCut"]   = "00000000000000000";
+    CutMap["Filter"]  = "00000000000000001";
+    CutMap["MuTrig"]  = "00000000000000011";
+    CutMap["NMuon"]   = "00000000000000111";
+    CutMap["NEle"]    = "00000000000001111";
+    CutMap["nJets30"] = "00000000000011111";
+    CutMap["BJets"]   = "00000000000111111";
+  }
+
   if (AnaName.find("QCD") != std::string::npos)
   {
     // Use this trigger as denominator
+    HLTstr.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
 
     //Add name and order of the cutflow
     //Default is the singleEle trigger pass
@@ -224,6 +257,18 @@ bool TriggerAna::CheckCut()
     cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
     cutbit.set(7 , tr->getVar<bool>(Label["passHT"]));
   }
+
+  if (AnaName.find("Ele") != std::string::npos)
+  {
+    cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
+    cutbit.set(1 , PassTrigger());
+    cutbit.set(2 , tr->getVec<TLorentzVector>(Label["cutMuVec"]).size() >= 1 && 
+        tr->getVec<TLorentzVector>(Label["cutMuVec"]).front().Pt() > 50);
+    cutbit.set(3 , tr->getVar<int>(Label["nElectrons_Base"]) >= 1 );
+    cutbit.set(4 , tr->getVar<int>(Label["cntNJetsPt30Eta24"]) > 3 );
+    cutbit.set(5 , tr->getVar<bool>(Label["passBJets"]));
+  }
+
 
   if (AnaName.find("QCD") != std::string::npos)
   {
@@ -350,3 +395,37 @@ bool TriggerAna::FillMuonEff(int NCut)
   }
   return true;
 }       // -----  end of function TriggerAna::FillMuonEff  -----
+// ===  FUNCTION  ============================================================
+//         Name:  TriggerAna::FillEleEff
+//  Description:  
+// ===========================================================================
+bool TriggerAna::FillEleEff(int NCut)
+{
+  
+  const std::vector<TLorentzVector> &elesLVec   = tr->getVec<TLorentzVector>(Label["cutEleVec"]);
+  if (elesLVec.empty()) return false;
+  double LeadingPt =  -1;
+  double LeadingEta40 =  -999;
+
+  for(auto i : elesLVec)
+  {
+    //if (fabs(i.Eta()) > 2.1) continue;
+    if (i.Pt() > LeadingPt)
+    {
+      LeadingPt = i.Pt();
+      if (i.Pt() > 40)
+        LeadingEta40 = i.Eta();
+    }
+  }
+  his->FillTH1(NCut, "TrigEle_Denominator", LeadingPt);
+  his->FillTH1(NCut, "TrigEleEta40_Denominator", LeadingEta40);
+
+  std::vector<std::string> EleHLT;
+  EleHLT.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
+  if (PassTrigger(EleHLT))
+  {
+    his->FillTH1(NCut, "TrigEle_Numerator", LeadingPt);
+    his->FillTH1(NCut, "TrigEleEta40_Numerator", LeadingEta40);
+  }
+  return true;
+}       // -----  end of function TriggerAna::FillEleEff  -----

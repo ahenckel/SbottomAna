@@ -173,11 +173,11 @@ int main(int argc, char* argv[])
   {
     tr.registerFunction(*blv.second);
   }
-  tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
+  //tr.registerFunction(boost::bind(GetTopPtReweight, _1, SamplePro));
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "001")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "010")); // bit : TEM
   //tr.registerFunction(boost::bind(passBaselineZinv, _1, "100")); // bit : TEM
-  tr.registerFunction(boost::bind(passBaselineTTZ, _1, blvMap, "01", 0)); // bit : EM
+  //tr.registerFunction(boost::bind(passBaselineTTZ, _1, blvMap, "01", 0)); // bit : EM
   //tr.registerFunction(boost::bind(passBaselineTTZ, _1, "01", 1)); // bit : EM
 
   //tr.registerFunction(boost::bind(GetNbNjReweighting, _1, "", dynamic_cast<TH2*>(Gobj.Get("STZinv15.root:STZinvT_NbNjWeight")))); 
@@ -190,13 +190,13 @@ int main(int argc, char* argv[])
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
   AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
-  AnaMap["TrigStop"] = new TriggerAna("TrigStop", &tr, OutFile, "MedEle");
-  AnaMap["TrigQCD"]  = new TriggerAna("TrigQCD",  &tr, OutFile, "MedEle");
-  AnaMap["TrigMuon"] = new TriggerAna("TrigMuon", &tr, OutFile, "MedEle");
+  //AnaMap["TrigStop"] = new TriggerAna("TrigStop", &tr, OutFile, "MedEle");
+  //AnaMap["TrigQCD"]  = new TriggerAna("TrigQCD",  &tr, OutFile, "MedEle");
+  //AnaMap["TrigMuon"] = new TriggerAna("TrigMuon", &tr, OutFile, "MedEle");
+  AnaMap["TrigEle"] = new TriggerAna("TrigEle", &tr, OutFile, "MedEle");
   for (int i = 0; i < 4; ++i)
   {
-    AnaMap["Tagger"+std::to_string(i)] = new STTagger("Tagger"+std::to_string(i), &tr, OutFile, "", i);
-    //AnaMap["TaggerICHEP"+std::to_string(i)] = new STTagger("TaggerICHEP"+std::to_string(i), &tr, OutFile, "ICHEP", i);
+    AnaMap["Tagger"+std::to_string(i)] = new STTagger("Tagger"+std::to_string(i), &tr, OutFile, "MedEle", i);
   }
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
@@ -208,8 +208,8 @@ int main(int argc, char* argv[])
   //AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
   //AnaMap["TTZ3LepT"] = new TTZ3Lep("TTZ3LepT", &tr, OutFile, "TTZT");
   //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
-  AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
-  AnaMap["TTZ3SUSYE"] = new TTZ3Lep("SUSYE", &tr, OutFile);
+  //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
+  //AnaMap["TTZ3SUSYE"] = new TTZ3Lep("SUSYE", &tr, OutFile);
   //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZDiLepE"] = new TTZDiLep("TTZDiLepE", &tr, OutFile, "TTZE");
@@ -229,7 +229,7 @@ int main(int argc, char* argv[])
   //SysMap["PDF_down"] = std::make_pair("11", "PDF_Unc_Down"); // as shape uncertainty
   SysMap["Scale_up"] = std::make_pair("11", "Scaled_Variations_Up"); // as shape uncertainty
   SysMap["Scale_down"] = std::make_pair("11", "Scaled_Variations_Down"); // as shape uncertainty
-  //DefSysComAnd(SysMap, AnaMap);
+  DefSysComAnd(SysMap, AnaMap);
   //AnaMap["Stop_PU_up"] = new StopAna("Stop_PU_up", &tr, OutFile);
   //AnaMap["Stop_PU_down"] = new StopAna("Stop_PU_down", &tr, OutFile);
 
@@ -262,30 +262,21 @@ int main(int argc, char* argv[])
     //**************************************************************************//
     //                             Set Event Weight                             //
     //**************************************************************************//
-    double stored_weight = -999;
-    double evtWeight = 1.0; // For shape 
-    double rateWeight = 1.0; // For rate (event count) -> NEvent & NBase
-
-    //~~~~~~~~~~~~~~~~~~~~~ Getting weight that apply to both shape and rate ~~~~~
-    try {
-      stored_weight = tr.getVar<double>("stored_weight");
-    } catch (std::string var) {
-    }
-    if (stored_weight == -999) stored_weight = 1;
-    evtWeight = stored_weight;
+    double evtWeight = tr.getVar<double>("evtWeight"); // For shape 
     if (tr.getVar<int>("run") != 1) // Set weight to 1 for Data
       evtWeight = 1;
-    rateWeight = evtWeight;
+    double rateWeight = evtWeight; // For rate (event count) -> NEvent & NBase
+    his->FillTH1("NEvent", 1, evtWeight);
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for rate, but not shape ~~~~~
     //rateWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
     //evtWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
-    evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
+    //evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
     //evtWeight *= tr.getVar<double>("NbNjReweight"); // TopPtReweight, apply to shape, not rate
 
-    his->FillTH1("NEvent", 1, stored_weight >= 0 ? 1 : -1);
-    his->FillTH1("Weight", stored_weight);
+    his->FillTH1("Weight", evtWeight);
 
     //**************************************************************************//
     //                                 Fill Cuts                                //
