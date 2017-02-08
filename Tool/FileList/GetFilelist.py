@@ -226,49 +226,7 @@ def GetLPClist():
     from samples import SampleCollection
     sc = SampleCollection()
 
-    datasets = [
-        "TTbar"               ,
-        "TTbarSingleLep"      ,
-        "TTbarDiLep"          ,
-        "TTbarHT"             ,
-        "TTbarNoHad"          ,
-        "TTbarAll"            ,
-        "TTbarExt"            ,
-        "WJetsToLNu_LESS"     ,
-        "WJetsToLNu"          ,
-        "ZJetsToNuNu"         ,
-        "DYJetsToLL"          ,
-        "IncDY"               ,
-        "QCD"                 ,
-        "tW"                  ,
-        "TTZ"                 ,
-        "TTW"                 ,
-        "WW"                 ,
-        "WZ"                 ,
-        "ZZ"                 ,
-        "WWW"                 ,
-        "WWZ"                 ,
-        "WZZ"                 ,
-        "ZZZ"                 ,
-        "Data_SingleMuon"     ,
-        "Data_SingleMuon_Run2016G",
-        "Data_SingleElectron" ,
-        "Data_SingleElectron_Run2016G",
-        "Data_DoubleMuon"     ,
-        "Data_DoubleEG"       ,
-        "Diboson",
-        "Data_HTMHT"          ,
-        "Data_HTMHT_Run2016G",
-        "Data_MET",
-        "Data_MET_Run2016G",
-        "Signal_T1tttt_mGluino1200_mLSP800",
-        "Signal_T1tttt_mGluino1500_mLSP100",
-        "Signal_T2tt_mStop500_mLSP325",
-        "Signal_T2tt_mStop850_mLSP100",
-        ]
-
-
-    for ds in datasets:
+    for ds in sc.sampleCollectionList():
         ds = ds.strip()
         print(ds)
 
@@ -276,28 +234,6 @@ def GetLPClist():
             if not os.path.isfile(s):
                 continue
             shutil.copyfile(s, n+".list")
-
-
-    # import shutil
-    # for key, value in LPCNameDir.items():
-        # filename = NtupleDir +"/" + value
-        # if not os.path.isfile(filename):
-            # continue
-        # print(filename)
-        # shutil.copyfile(filename, key+".list")
-
-
-    # for key, value in LPCNameDir.items():
-        # matches = []
-        # file = open ("%s.list" % key, "w")
-        # for root, dirnames, filenames in os.walk( "%s" % value ):
-            # for filename in fnmatch.filter(filenames, '*.root'):
-                # tempname = os.path.join(root, filename)
-                # #print(tempname)
-                # tempname = tempname.replace("/eos/uscms", "root://cmsxrootd-site.fnal.gov/")
-                # #print(tempname)
-                # file.write("%s\n" % tempname)
-        # file.close()
 
 
 if __name__ == "__main__":

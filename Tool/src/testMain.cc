@@ -161,6 +161,8 @@ int main(int argc, char* argv[])
 //**************************************************************************//
   std::map<std::string, BaselineVessel*> blvMap;
   blvMap["Default"] = new BaselineVessel(tr, "", filterstring);
+  blvMap["MedEle"] = new BaselineVessel(tr, "MedEle", filterstring);
+  blvMap["MedEle"]->elesFlagIDLabel = "elesFlagMedium";
   //blvMap["ICHEP"] = new BaselineVessel(tr, "ICHEP", filterstring);
   //blvMap["ICHEP"]->SetupTopTagger(false);
   //tr.registerFunction(blv);
@@ -188,10 +190,9 @@ int main(int argc, char* argv[])
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
   AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
-  //AnaMap["StopICHEP"] = new StopAna("StopICHEP", &tr, OutFile, "ICHEP");
-  //AnaMap["TrigStop"] = new TriggerAna("TrigStop", &tr, OutFile);
-  //AnaMap["TrigQCD"]  = new TriggerAna("TrigQCD",  &tr, OutFile);
-  //AnaMap["TrigMuon"] = new TriggerAna("TrigMuon", &tr, OutFile);
+  AnaMap["TrigStop"] = new TriggerAna("TrigStop", &tr, OutFile, "MedEle");
+  AnaMap["TrigQCD"]  = new TriggerAna("TrigQCD",  &tr, OutFile, "MedEle");
+  AnaMap["TrigMuon"] = new TriggerAna("TrigMuon", &tr, OutFile, "MedEle");
   for (int i = 0; i < 4; ++i)
   {
     AnaMap["Tagger"+std::to_string(i)] = new STTagger("Tagger"+std::to_string(i), &tr, OutFile, "", i);
