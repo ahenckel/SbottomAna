@@ -60,6 +60,7 @@ class ComAna
     bool DrawHistogram();
     bool RunEvent();
     bool SetSysVar(std::string &Sysbit_, std::string &SysVar_, std::string SysCentral_="");
+    std::vector<std::string> GetHLTsrc() const;
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================
@@ -67,6 +68,8 @@ class ComAna
     ComAna& operator = ( const ComAna &other ); // assignment operator
 
     // ====================  DATA MEMBERS  ===============================
+    std::string spec;
+    std::string AnaName;
     std::string jetVecLabel;
     std::string CSVVecLabel;
     std::string METLabel   ;
@@ -101,8 +104,6 @@ class ComAna
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input Labels ~~~~~
     bool isData;
-    std::string spec;
-    std::string AnaName;
     std::vector<std::string> HLTstr;
     std::vector<std::string> MCTrigstr;
     std::map<std::string, std::set<unsigned int> > HLTIdx;

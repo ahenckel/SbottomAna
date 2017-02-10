@@ -48,13 +48,14 @@
 #include "TTZDiLep.h"
 #include "TTZ3Lep.h"
 #include "TriggerAna.h"
+#include "LepTrigSF.h"
 
 // SusyAnaTools
 #include "SusyAnaTools/Tools/baselineDef.h"
 #include "SusyAnaTools/Tools/NTupleReader.h"
 #include "SusyAnaTools/Tools/EventListFilter.h"
 #include "SusyAnaTools/Tools/PDFUncertainty.h"
-#include "SusyAnaTools/Tools/Weights.h"
+#include "SusyAnaTools/Tools/PileupWeights.h"
 #include "SusyAnaTools/Tools/BTagCorrector.h"
 #include "SusyAnaTools/Tools/ISRCorrector.h"
 
@@ -134,23 +135,23 @@ int main(int argc, char* argv[])
     filterstring =  "fastsim";
   std::cout << "Process " <<proname <<  " Sample is  " << filterstring << std::endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setup Global Object ~~~~~
-  //LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
-  //PDFUncertainty pdfs;  //PDF 
-  //ISRCorrector isrCorr("allINone_ISRJets.root", "", "", proname);
-  //BTagCorrector btagcorr("allINone_bTagEff.root", "", filterstring == "fastsim", proname);
-  //Pileup_Sys pileup("PileupHistograms_0121_69p2mb_pm4p6.root");
+  LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
+  PDFUncertainty pdfs;  //PDF 
+  ISRCorrector isrCorr("allINone_ISRJets.root", "", "", proname);
+  BTagCorrector btagcorr("allINone_bTagEff.root", "", filterstring == "fastsim", proname);
+  Pileup_Sys pileup("PileupHistograms_0121_69p2mb_pm4p6.root");
   //ExternObj Gobj;
 
   //clock to monitor the run time
   size_t t0 = clock();
   NTupleReader tr(fChain);
   tr.setReThrow(false);
-  //tr.registerFunction(pdfs);
-  //tr.registerFunction(isrCorr);
-  //tr.registerFunction(btagcorr);
-  //tr.registerFunction(pileup);
+  tr.registerFunction(pdfs);
+  tr.registerFunction(isrCorr);
+  tr.registerFunction(btagcorr);
+  tr.registerFunction(pileup);
 
-  // TopTagger
+  LepTrigSF lepTrigSF(&tr, "allINone_leptonSF_Moriond17.root");
 //**************************************************************************//
 //                         Prepare Baseline Classes                         //
 //**************************************************************************//
@@ -278,8 +279,9 @@ int main(int argc, char* argv[])
     //**************************************************************************//
     for( auto &it : AnaMap )
     {
-      double temprate = rateWeight;
-      double tempevt = evtWeight;
+      float leptrig = lepTrigSF.GetEventSF(it.second, "11");
+      double temprate = rateWeight *leptrig;
+      double tempevt = evtWeight *leptrig;
       it.second->SetRateWeight(temprate);
       it.second->SetEvtWeight(tempevt);
       it.second->FillCut();

@@ -781,3 +781,12 @@ bool ComAna::IsUpdateHLT()
   }
   return false;
 }       // -----  end of function ComAna::IsUpdateHLT  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  ComAna::GetHLTstr
+//  Description:  /* cursor */
+// ===========================================================================
+std::vector<std::string> ComAna::GetHLTsrc() const
+{
+  return HLTstr;
+}       // -----  end of function ComAna::GetHLTstr  -----
