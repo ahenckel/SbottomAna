@@ -24,7 +24,8 @@
 // Description:  constructor
 //----------------------------------------------------------------------------
 ComAna::ComAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &OutFile_, std::string spec_):
-  isData(false), AnaName(name), tr(tr_), spec(spec_), NBaseWeight(1.0), OutFile(OutFile_)
+  isData(false), AnaName(name), tr(tr_), spec(spec_), NBaseWeight(1.0), OutFile(OutFile_),
+  SysVarName(""), SysVarCentral("")
 {
   his = new HistTool(OutFile, "", name);
   DefineLabels(spec);
@@ -565,7 +566,12 @@ bool ComAna::SetEvtWeight(double weight)
   }
   ShapeWeight = weight;
   if (Sysbit.test(0))
-    ShapeWeight = ShapeWeight * tr->getVar<double>(SysVarName);
+  {
+    if (SysVarCentral == "")
+      ShapeWeight = weight * tr->getVar<double>(SysVarName);
+    else
+      ShapeWeight = weight / tr->getVar<double>(SysVarCentral) * tr->getVar<double>(SysVarName);
+  }
   his->SetWeight(ShapeWeight);
   return true;
 }       // -----  end of function ComAna::SetEvtWeight  -----
@@ -600,7 +606,12 @@ bool ComAna::SetRateWeight(double weight)
   }
 
   if (Sysbit.test(1))
-    NBaseWeight = weight * tr->getVar<double>(SysVarName);
+  {
+    if (SysVarCentral == "")
+      NBaseWeight = weight * tr->getVar<double>(SysVarName);
+    else
+      NBaseWeight = weight / tr->getVar<double>(SysVarCentral) * tr->getVar<double>(SysVarName);
+  }
   else NBaseWeight = weight;
   return true;
 }       // -----  end of function ComAna::SetRateWeight  -----
@@ -736,9 +747,10 @@ bool ComAna::CheckLeadingLeptons(int NCut)
 //         Name:  ComAna::SetSysVar
 //  Description:  
 // ===========================================================================
-bool ComAna::SetSysVar(std::string &Sysbit_, std::string &SysVar_)
+bool ComAna::SetSysVar(std::string &Sysbit_, std::string &SysVar_, std::string SysCentral_)
 {
   SysVarName = SysVar_;
+  SysVarCentral = SysCentral_;
   Sysbit = std::bitset<2>(Sysbit_);
   return true;
 }       // -----  end of function ComAna::SetSysVar  -----

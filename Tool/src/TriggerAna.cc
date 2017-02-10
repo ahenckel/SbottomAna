@@ -305,6 +305,7 @@ bool TriggerAna::FillCut()
     his->FillTH1("CutFlow", int(i)); 
     FillMETEff(i);
     FillMuonEff(i);
+    FillEleEff(i);
   }
 
   return true;
@@ -422,6 +423,8 @@ bool TriggerAna::FillEleEff(int NCut)
 
   std::vector<std::string> EleHLT;
   EleHLT.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
+  EleHLT.push_back("HLT_Ele105_CaloIdVT_GsfTrkIdT_v\\d");
+  EleHLT.push_back("HLT_Ele115_CaloIdVT_GsfTrkIdT_v\\d");
   if (PassTrigger(EleHLT))
   {
     his->FillTH1(NCut, "TrigEle_Numerator", LeadingPt);

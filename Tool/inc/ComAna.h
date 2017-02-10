@@ -59,7 +59,7 @@ class ComAna
     virtual bool WriteHistogram();
     bool DrawHistogram();
     bool RunEvent();
-    bool SetSysVar(std::string &Sysbit_, std::string &SysVar_);
+    bool SetSysVar(std::string &Sysbit_, std::string &SysVar_, std::string SysCentral_="");
     // ====================  MUTATORS      ===============================
 
     // ====================  OPERATORS     ===============================
@@ -113,6 +113,7 @@ class ComAna
     // Systematics
     std::bitset<2> Sysbit;
     std::string SysVarName;
+    std::string SysVarCentral;
 
   private:
     // ====================  METHODS       ===============================

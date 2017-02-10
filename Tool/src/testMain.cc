@@ -56,9 +56,12 @@
 #include "SusyAnaTools/Tools/PDFUncertainty.h"
 #include "SusyAnaTools/Tools/Weights.h"
 #include "SusyAnaTools/Tools/BTagCorrector.h"
+#include "SusyAnaTools/Tools/ISRCorrector.h"
 
-bool DefSysComAnd(std::map<std::string, std::pair<std::string, std::string> > &SysMap, 
-    std::map<std::string, ComAna*> &AnaMap, std::shared_ptr<TFile> OutFile=NULL);
+bool DefSysComAnd(std::map<std::string, std::vector<std::string> > &SysMap, 
+    std::map<std::string, ComAna*> &AnaMap, 
+    std::vector<std::string> vSysAna={},
+    std::shared_ptr<TFile> OutFile=NULL);
 
 int main(int argc, char* argv[])
 {
@@ -125,49 +128,36 @@ int main(int argc, char* argv[])
     his->FillTPro("XS", static_cast<int>(i), SamplePro[binlabel]);
   }
 
+  std::string  proname = GetProcName(SamplePro);
   std::string filterstring = "";
-  if (strcmp(fastsim, "fastsim") == 0)
-  {
+  if (strcmp(fastsim, "fastsim") == 0 || strstr(inputFileList, "Fastsim") != NULL)
     filterstring =  "fastsim";
-  }
-  if(strstr(inputFileList, "Fastsim") != NULL)
-    filterstring =  "fastsim";
-  
-
-  std::cout << " Sample is  " << filterstring << std::endl;
+  std::cout << "Process " <<proname <<  " Sample is  " << filterstring << std::endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setup Global Object ~~~~~
-  LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
-  PDFUncertainty pdfs;  //PDF 
-  //Pileup_Sys pileup;
+  //LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
+  //PDFUncertainty pdfs;  //PDF 
+  //ISRCorrector isrCorr("allINone_ISRJets.root", "", "", proname);
+  //BTagCorrector btagcorr("allINone_bTagEff.root", "", filterstring == "fastsim", proname);
+  //Pileup_Sys pileup("PileupHistograms_0121_69p2mb_pm4p6.root");
   //ExternObj Gobj;
-  //BTagCorrector btagcorr;
-  //if (filterstring == "fastsim")
-  //{
-    //btagcorr.SetFastSim(true);
-    //btagcorr.SetCalibFastSim("CSV_13TEV_Combined_20_11_2015.csv");
-  //}
 
   //clock to monitor the run time
   size_t t0 = clock();
   NTupleReader tr(fChain);
   tr.setReThrow(false);
-  tr.registerFunction(pdfs);
-  //tr.registerFunction(pileup);
+  //tr.registerFunction(pdfs);
+  //tr.registerFunction(isrCorr);
   //tr.registerFunction(btagcorr);
+  //tr.registerFunction(pileup);
 
   // TopTagger
 //**************************************************************************//
 //                         Prepare Baseline Classes                         //
 //**************************************************************************//
   std::map<std::string, BaselineVessel*> blvMap;
-  blvMap["Default"] = new BaselineVessel(tr, "", filterstring);
+  //blvMap["Default"] = new BaselineVessel(tr, "", filterstring);
   blvMap["MedEle"] = new BaselineVessel(tr, "MedEle", filterstring);
   blvMap["MedEle"]->elesFlagIDLabel = "elesFlagMedium";
-  //blvMap["ICHEP"] = new BaselineVessel(tr, "ICHEP", filterstring);
-  //blvMap["ICHEP"]->SetupTopTagger(false);
-  //tr.registerFunction(blv);
-  //tr.registerFunction(&passBaselineJECup);
-  //tr.registerFunction(&passBaselineJECdn);
 
   for(auto blv : blvMap)
   {
@@ -189,14 +179,14 @@ int main(int argc, char* argv[])
   //                           Prepare the analysis                           //
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
-  AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
   //AnaMap["TrigStop"] = new TriggerAna("TrigStop", &tr, OutFile, "MedEle");
   //AnaMap["TrigQCD"]  = new TriggerAna("TrigQCD",  &tr, OutFile, "MedEle");
   //AnaMap["TrigMuon"] = new TriggerAna("TrigMuon", &tr, OutFile, "MedEle");
   AnaMap["TrigEle"] = new TriggerAna("TrigEle", &tr, OutFile, "MedEle");
   for (int i = 0; i < 4; ++i)
   {
-    AnaMap["Tagger"+std::to_string(i)] = new STTagger("Tagger"+std::to_string(i), &tr, OutFile, "MedEle", i);
+    //AnaMap["Tagger"+std::to_string(i)] = new STTagger("Tagger"+std::to_string(i), &tr, OutFile, "MedEle", i);
   }
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
@@ -206,10 +196,9 @@ int main(int argc, char* argv[])
   //AnaMap["STZinvM"] = new STZinv("STZinvM", &tr, OutFile,"ZinvM");
   //AnaMap["STZinvE"] = new STZinv("STZinvE", &tr, OutFile,"ZinvE");
   //AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
-  //AnaMap["TTZ3LepT"] = new TTZ3Lep("TTZ3LepT", &tr, OutFile, "TTZT");
   //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
-  //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
-  //AnaMap["TTZ3SUSYE"] = new TTZ3Lep("SUSYE", &tr, OutFile);
+  AnaMap["TTZ3SUSYE"] = new TTZ3Lep("SUSYE", &tr, OutFile, "MedEle");
+  AnaMap["TTZ3SUSYM"] = new TTZ3Lep("SUSYM", &tr, OutFile, "MedEle");
   //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZDiLepE"] = new TTZDiLep("TTZDiLepE", &tr, OutFile, "TTZE");
@@ -222,16 +211,15 @@ int main(int argc, char* argv[])
   //                      Setup Systematics with Weights                      //
   //**************************************************************************//
   // Systematic_Name, sysbit (rate, shape), registerName
-  std::map<std::string, std::pair<std::string, std::string> > SysMap;
-  SysMap["PDF_up"] = std::make_pair("11", "NNPDF_From_Median_Up"); // as shape uncertainty
-  SysMap["PDF_down"] = std::make_pair("11", "NNPDF_From_Median_Down"); // as shape uncertainty
-  //SysMap["PDF_up"] = std::make_pair("11", "PDF_Unc_Up"); // as shape uncertainty
-  //SysMap["PDF_down"] = std::make_pair("11", "PDF_Unc_Down"); // as shape uncertainty
-  SysMap["Scale_up"] = std::make_pair("11", "Scaled_Variations_Up"); // as shape uncertainty
-  SysMap["Scale_down"] = std::make_pair("11", "Scaled_Variations_Down"); // as shape uncertainty
-  DefSysComAnd(SysMap, AnaMap);
-  //AnaMap["Stop_PU_up"] = new StopAna("Stop_PU_up", &tr, OutFile);
-  //AnaMap["Stop_PU_down"] = new StopAna("Stop_PU_down", &tr, OutFile);
+  std::map<std::string, std::vector<std::string> > SysMap;
+  // Bit(Rate, Shape), "Scale Up/Down", "Central correction is has"
+  SysMap["PDF_up"]     = {"11", "NNPDF_From_Median_Up"};
+  SysMap["PDF_down"]   = {"11", "NNPDF_From_Median_Down"};
+  SysMap["Scale_up"]   = {"11", "Scaled_Variations_Up"};
+  SysMap["Scale_down"] = {"11", "Scaled_Variations_Down"};
+  SysMap["PU_up"]      = {"01", "_PUSysUp",                "_PUweightFactor"};
+  SysMap["PU_down"]    = {"01", "_PUSysDown",              "_PUweightFactor"};
+  //DefSysComAnd(SysMap, AnaMap, {"Stop"});
 
   for( auto &it : AnaMap )
   {
@@ -268,13 +256,20 @@ int main(int argc, char* argv[])
     double rateWeight = evtWeight; // For rate (event count) -> NEvent & NBase
     his->FillTH1("NEvent", 1, evtWeight);
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for rate, but not shape ~~~~~
-    //rateWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
+    if (tr.getVar<int>("run") == 1) // Set weight to MC
+    {
+      //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for rate, but not shape ~~~~~
+      rateWeight *= tr.getVar<double>("isr_Unc_Cent"); 
+      rateWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
-    //evtWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
-    //evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
-    //evtWeight *= tr.getVar<double>("NbNjReweight"); // TopPtReweight, apply to shape, not rate
+      //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
+      evtWeight *= tr.getVar<double>("isr_Unc_Cent"); 
+      evtWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
+      evtWeight *= tr.getVar<double>("_PUweightFactor"); 
+      //evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
+      //evtWeight *= tr.getVar<double>("NbNjReweight"); // TopPtReweight, apply to shape, not rate
+    }
+
 
     his->FillTH1("Weight", evtWeight);
 
@@ -285,21 +280,6 @@ int main(int argc, char* argv[])
     {
       double temprate = rateWeight;
       double tempevt = evtWeight;
-      //if (it.first.find("PU") == std::string::npos)
-      //{
-        //temprate *= tr.getVar<double>("_PUweightFactor");
-        //tempevt *= tr.getVar<double>("_PUweightFactor");
-      //} 
-      //else if (it.first.find("PU_up") != std::string::npos)
-      //{
-        //temprate *= tr.getVar<double>("_PUSysUp");
-        //tempevt *= tr.getVar<double>("_PUSysUp");
-      //} else if (it.first.find("PU_down") != std::string::npos)
-      //{
-        //temprate *= tr.getVar<double>("_PUSysDown");
-        //tempevt *= tr.getVar<double>("_PUSysDown");
-      //}
-
       it.second->SetRateWeight(temprate);
       it.second->SetEvtWeight(tempevt);
       it.second->FillCut();
@@ -327,14 +307,20 @@ int main(int argc, char* argv[])
 //         Name:  DefSysComAnd
 //  Description:  /* cursor */
 // ===========================================================================
-bool DefSysComAnd(std::map<std::string, std::pair<std::string, std::string> > &SysMap, 
-  std::map<std::string, ComAna*> &AnaMap, std::shared_ptr<TFile> OutFile)
+bool DefSysComAnd(std::map<std::string, std::vector<std::string> > &SysMap, 
+    std::map<std::string, ComAna*> &AnaMap, 
+    std::vector<std::string> vSysAna,
+    std::shared_ptr<TFile> OutFile)
 {
   std::vector<std::string> anaNames;
-  for(auto &ana : AnaMap)
+  if (vSysAna.empty())
   {
-    anaNames.push_back(ana.first);
+    for(auto &ana : AnaMap)
+    {
+      anaNames.push_back(ana.first);
+    }
   }
+  else anaNames = vSysAna;
 
   for(auto &sys : SysMap)
   {
@@ -343,7 +329,10 @@ bool DefSysComAnd(std::map<std::string, std::pair<std::string, std::string> > &S
       std::stringstream ss;
       ss << ananame <<"_" << sys.first;
       AnaMap[ss.str()] = AnaMap[ananame]->Clone(ss.str(), OutFile);
-      AnaMap[ss.str()]->SetSysVar(sys.second.first, sys.second.second);
+      if (sys.second.size() == 2)
+        AnaMap[ss.str()]->SetSysVar(sys.second.at(0), sys.second.at(1));
+      if (sys.second.size() == 3)
+        AnaMap[ss.str()]->SetSysVar(sys.second.at(0), sys.second.at(1), sys.second.at(2));
     }
   }
   return true;

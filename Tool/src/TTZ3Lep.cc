@@ -48,7 +48,15 @@ TTZ3Lep::TTZ3Lep (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
     if (strcmp(&(AnaName.back()), "E") == 0)
     {
       HLTstr.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
+      HLTstr.push_back("HLT_Ele105_CaloIdVT_GsfTrkIdT_v\\d");
+      HLTstr.push_back("HLT_Ele115_CaloIdVT_GsfTrkIdT_v\\d");
       //MCTrigstr.push_back(Label["PassDiEleTrigger"]);
+    }
+    if (strcmp(&(AnaName.back()), "M") == 0)
+    {
+      HLTstr.push_back("HLT_Mu50_v\\d");
+      HLTstr.push_back("HLT_IsoMu24_v\\d");
+      HLTstr.push_back("HLT_IsoTKMu24_v\\d");
     }
   }
 }  // -----  end of method TTZ3Lep::TTZ3Lep  (constructor)  -----
@@ -211,7 +219,7 @@ bool TTZ3Lep::CheckCut()
   {
     cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
     cutbit.set(1 , ComAna::PassTrigger());
-    cutbit.set(2 , Pass3Leps(40, 20, 20, true));
+    cutbit.set(2 , Pass3Leps(40, 20, 20, strcmp(&(AnaName.back()), "E") == 0));
     cutbit.set(3 , tr->getVec<TLorentzVector>(Label["recoZVec"]).size() == 1);
     cutbit.set(4 , ComAna::CountJets(40) >= 4);
     cutbit.set(5 , tr->getVar<int>(Label["cntCSVS"]) >= 2);
