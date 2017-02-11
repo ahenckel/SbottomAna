@@ -185,7 +185,9 @@ float LepTrigSF::GetLeptonSF(ComAna* ana)
   if (muontype == "muonsFlagMedium" )
     LepSFVec["muon"] = { "mu_mediumID_SF", "mu_miniISO_SF", "mu_trkptLT10_SF", "mu_trkptGT10_SF"};
   if (muontype == "elesFlagVeto" )
-    LepSFVec["ele"] = { "ele_VetoID_SF", "ele_miniISO_SF", "ele_trkpt_SF"};
+    LepSFVec["ele"] = { "GsfElectronToCutBasedSpring15V", "ele_miniISO_SF", "ele_trkpt_SF"};
+  if (muontype == "elesFlagMedium" )
+    LepSFVec["ele"] = { "GsfElectronToCutBasedSpring15M", "ele_miniISO_SF", "ele_trkpt_SF"};
 
   float lepsf = 1.;
   lepsf *= GetMuonSF() * GetEleSF();
