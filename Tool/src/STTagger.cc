@@ -376,7 +376,7 @@ bool STTagger::GetRecoTops()
 {
   vRecoTops.clear();
   if (nTopJets == 0)
-    vRecoTops = tr->getVec<TLorentzVector>("vTops");
+    vRecoTops = tr->getVec<TLorentzVector>(Label["vTops"]);
   else
   {
     const std::map<int, std::vector<TLorentzVector> > &mtopjets = tr->getMap<int, std::vector<TLorentzVector> >(Label["mTopJets"]);
@@ -384,7 +384,7 @@ bool STTagger::GetRecoTops()
     {
       if (topit.second.size() == nTopJets)
       {
-        vRecoTops.push_back(tr->getVec<TLorentzVector>("vTops").at(topit.first));
+        vRecoTops.push_back(tr->getVec<TLorentzVector>(Label["vTops"]).at(topit.first));
       }
     }
   }

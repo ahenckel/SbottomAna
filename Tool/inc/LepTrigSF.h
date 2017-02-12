@@ -17,6 +17,8 @@
 #ifndef  MY_LEPTRIGSF_INC
 #define  MY_LEPTRIGSF_INC
 
+#include <algorithm>
+
 #include "ComAna.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
@@ -56,12 +58,13 @@ class LepTrigSF
     float GetMuonSF();
     bool InitLeptonSF(std::string LepSFFileName);
     float GetMETTrigEff();
-    float GetMuonTrigEff();
+    float GetMuonTrigEff(int ptcut);
     float GetLeptonSF(ComAna* ana);
     float GetElecTrigEff();
     float GetTriggerEff(ComAna *ana);
 
     // ====================  DATA MEMBERS  ===============================
+    bool debug;
     NTupleReader *tr;
     TFile *LepSFfile;
     std::string curSpec;

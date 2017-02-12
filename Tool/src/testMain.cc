@@ -135,6 +135,9 @@ int main(int argc, char* argv[])
     filterstring =  "fastsim";
   std::cout << "Process " <<proname <<  " Sample is  " << filterstring << std::endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setup Global Object ~~~~~
+  //Dirty fixed for missing DYJetsToLL_HT_70to100 in ISR and BTag SF
+  if (proname =="DYJetsToLL_HT_70to100") proname = "DYJetsToLL_HT_100to200";
+
   LHAPDF::setVerbosity(LHAPDF::Verbosity::SILENT);
   PDFUncertainty pdfs;  //PDF 
   ISRCorrector isrCorr("allINone_ISRJets.root", "", "", proname);
@@ -184,10 +187,11 @@ int main(int argc, char* argv[])
   //AnaMap["TrigStop"] = new TriggerAna("TrigStop", &tr, OutFile, "MedEle");
   //AnaMap["TrigQCD"]  = new TriggerAna("TrigQCD",  &tr, OutFile, "MedEle");
   //AnaMap["TrigMuon"] = new TriggerAna("TrigMuon", &tr, OutFile, "MedEle");
-  AnaMap["TrigEle"] = new TriggerAna("TrigEle", &tr, OutFile, "MedEle");
+  //AnaMap["TrigEle"] = new TriggerAna("TrigEle", &tr, OutFile, "MedEle");
   for (int i = 0; i < 4; ++i)
   {
-    //AnaMap["Tagger"+std::to_string(i)] = new STTagger("Tagger"+std::to_string(i), &tr, OutFile, "MedEle", i);
+    AnaMap["Tagger"+std::to_string(i)] = new STTagger("Tagger"+std::to_string(i), &tr, OutFile, "MedEle", i);
+    AnaMap["Tagger"+std::to_string(i)+"WT"] = new STTagger("Tagger"+std::to_string(i)+"WT", &tr, OutFile, "MedEle", i);
   }
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
@@ -200,6 +204,8 @@ int main(int argc, char* argv[])
   //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
   AnaMap["TTZ3SUSYE"] = new TTZ3Lep("SUSYE", &tr, OutFile, "MedEle");
   AnaMap["TTZ3SUSYM"] = new TTZ3Lep("SUSYM", &tr, OutFile, "MedEle");
+  AnaMap["WTTZ3SUSYE"] = new TTZ3Lep("WSUSYE", &tr, OutFile, "MedEle");
+  AnaMap["WTTZ3SUSYM"] = new TTZ3Lep("WSUSYM", &tr, OutFile, "MedEle");
   //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZDiLepE"] = new TTZDiLep("TTZDiLepE", &tr, OutFile, "TTZE");
@@ -279,7 +285,11 @@ int main(int argc, char* argv[])
     //**************************************************************************//
     for( auto &it : AnaMap )
     {
-      float leptrig = lepTrigSF.GetEventSF(it.second, "11");
+      float leptrig = 1.0;
+      if (it.first.find("WT") != std::string::npos)
+        leptrig = lepTrigSF.GetEventSF(it.second, "10");
+      else
+        leptrig = lepTrigSF.GetEventSF(it.second, "11");
       double temprate = rateWeight *leptrig;
       double tempevt = evtWeight *leptrig;
       it.second->SetRateWeight(temprate);
