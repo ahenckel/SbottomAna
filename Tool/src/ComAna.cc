@@ -158,6 +158,9 @@ ComAna::operator = ( const ComAna &other )
 bool ComAna::BookHistograms()
 {
   his->AddTH1C("NBase", "Number of Events passed baseline", 2, 0, 2);
+  his->AddTH1("NBaseWeight", "NBaseWeight", 120, -1.2, 1.2);
+  his->AddTH1("ShapeWeight", "ShapeWeight", 120, -1.2, 1.2);
+  return true;
   // Jets
   BookTLVHistos("Jet1");
   BookTLVHistos("Jet2");
@@ -225,6 +228,12 @@ bool ComAna::InitCutOrder(std::string ana)
 bool ComAna::FillCut(int NCut)
 {
   his->FillTH1(NCut, "NBase", 1, NBaseWeight);
+  if (NCut == 0)
+  {
+    his->FillTH1("NBaseWeight", NBaseWeight, 1);
+    his->FillTH1("ShapeWeight", ShapeWeight, 1);
+  }
+  return true;
   // Jet
   his->FillTH1(NCut, "NJets", j30count);
   his->FillTH2(NCut, "NBJetsNJets30", tr->getVar<int>(Label["cntCSVS"]), tr->getVar<int>(Label["cntNJetsPt30Eta24"]));

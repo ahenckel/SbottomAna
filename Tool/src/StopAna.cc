@@ -77,7 +77,7 @@ StopAna::operator = ( const StopAna &other )
 // ===========================================================================
 bool StopAna::BookHistograms()
 {
-  //ComAna::BookHistograms();
+  ComAna::BookHistograms();
   BookTLVHistos("RecoTop");
   his->AddTH1C("hSearchBinsStat" , "Search Bins Stat;Search Bin;Events" , 84 , 0 , 84);
   his->AddTH1C("hSearchBins"     , "Search Bins;Search Bin;Events"      , 84 , 0 , 84);

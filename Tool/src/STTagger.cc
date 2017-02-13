@@ -144,7 +144,7 @@ bool STTagger::BookHistograms()
   his->AddTH1("TopTagdPhiJ2_Efficiency",     "TopTagdPhiJ2_Efficiency",    "dPhi(J2, MET)", "Efficiency"      ,  200, 0, 4);
 
   BookJMEHist();
-  //ComAna::BookHistograms();
+  ComAna::BookHistograms();
   return true;
 }       // -----  end of function STTagger::BookHistograms  -----
 
@@ -286,7 +286,7 @@ bool STTagger::FillCut()
     his->FillTH1("CutFlow", int(i)); 
     his->FillTH1(int(i), "HTLep", HTLep);
 
-    //ComAna::FillCut(i);
+    ComAna::FillCut(i);
     CalTaggerEff(i);
     FillGenTop(i);
 
@@ -660,49 +660,49 @@ bool STTagger::FillGenTop(int icut)
 bool STTagger::WriteHistogram() 
 {
 
-  for (int i = 0; i < static_cast<int>(CutOrder.size()); ++i)
-  {
-    std::string eff = "TopTagPT_Efficiency_";
-    std::string num = "TopTagPT_Numerator_";
-    std::string den = "TopTagPT_Denominator_";
-    eff += std::to_string(i);
-    num += std::to_string(i);
-    den += std::to_string(i);
-    his->CalEfficiency(eff, num, den);
-  }
+  //for (int i = 0; i < static_cast<int>(CutOrder.size()); ++i)
+  //{
+    //std::string eff = "TopTagPT_Efficiency_";
+    //std::string num = "TopTagPT_Numerator_";
+    //std::string den = "TopTagPT_Denominator_";
+    //eff += std::to_string(i);
+    //num += std::to_string(i);
+    //den += std::to_string(i);
+    //his->CalEfficiency(eff, num, den);
+  //}
 
 
-  for (int i = 0; i < static_cast<int>(CutOrder.size()); ++i)
-  {
-    std::string eff = "TopTagMET_Efficiency_";
-    std::string num = "TopTagMET_Numerator_";
-    std::string den = "TopTagMET_Denominator_";
-    eff += std::to_string(i);
-    num += std::to_string(i);
-    den += std::to_string(i);
-    his->CalEfficiency(eff, num, den);
-  }
-  his->CalEfficiency("TopTagHT_Efficiency", "TopTagHT_Numerator", "TopTagHT_Denominator");
-  his->CalEfficiency("TopTagPT_Efficiency", "TopTagPT_Numerator", "TopTagPT_Denominator");
-  his->CalEfficiency("TopTagEta_Efficiency", "TopTagEta_Numerator", "TopTagEta_Denominator");
-  his->CalEfficiency("TopTagdR_Efficiency", "TopTagdR_Numerator", "TopTagdR_Denominator");
-  his->CalEfficiency("TopTagHT_Efficiency", "TopTagHT_Numerator", "TopTagHT_Denominator");
-  his->CalEfficiency("TopTagnAK4Js_Efficiency", "TopTagnAK4Js_Numerator", "TopTagnAK4Js_Denominator");
-  his->CalEfficiency("TopTagnBJs_Efficiency", "TopTagnBJs_Numerator", "TopTagnBJs_Denominator");
-  his->CalEfficiency("TopTagMET_Efficiency", "TopTagMET_Numerator", "TopTagMET_Denominator");
-  his->CalEfficiency("TopTagdPhiJ0_Efficiency", "TopTagdPhiJ0_Numerator", "TopTagdPhiJ0_Denominator");
-  his->CalEfficiency("TopTagdPhiJ1_Efficiency", "TopTagdPhiJ1_Numerator", "TopTagdPhiJ1_Denominator");
-  his->CalEfficiency("TopTagdPhiJ2_Efficiency", "TopTagdPhiJ2_Numerator", "TopTagdPhiJ2_Denominator");
+  //for (int i = 0; i < static_cast<int>(CutOrder.size()); ++i)
+  //{
+    //std::string eff = "TopTagMET_Efficiency_";
+    //std::string num = "TopTagMET_Numerator_";
+    //std::string den = "TopTagMET_Denominator_";
+    //eff += std::to_string(i);
+    //num += std::to_string(i);
+    //den += std::to_string(i);
+    //his->CalEfficiency(eff, num, den);
+  //}
+  //his->CalEfficiency("TopTagHT_Efficiency", "TopTagHT_Numerator", "TopTagHT_Denominator");
+  //his->CalEfficiency("TopTagPT_Efficiency", "TopTagPT_Numerator", "TopTagPT_Denominator");
+  //his->CalEfficiency("TopTagEta_Efficiency", "TopTagEta_Numerator", "TopTagEta_Denominator");
+  //his->CalEfficiency("TopTagdR_Efficiency", "TopTagdR_Numerator", "TopTagdR_Denominator");
+  //his->CalEfficiency("TopTagHT_Efficiency", "TopTagHT_Numerator", "TopTagHT_Denominator");
+  //his->CalEfficiency("TopTagnAK4Js_Efficiency", "TopTagnAK4Js_Numerator", "TopTagnAK4Js_Denominator");
+  //his->CalEfficiency("TopTagnBJs_Efficiency", "TopTagnBJs_Numerator", "TopTagnBJs_Denominator");
+  //his->CalEfficiency("TopTagMET_Efficiency", "TopTagMET_Numerator", "TopTagMET_Denominator");
+  //his->CalEfficiency("TopTagdPhiJ0_Efficiency", "TopTagdPhiJ0_Numerator", "TopTagdPhiJ0_Denominator");
+  //his->CalEfficiency("TopTagdPhiJ1_Efficiency", "TopTagdPhiJ1_Numerator", "TopTagdPhiJ1_Denominator");
+  //his->CalEfficiency("TopTagdPhiJ2_Efficiency", "TopTagdPhiJ2_Numerator", "TopTagdPhiJ2_Denominator");
 
-  his->CalEfficiency("TagPT_Efficiency", "TagPT_Numerator", "TagPT_Denominator");
-  his->CalEfficiency("TagMass_Efficiency", "TagMass_Numerator", "TagMass_Denominator");
-  his->CalEfficiency("TagPhi_Efficiency", "TagPhi_Numerator", "TagPhi_Denominator");
-  his->CalEfficiency("TagEta_Efficiency", "TagEta_Numerator", "TagEta_Denominator");
+  //his->CalEfficiency("TagPT_Efficiency", "TagPT_Numerator", "TagPT_Denominator");
+  //his->CalEfficiency("TagMass_Efficiency", "TagMass_Numerator", "TagMass_Denominator");
+  //his->CalEfficiency("TagPhi_Efficiency", "TagPhi_Numerator", "TagPhi_Denominator");
+  //his->CalEfficiency("TagEta_Efficiency", "TagEta_Numerator", "TagEta_Denominator");
 
-  his->CalEfficiency("TagdRLep_Efficiency", "TagdRLep_Numerator", "TagdRLep_Denominator");
-  his->CalEfficiency("TagdEtaLep_Efficiency", "TagdEtaLep_Numerator", "TagdEtaLep_Denominator");
-  his->CalEfficiency("TagdPhiLep_Efficiency", "TagdPhiLep_Numerator", "TagdPhiLep_Denominator");
-  his->CalEfficiency("TagMtW_Efficiency", "TagMtW_Numerator", "TagMtW_Denominator");
+  //his->CalEfficiency("TagdRLep_Efficiency", "TagdRLep_Numerator", "TagdRLep_Denominator");
+  //his->CalEfficiency("TagdEtaLep_Efficiency", "TagdEtaLep_Numerator", "TagdEtaLep_Denominator");
+  //his->CalEfficiency("TagdPhiLep_Efficiency", "TagdPhiLep_Numerator", "TagdPhiLep_Denominator");
+  //his->CalEfficiency("TagMtW_Efficiency", "TagMtW_Numerator", "TagMtW_Denominator");
   ComAna::WriteHistogram();
   return true;
 }       // -----  end of function STTagger::WriteHistogram  -----
@@ -798,7 +798,7 @@ bool STTagger::FillJMEEff()
   if (vMuon45.size() == 0)
     return false;
 
-  const std::vector<TLorentzVector> &vTops = tr->getVec<TLorentzVector>(Label["vTops"]);
+  const std::vector<TLorentzVector> &vTops = vRecoTops;
 
   assert(vMuon45.size() > 0);
   TLorentzVector muon = vMuon45.front();

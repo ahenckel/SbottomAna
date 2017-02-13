@@ -111,7 +111,7 @@ TTZ3Lep::operator = ( const TTZ3Lep &other )
 // ===========================================================================
 bool TTZ3Lep::BookHistograms()
 {
-  //ComAna::BookHistograms();
+  ComAna::BookHistograms();
   BookTLVHistos("RecoZ");
   BookTLVHistos("3rdMuon");
   BookTLVHistos("3rdEle");
@@ -266,7 +266,7 @@ bool TTZ3Lep::FillCut()
       his->FillTH2(i, "JBTVsZPT", tr->getVec<TLorentzVector>(Label["recoZVec"]).at(0).Pt(), JBTcount);
     }
 
-    //ComAna::FillCut(i);
+    ComAna::FillCut(i);
     ComAna::CheckLeadingLeptons(i);
 
     Check3rdLep(i);

@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
   std::shared_ptr<TFile> OutFile(new TFile(outFileName, "RECREATE"));
   HistTool* his = new HistTool(OutFile, "d");
   his->AddTH1("NEvent", "Number of Events", 2, 0, 2);
-  his->AddTH1("Weight", "Number of Events", 200, -1, 1);
+  his->AddTH1("Weight", "Number of Events", 120, -1.2, 1.2);
 
   std::map<std::string, double> SamplePro = GetXS(inputFileList);
   std::vector<std::string> Probins= { "key", "xsec", "lumi", "kfactor", "nEvts", "color" };
@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 //                         Prepare Baseline Classes                         //
 //**************************************************************************//
   std::map<std::string, BaselineVessel*> blvMap;
-  //blvMap["Default"] = new BaselineVessel(tr, "", filterstring);
+  blvMap["Default"] = new BaselineVessel(tr, "", filterstring);
   blvMap["MedEle"] = new BaselineVessel(tr, "MedEle", filterstring);
   blvMap["MedEle"]->elesFlagIDLabel = "elesFlagMedium";
 
@@ -183,7 +183,8 @@ int main(int argc, char* argv[])
   //                           Prepare the analysis                           //
   //**************************************************************************//
   std::map<std::string, ComAna*> AnaMap;
-  //AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  AnaMap["Stop"] = new StopAna("Stop", &tr, OutFile);
+  AnaMap["NTStop"] = new StopAna("NTStop", &tr, OutFile);
   //AnaMap["TrigStop"] = new TriggerAna("TrigStop", &tr, OutFile, "MedEle");
   //AnaMap["TrigQCD"]  = new TriggerAna("TrigQCD",  &tr, OutFile, "MedEle");
   //AnaMap["TrigMuon"] = new TriggerAna("TrigMuon", &tr, OutFile, "MedEle");
@@ -191,7 +192,7 @@ int main(int argc, char* argv[])
   for (int i = 0; i < 4; ++i)
   {
     AnaMap["Tagger"+std::to_string(i)] = new STTagger("Tagger"+std::to_string(i), &tr, OutFile, "MedEle", i);
-    AnaMap["Tagger"+std::to_string(i)+"WT"] = new STTagger("Tagger"+std::to_string(i)+"WT", &tr, OutFile, "MedEle", i);
+    AnaMap["Tagger"+std::to_string(i)+"NT"] = new STTagger("Tagger"+std::to_string(i)+"NT", &tr, OutFile, "MedEle", i);
   }
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
@@ -206,6 +207,8 @@ int main(int argc, char* argv[])
   AnaMap["TTZ3SUSYM"] = new TTZ3Lep("SUSYM", &tr, OutFile, "MedEle");
   AnaMap["WTTZ3SUSYE"] = new TTZ3Lep("WSUSYE", &tr, OutFile, "MedEle");
   AnaMap["WTTZ3SUSYM"] = new TTZ3Lep("WSUSYM", &tr, OutFile, "MedEle");
+  AnaMap["NTTZ3SUSYE"] = new TTZ3Lep("NSUSYE", &tr, OutFile, "MedEle");
+  AnaMap["NTTZ3SUSYM"] = new TTZ3Lep("NSUSYM", &tr, OutFile, "MedEle");
   //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZDiLepE"] = new TTZDiLep("TTZDiLepE", &tr, OutFile, "TTZE");
@@ -226,7 +229,7 @@ int main(int argc, char* argv[])
   SysMap["Scale_down"] = {"11", "Scaled_Variations_Down"};
   SysMap["PU_up"]      = {"01", "_PUSysUp",                "_PUweightFactor"};
   SysMap["PU_down"]    = {"01", "_PUSysDown",              "_PUweightFactor"};
-  //DefSysComAnd(SysMap, AnaMap, {"Stop"});
+  DefSysComAnd(SysMap, AnaMap, {"Stop", "NTStop"});
 
   for( auto &it : AnaMap )
   {
@@ -287,11 +290,13 @@ int main(int argc, char* argv[])
     {
       float leptrig = 1.0;
       if (it.first.find("WT") != std::string::npos)
-        leptrig = lepTrigSF.GetEventSF(it.second, "10");
-      else
         leptrig = lepTrigSF.GetEventSF(it.second, "11");
+      else
+        leptrig = lepTrigSF.GetEventSF(it.second, "10");
       double temprate = rateWeight *leptrig;
       double tempevt = evtWeight *leptrig;
+      if(it.first.find("NT") != std::string::npos)
+        temprate = tempevt = tr.getVar<double>("evtWeight"); // No weights
       it.second->SetRateWeight(temprate);
       it.second->SetEvtWeight(tempevt);
       it.second->FillCut();
