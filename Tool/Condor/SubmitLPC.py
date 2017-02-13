@@ -9,11 +9,13 @@ import glob
 import tarfile
 
 DelExe    = '../testMain'
-OutDir = '/store/user/benwu/Stop16/Trigger/'
+OutDir = '/store/user/benwu/Stop16/TTZ/'
 
-tempdir = ''
+
+# tempdir = ''
+tempdir = '/uscmst1b_scratch/lpc1/lpctrig/benwu/CondorTemp'
 UserEMAIL = 'benwu@fnal.gov'
-ProjectName = 'Trig_v10'
+ProjectName = 'TTZTaggerStop_v15'
 Process = {
 # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SM ~~~~~
     "WJetsToLNu_HT_70to100"    : ['', 10],
@@ -116,20 +118,20 @@ Process = {
     # "Data_MET_Run2016G"            : ['', 200],
     # "Data_SingleElectron_2016"     : ['', 1000],
     # "Data_SingleElectron_Run2016G" : ['', 200],
-    # "Data_SingleMuon_2016"         : ['', 1000],
+    # "Data_SingleMuon_2016"         : ['', 1200],
     # "Data_SingleMuon_Run2016G"     : ['', 200],
 
 # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Signal ~~~~~
-    "Signal_fullsim_T2tt_mStop175_mLSP0"   : ['', 18],
-    "Signal_fullsim_T2tt_mStop200_mLSP25"  : ['', 20],
-    "Signal_fullsim_T2tt_mStop225_mLSP50"  : ['', 11],
-    "Signal_fullsim_T2tt_mStop250_mLSP75"  : ['', 22],
-    "Signal_fullsim_T2tt_mStop275_mLSP100" : ['', 13],
-    "Signal_fullsim_T2tt_mStop300_mLSP125" : ['', 9],
-    "Signal_T1tttt_mGluino1200_mLSP800"    : ['', 1],
-    "Signal_T1tttt_mGluino1500_mLSP100"    : ['', 1],
-    "Signal_T2tt_mStop500_mLSP325"         : ['', 1],
-    "Signal_T2tt_mStop850_mLSP100"         : ['', 1],
+    # "Signal_fullsim_T2tt_mStop175_mLSP0"   : ['', 18],
+    # "Signal_fullsim_T2tt_mStop200_mLSP25"  : ['', 20],
+    # "Signal_fullsim_T2tt_mStop225_mLSP50"  : ['', 11],
+    # "Signal_fullsim_T2tt_mStop250_mLSP75"  : ['', 22],
+    # "Signal_fullsim_T2tt_mStop275_mLSP100" : ['', 13],
+    # "Signal_fullsim_T2tt_mStop300_mLSP125" : ['', 9],
+    # "Signal_T1tttt_mGluino1200_mLSP800"    : ['', 1],
+    # "Signal_T1tttt_mGluino1500_mLSP100"    : ['', 1],
+    # "Signal_T2tt_mStop500_mLSP325"         : ['', 1],
+    # "Signal_T2tt_mStop850_mLSP100"         : ['', 1],
 
 }
 
@@ -160,7 +162,7 @@ def MergeFile(prod):
             allfile.add(f)
             if os.path.getsize(f) != 0:
                 goodfile.add(f)
-    run = "hadd -f %s.root " % prod
+    run = "hadd -f merged/%s.root " % prod
     run += " ".join(goodfile)
     process = subprocess.Popen(run, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = process.communicate()
@@ -168,11 +170,6 @@ def MergeFile(prod):
     logfile.write(err)
     logfile.close()
 
-    mv = "mv "
-    mv += " ".join(allfile)
-    mv += " %s.log" % prod
-    mv += " backup"
-    subprocess.call(mv, shell=True)
 
 if __name__ == "__main__":
     cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK)
@@ -193,7 +190,7 @@ if __name__ == "__main__":
         exit()
 
     pattern = re.compile(r'^(.*)_\d+\.root$')
-    g = glob.glob("*")
+    g = glob.glob("*.root")
 
     ## Get all the process
     process = set()
@@ -201,7 +198,13 @@ if __name__ == "__main__":
         match = pattern.match(files)
         if match is not None:
             process.add(match.group(1))
+        else:
+            print files
+            cmd = "cp %s merged/" % files
+            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = proc.communicate()
 
+    print process
     ## Run with multiprocessing Pool
     pool = multiprocessing.Pool(processes = multiprocessing.cpu_count()/3)
     pool.map(MergeFile, process)
@@ -301,6 +304,8 @@ def my_process():
     f.close()
     import shutil
     shutil.copy2("%s/merge.py" % tempdir, "%s/merge.py" % outdir)
+    ### Keeping track of running script
+    shutil.copy2("../src/testMain.cc", "%s/testMain.cc" % outdir)
 
     ### Create Tarball
     NewNpro = {}
@@ -311,14 +316,14 @@ def my_process():
         if not os.path.isfile(value[0]):
             continue
         npro = GetProcess(key, value)
-        Tarfiles.append(npro)
+        Tarfiles+=npro
         NewNpro[key] = len(npro)
 
     Tarfiles.append(os.path.abspath(DelExe))
     Tarfiles += GetNeededFileList(key)
     tarballname ="%s/%s.tar.gz" % (tempdir, ProjectName)
     with tarfile.open(tarballname, "w:gz", dereference=True) as tar:
-        [tar.add(f, arcname=f.split('/')[-1]) for f in npro]
+        [tar.add(f, arcname=f.split('/')[-1]) for f in Tarfiles]
         tar.close()
 
     ### Update condor files

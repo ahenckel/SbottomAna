@@ -161,7 +161,7 @@ def MergeFile(prod):
             allfile.add(f)
             if os.path.getsize(f) != 0:
                 goodfile.add(f)
-    run = "hadd -f %s.root " % prod
+    run = "hadd -f merged/%s.root " % prod
     run += " ".join(goodfile)
     process = subprocess.Popen(run, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = process.communicate()
@@ -169,11 +169,6 @@ def MergeFile(prod):
     logfile.write(err)
     logfile.close()
 
-    mv = "mv "
-    mv += " ".join(allfile)
-    mv += " %s.log" % prod
-    mv += " backup"
-    subprocess.call(mv, shell=True)
 
 if __name__ == "__main__":
     cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK)
@@ -194,7 +189,7 @@ if __name__ == "__main__":
         exit()
 
     pattern = re.compile(r'^(.*)_\d+\.root$')
-    g = glob.glob("*")
+    g = glob.glob("*.root")
 
     ## Get all the process
     process = set()
@@ -202,7 +197,13 @@ if __name__ == "__main__":
         match = pattern.match(files)
         if match is not None:
             process.add(match.group(1))
+        else:
+            print files
+            cmd = "cp %s merged/" % files
+            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = proc.communicate()
 
+    print process
     ## Run with multiprocessing Pool
     pool = multiprocessing.Pool(processes = multiprocessing.cpu_count()/3)
     pool.map(MergeFile, process)
@@ -210,15 +211,6 @@ if __name__ == "__main__":
 
 def Condor_Sub(condor_file):
     ## Since we run with xrootd, setup proxy
-    # hasproxy = True
-    # proxyfile = ''
-    # if os.environ.has_key('X509_USER_PROXY'):
-        # proxyfile = os.path.abspath(os.environ['X509_USER_PROXY'])
-    # else:
-        # hasproxy = False
-    # if not hasproxy or not os.path.exists(proxyfile) or (time.time() - os.stat(proxyfile).st_ctime) / 60/24 > 1:
-        # print "Proxy file is at least one day old. Requesting new proxy"
-        # os.system("voms-proxy-init -valid 168:00 -voms cms")
 
     curdir = os.path.abspath(os.path.curdir)
     os.chdir(os.path.dirname(condor_file))
@@ -272,19 +264,14 @@ def my_process():
     global Mergeblock
     global ProjectName
     ProjectName = time.strftime('%b%d') + ProjectName
-    tempdir = '/tmp/' + os.getlogin() + "/" + ProjectName +  "/"
+    tempdir = tempdir + os.getlogin() + "/" + ProjectName +  "/"
     try:
         os.makedirs(tempdir)
     except OSError:
         pass
 
-    # ## Create the output directory
+    ## Create the output directory
     outdir = OutDir +  "/" + ProjectName + "/"
-    # sanddir =  CreateSandbox()
-    # try:
-        # os.makedirs(outdir)
-    # except OSError:
-        # pass
 
     ## Update RunHT.csh with DelDir and pileups
     RunHTFile = tempdir + "/" + "RunConnect.csh"
@@ -297,15 +284,6 @@ def my_process():
             outfile.write(line)
         outfile.close()
     os.chmod(RunHTFile, 0755)
-    # os.chmod(RunHTFile, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
-
-    # ## Script for merging output histograms
-    # MergeFile = tempdir + "/" + "merge.py"
-    # f = open("%s/merge.py" % tempdir, 'wt')
-    # f.writelines(Mergeblock)
-    # f.close()
-    # import shutil
-    # shutil.copy2("%s/merge.py" % tempdir, "%s/merge.py" % outdir)
 
     ### Update condor files
     for key, value in Process.items():
@@ -314,25 +292,29 @@ def my_process():
         if not os.path.isfile(value[0]):
             continue
         npro = GetProcess(key, value)
-        if len(npro) > 1:
-            arg = "\nArguments = %s.$(Process).list %s_$(Process).root \nQueue %d \n" % (key, key, len(npro))
+        Tarfiles+=npro
+        NewNpro[key] = len(npro)
+
+    Tarfiles.append(os.path.abspath(DelExe))
+    Tarfiles += GetNeededFileList(key)
+    tarballname ="%s/%s.tar.gz" % (tempdir, ProjectName)
+    with tarfile.open(tarballname, "w:gz", dereference=True) as tar:
+        [tar.add(f, arcname=f.split('/')[-1]) for f in Tarfiles]
+        tar.close()
+
+    ### Update condor files
+    for key, value in Process.items():
+        if NewNpro[key] > 1:
+            arg = "\nArguments = %s.$(Process).list %s_$(Process).root \nQueue %d \n" % (key, key, NewNpro[key])
         else:
             arg = "\nArguments = %s.list %s.root \n Queue\n" % (key, key)
 
-        npro.append(os.path.abspath(DelExe))
-        # npro.append(sanddir)
-        npro += GetNeededFileList(key)
-        tarballname ="%s/%s.tar.gz" % (tempdir, key)
         sendfile = ', '.join([os.path.abspath(RunHTFile), tarballname])
-        with tarfile.open(tarballname, "w:gz", dereference=True) as tar:
-            [tar.add(f, arcname=f.split('/')[-1]) for f in npro]
-            tar.close()
         ## Prepare the condor file
         condorfile = tempdir + "/" + "condor_" + ProjectName +"_" + key
         with open(condorfile, "wt") as outfile:
             for line in open("connect_template", "r"):
                 line = line.replace("EXECUTABLE", os.path.basename(RunHTFile))
-                #line = line.replace("DELDIR", os.environ['CMSSW_BASE'])
                 line = line.replace("TARFILES", sendfile)
                 line = line.replace("TEMPDIR", tempdir)
                 line = line.replace("PROJECTNAME", ProjectName)
