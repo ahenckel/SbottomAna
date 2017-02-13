@@ -116,7 +116,8 @@ float LepTrigSF::GetTriggerEff(ComAna *ana)
 float LepTrigSF::GetElecTrigEff()
 {
   const std::vector<float> elePtbins = {0, 25, 40, 45, 50, 55, 60, 65, 75, 100, 125, 150, 175, 200, 275, 400, 500};
-  const std::vector<float> elePtEffs = {0.003781684,
+  const std::vector<float> elePtEffs = {
+    0.003781684,
     0.5606094,
     0.7254957,
     0.7425901,
@@ -145,14 +146,22 @@ float LepTrigSF::GetElecTrigEff()
     }
   }
 
-  std::pair<std::vector<float>::const_iterator,std::vector< float>::const_iterator> bounds;
-  bounds = std::equal_range(elePtbins.begin(), elePtbins.end(), LeadingPt);
-  assert((bounds.first - bounds.second) == 0);
-  //assert((bounds.first - bounds.second) == 1 || (bounds.first - bounds.second) == 0);
-  std::size_t idx = (bounds.first - elePtbins.begin());
-  if (debug)
-    std::cout << "PT " << LeadingPt<<" bound :" << *(bounds.first) <<":"<<*(bounds.second)<<" "<< idx<<" "<< elePtEffs.at(idx-1) << std::endl;
-  return elePtEffs.at(idx-1);
+
+  std::size_t idx = -1;
+  for(unsigned int i=0; i < elePtbins.size()-1; ++i)
+  {
+    if (LeadingPt >= elePtbins.at(i) && LeadingPt < elePtbins.at(i+1) )
+    {
+      idx=i;
+      break;
+    }
+  }
+  if (idx == -1 && LeadingPt >= elePtbins.back())
+  {
+    idx = elePtbins.size()-2;
+  }
+  assert(idx != -1);
+  return elePtEffs.at(idx);
 }       // -----  end of function LepTrigSF::GetElecTrigEff  -----
 
 // ===  FUNCTION  ============================================================
@@ -206,16 +215,29 @@ float LepTrigSF::GetMuonTrigEff(int ptcut)
     }
   }
 
-  std::pair<std::vector<float>::const_iterator,std::vector<float>::const_iterator> bounds;
-  bounds = std::equal_range(muonEtabins.begin(), muonEtabins.end(), LeadingEta);
-  assert((bounds.first - bounds.second) == 1 || (bounds.first - bounds.second) == 0);
-  std::size_t idx = bounds.first - muonEtabins.begin();
-  if (debug)
-    std::cout << "Eta " << LeadingEta<<" bound :" <<*bounds.first <<":"<<*bounds.second<<" " << std::endl;
+  std::size_t idx = -1;
+  for(unsigned int i=0; i < muonEtabins.size()-1; ++i)
+  {
+    if (LeadingEta >= muonEtabins.at(i) && LeadingEta < muonEtabins.at(i+1) )
+    {
+      idx=i;
+      break;
+    }
+  }
+  if (idx == -1 && LeadingEta >= muonEtabins.back())
+  {
+    idx = muonEtabins.size()-2;
+  }
+  if (idx == -1 && LeadingEta <= muonEtabins.front())
+  {
+    idx = 0;
+  }
+
+  assert(idx != -1);
   if (ptcut == 40)
-    return muonEta40Effs.at(idx-1);
+    return muonEta40Effs.at(idx);
   if (ptcut == 45)
-    return muonEta45Effs.at(idx-1);
+    return muonEta45Effs.at(idx);
 
   return 1.;
 }       // -----  end of function LepTrigSF::GetMuonTrigEff  -----
