@@ -137,15 +137,7 @@ float LepTrigSF::GetElecTrigEff()
 
   const std::vector<TLorentzVector> &elesLVec   = tr->getVec<TLorentzVector>("cutEleVec"+curSpec);
   if (elesLVec.empty()) return 0.;
-  float LeadingPt =  -1;
-  for(auto i : elesLVec)
-  {
-    if (i.Pt() > LeadingPt)
-    {
-      LeadingPt = i.Pt();
-    }
-  }
-
+  float LeadingPt =  elesLVec.front().Pt();
 
   std::size_t idx = -1;
   for(unsigned int i=0; i < elePtbins.size()-1; ++i)
@@ -204,16 +196,8 @@ float LepTrigSF::GetMuonTrigEff(int ptcut)
 
   const std::vector<TLorentzVector> &muonsLVec   = tr->getVec<TLorentzVector>("cutMuVec"+curSpec);
   if (muonsLVec.empty()) return 0.;
-  double LeadingPt =  -1;
-  double LeadingEta =  -1;
-  for(auto i : muonsLVec)
-  {
-    if (i.Pt() > LeadingPt)
-    {
-      LeadingPt = i.Pt();
-      LeadingEta = i.Eta();
-    }
-  }
+  double LeadingPt = muonsLVec.front().Pt();
+  double LeadingEta =  muonsLVec.front().Eta();
 
   std::size_t idx = -1;
   for(unsigned int i=0; i < muonEtabins.size()-1; ++i)

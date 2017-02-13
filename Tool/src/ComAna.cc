@@ -158,6 +158,7 @@ ComAna::operator = ( const ComAna &other )
 bool ComAna::BookHistograms()
 {
   his->AddTH1C("NBase", "Number of Events passed baseline", 2, 0, 2);
+  his->AddTH1("NEvent", "Number of Events", 2, 0, 2);
   his->AddTH1("NBaseWeight", "NBaseWeight", 120, -1.2, 1.2);
   his->AddTH1("ShapeWeight", "ShapeWeight", 120, -1.2, 1.2);
   return true;
@@ -230,6 +231,7 @@ bool ComAna::FillCut(int NCut)
   his->FillTH1(NCut, "NBase", 1, NBaseWeight);
   if (NCut == 0)
   {
+    his->FillTH1("NEvent", 1, NBaseWeight);
     his->FillTH1("NBaseWeight", NBaseWeight, 1);
     his->FillTH1("ShapeWeight", ShapeWeight, 1);
   }

@@ -271,7 +271,7 @@ def my_process():
     global Mergeblock
     global ProjectName
     ProjectName = time.strftime('%b%d') + ProjectName
-    tempdir = '/tmp/' + os.getlogin() + "/" + ProjectName +  "/"
+    tempdir = tempdir + os.getlogin() + "/" + ProjectName +  "/"
     try:
         os.makedirs(tempdir)
     except OSError:
@@ -302,30 +302,37 @@ def my_process():
     import shutil
     shutil.copy2("%s/merge.py" % tempdir, "%s/merge.py" % outdir)
 
-    ### Update condor files
+    ### Create Tarball
+    NewNpro = {}
+    Tarfiles = []
     for key, value in Process.items():
         if value[0] == "":
             value[0] = "../FileList/"+key+".list"
         if not os.path.isfile(value[0]):
             continue
         npro = GetProcess(key, value)
-        if len(npro) > 1:
-            arg = "\nArguments = %s.$(Process).list %s_$(Process).root \nQueue %d \n" % (key, key, len(npro))
+        Tarfiles.append(npro)
+        NewNpro[key] = len(npro)
+
+    Tarfiles.append(os.path.abspath(DelExe))
+    Tarfiles += GetNeededFileList(key)
+    tarballname ="%s/%s.tar.gz" % (tempdir, ProjectName)
+    with tarfile.open(tarballname, "w:gz", dereference=True) as tar:
+        [tar.add(f, arcname=f.split('/')[-1]) for f in npro]
+        tar.close()
+
+    ### Update condor files
+    for key, value in Process.items():
+        if NewNpro[key] > 1:
+            arg = "\nArguments = %s.$(Process).list %s_$(Process).root \nQueue %d \n" % (key, key, NewNpro[key])
         else:
             arg = "\nArguments = %s.list %s.root \n Queue\n" % (key, key)
 
-        npro.append(os.path.abspath(DelExe))
-        npro += GetNeededFileList(key)
-        tarballname ="%s/%s.tar.gz" % (tempdir, key)
-        with tarfile.open(tarballname, "w:gz", dereference=True) as tar:
-            [tar.add(f, arcname=f.split('/')[-1]) for f in npro]
-            tar.close()
         ## Prepare the condor file
         condorfile = tempdir + "/" + "condor_" + ProjectName +"_" + key
         with open(condorfile, "wt") as outfile:
             for line in open("condor_template", "r"):
                 line = line.replace("EXECUTABLE", os.path.abspath(RunHTFile))
-                #line = line.replace("DELDIR", os.environ['CMSSW_BASE'])
                 line = line.replace("TARFILES", tarballname)
                 line = line.replace("TEMPDIR", tempdir)
                 line = line.replace("PROJECTNAME", ProjectName)
