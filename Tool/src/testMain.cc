@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
 
   std::string  proname = GetProcName(SamplePro);
   std::string filterstring = "";
-  if (strcmp(fastsim, "fastsim") == 0 || strstr(inputFileList, "Fastsim") != NULL)
+  if (strcmp(fastsim, "fastsim") == 0 || strstr(inputFileList, "Fastsim") != NULL || strstr(inputFileList, "fastsim") != NULL)
     filterstring =  "fastsim";
   std::cout << "Process " <<proname <<  " Sample is  " << filterstring << std::endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setup Global Object ~~~~~
@@ -158,6 +158,7 @@ int main(int argc, char* argv[])
   blvMap["Default"] = new BaselineVessel(tr, "", filterstring);
   blvMap["MedEle"] = new BaselineVessel(tr, "MedEle", filterstring);
   blvMap["MedEle"]->elesFlagIDLabel = "elesFlagMedium";
+  blvMap["MedEle"]->UseLepCleanJets();
 
   for(auto blv : blvMap)
   {
@@ -190,6 +191,13 @@ int main(int argc, char* argv[])
     AnaMap["Tagger"+std::to_string(i)] = new STTagger("Tagger"+std::to_string(i), &tr, OutFile, "MedEle", i);
     AnaMap["Tagger"+std::to_string(i)+"NT"] = new STTagger("Tagger"+std::to_string(i)+"NT", &tr, OutFile, "MedEle", i);
   }
+  AnaMap["TTZ3SUSYE"] = new TTZ3Lep("SUSYE", &tr, OutFile, "MedEle");
+  AnaMap["TTZ3SUSYM"] = new TTZ3Lep("SUSYM", &tr, OutFile, "MedEle");
+  AnaMap["WTTZ3SUSYE"] = new TTZ3Lep("WSUSYE", &tr, OutFile, "MedEle");
+  AnaMap["WTTZ3SUSYM"] = new TTZ3Lep("WSUSYM", &tr, OutFile, "MedEle");
+  AnaMap["NTTZ3SUSYE"] = new TTZ3Lep("NSUSYE", &tr, OutFile, "MedEle");
+  AnaMap["NTTZ3SUSYM"] = new TTZ3Lep("NSUSYM", &tr, OutFile, "MedEle");
+
   //AnaMap["Tagger"] = new STTagger("Tagger", &tr, OutFile, "TTZM"); // DataMCSF
   //AnaMap["Tagger_Up"] = new STTagger("TaggerUp", &tr, OutFile, "TTZMJECup");
   //AnaMap["Tagger_Dn"] = new STTagger("TaggerDn", &tr, OutFile, "TTZMJECdn");
@@ -199,12 +207,6 @@ int main(int argc, char* argv[])
   //AnaMap["STZinvE"] = new STZinv("STZinvE", &tr, OutFile,"ZinvE");
   //AnaMap["STZinvT"] = new STZinv("STZinvT", &tr, OutFile,"ZinvT");
   //AnaMap["TTZ3LepM"] = new TTZ3Lep("TTZ3LepM", &tr, OutFile, "TTZM");
-  AnaMap["TTZ3SUSYE"] = new TTZ3Lep("SUSYE", &tr, OutFile, "MedEle");
-  AnaMap["TTZ3SUSYM"] = new TTZ3Lep("SUSYM", &tr, OutFile, "MedEle");
-  AnaMap["WTTZ3SUSYE"] = new TTZ3Lep("WSUSYE", &tr, OutFile, "MedEle");
-  AnaMap["WTTZ3SUSYM"] = new TTZ3Lep("WSUSYM", &tr, OutFile, "MedEle");
-  AnaMap["NTTZ3SUSYE"] = new TTZ3Lep("NSUSYE", &tr, OutFile, "MedEle");
-  AnaMap["NTTZ3SUSYM"] = new TTZ3Lep("NSUSYM", &tr, OutFile, "MedEle");
   //AnaMap["TTZ3LepE"] = new TTZ3Lep("TTZ3LepE", &tr, OutFile, "TTZE");
   //AnaMap["TTZDiLepM"] = new TTZDiLep("TTZDiLepM", &tr, OutFile, "TTZM");
   //AnaMap["TTZDiLepE"] = new TTZDiLep("TTZDiLepE", &tr, OutFile, "TTZE");
