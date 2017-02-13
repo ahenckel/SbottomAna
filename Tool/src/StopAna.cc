@@ -25,7 +25,6 @@ StopAna::StopAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> &O
 : ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
-  his->AddTH1("NBase", "Number of Events passed baseline", 2, 0, 2);
 }  // -----  end of method StopAna::StopAna  (constructor)  -----
 
 //----------------------------------------------------------------------------

@@ -531,9 +531,8 @@ TProfile* HistTool::AddTPro (const std::string name_, const std::string title,
 //         Name:  HistTool::AddTPro
 //  Description:  
 // ===========================================================================
-TProfile* HistTool::AddTPro(const std::string& name_, const std::string& title, std::vector<std::string>& BinLabels)
+TProfile* HistTool::AddTPro(const std::string& name, const std::string& title, std::vector<std::string>& BinLabels)
 {
-  std::string name = cutflag + "_" + name_;
   TProfile *temp = AddTPro(name, title, BinLabels.size(), 0, BinLabels.size());
   for (unsigned int i = 0; i < BinLabels.size(); ++i)
     temp->GetXaxis()->SetBinLabel(i+1, BinLabels.at(i).c_str());

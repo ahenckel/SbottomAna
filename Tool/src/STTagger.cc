@@ -26,7 +26,6 @@ STTagger::STTagger (std::string name, NTupleReader* tr_, std::shared_ptr<TFile> 
 {
   DataMCSF = true;
   InitCutOrder(name);
-  BookHistograms();
 }  // -----  end of method STTagger::STTagger  (constructor)  -----
 
 //----------------------------------------------------------------------------
