@@ -33,6 +33,9 @@ echo $EXE $argv
 time ./$EXE $argv
 
 if ($? == 0) then
+  foreach tarfile (`ls *gz FileList/*gz`)
+    tar -tf $tarfile  | xargs rm -r
+  end
   foreach outfile (`ls *root`)
     echo "Copying ${outfile} to ${OUTPUT}"
     xrdcp $outfile "root://cmseos.fnal.gov/${OUTPUT}/${outfile}"
