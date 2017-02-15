@@ -19,6 +19,7 @@
 #include <string>
 #include <cstdio>
 #include <ctime>
+#include <cmath>
 #include <memory>
 #include <functional>
 
@@ -266,6 +267,8 @@ int main(int argc, char* argv[])
 
     if (tr.getVar<int>("run") == 1) // Set weight to MC
     {
+      if ( std::isnan(tr.getVar<double>("bTagSF_EventWeightSimple_Central")) || std::isinf(tr.getVar<double>("bTagSF_EventWeightSimple_Central")))
+        continue;
       //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for rate, but not shape ~~~~~
       rateWeight *= tr.getVar<double>("isr_Unc_Cent"); 
       rateWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 

@@ -289,7 +289,7 @@ bool StopAna::IsGenZLep() const
       std::vector<int> out = GetGenChilds( genDecayPdgIdVec, genDecayMomIdxVec, genDecayIdxVec[i], {11, 13, 15});
       if (out.size() > 0)
       {
-        assert(out.size() == 2);
+        //assert(out.size() == 2);
         return true;
       }
     }
@@ -317,7 +317,7 @@ bool StopAna::IsGenWLep() const
       std::vector<int> out = GetGenChilds( genDecayPdgIdVec, genDecayMomIdxVec, genDecayIdxVec[i], {11, 13, 15});
       if (out.size() > 0)
       {
-        assert(out.size() == 1);
+        //assert(out.size() == 1);
         return true;
       }
     }
