@@ -954,10 +954,11 @@ int STTagger::GetBestComb()
 // ===========================================================================
 bool STTagger::FillWTaggerPlots(int type, std::vector<TLorentzVector> Jets) const
 {
+  if (nTopJets != 2) return false;
   //assert(Jets.size() == 2);
   if (Jets.size() != 2)
   {
-    std::cout << " Wrong in FillWTaggerPlots with type : " << type << std::endl;
+    std::cout << AnaName << " Wrong in FillWTaggerPlots with type : " << type << std::endl;
     tr->GetCurrentInfo();
     return false;
   }
