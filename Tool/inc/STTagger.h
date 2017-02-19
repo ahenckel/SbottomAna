@@ -69,7 +69,8 @@ class STTagger : public ComAna
     double GetHTLep();
     bool BookJMEHist();
     bool FillJMEEff();
-    TLorentzVector GetBestComb();
+    int GetBestComb();
+    bool FillWTaggerPlots(int type, std::vector<TLorentzVector> Jets) const;
     // ====================  OPERATORS     ===============================
 
     STTagger& operator = ( const STTagger &other ); // assignment operator

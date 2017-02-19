@@ -750,6 +750,18 @@ double STTagger::GetHTLep()
 // ===========================================================================
 bool STTagger::BookJMEHist()
 {
+
+  his->AddTH1("WTagdPt_Denominator" , "WTagdPt_Denominator" , "p_{T}^{reco} [GeV]"       , "Denominator"   , 60, -600 , 600);
+  his->AddTH1("WTagdPt_NoTag" , "WTagdPt_NoTag" , "p_{T}^{reco} [GeV]"       , "NoTag"   , 60, -600 , 600);
+  his->AddTH1("WTagdPt_Numerator"   , "WTagdPt_Numerator"   , "p_{T}^{reco} [GeV]"       , "Numerator"     , 60,  -600, 600);
+  his->AddTH1("WTagdR_Denominator" , "WTagdR_Denominator" , "p_{T}^{reco} [GeV]"       , "Denominator"   , 60, 0  , 6);
+  his->AddTH1("WTagdR_NoTag" , "WTagdR_NoTag" , "p_{T}^{reco} [GeV]"       , "NoTag"   , 60, 0  , 6);
+  his->AddTH1("WTagdR_Numerator"   , "WTagdR_Numerator"   , "p_{T}^{reco} [GeV]"       , "Numerator"     , 60, 0  , 6);
+  his->AddTH1("WTagdMass_Denominator" , "WTagdMass_Denominator" , "p_{T}^{reco} [GeV]"       , "Denominator"   , 200, -100 , 100);
+  his->AddTH1("WTagdMass_NoTag" , "WTagdMass_NoTag" , "p_{T}^{reco} [GeV]"       , "NoTag"   , 200, -100 , 100);
+  his->AddTH1("WTagdMass_Numerator"   , "WTagdMass_Numerator"   , "p_{T}^{reco} [GeV]"       , "Numerator"     , 200, -100 , 100);
+
+
   his->AddTH1("TagPT_Denominator" , "TagPT_Denominator" , "p_{T}^{reco} [GeV]"       , "Denominator"   , 60, 0  , 1200);
   his->AddTH1("TagPT_Numerator"   , "TagPT_Numerator"   , "p_{T}^{reco} [GeV]"       , "Numerator"     , 60, 0  , 1200);
   his->AddTH1("TagHadPT_Numerator", "TagHadPT_Numerator" , "p_{T}^{reco} [GeV]"       , "Numerator"   , 60, 0  , 1200);
@@ -798,6 +810,8 @@ bool STTagger::FillJMEEff()
     return false;
 
   const std::vector<TLorentzVector> &vTops = vRecoTops;
+  const std::vector<TLorentzVector> &vCombs = tr->getVec<TLorentzVector>(Label["vCombs"]);
+  const std::map<int, std::vector<TLorentzVector> > &mCombJets = tr->getMap<int, std::vector<TLorentzVector> >(Label["mCombJets"]);
 
   assert(vMuon45.size() > 0);
   TLorentzVector muon = vMuon45.front();
@@ -808,7 +822,10 @@ bool STTagger::FillJMEEff()
 
   if (vTops.size() == 0)
   {
-    TLorentzVector comb = GetBestComb();
+    int combidx = GetBestComb();
+    TLorentzVector comb(0, 0,0, 0);
+    if (combidx != -1)
+      comb = vCombs.at(combidx);
     his->FillTH1("TagPT_Denominator", comb.Pt());
     his->FillTH1("TagPhi_Denominator", comb.Phi());
     his->FillTH1("TagEta_Denominator", comb.Eta());
@@ -817,6 +834,11 @@ bool STTagger::FillJMEEff()
     his->FillTH1("TagdPhiLep_Denominator", comb.DeltaPhi(muon));
     his->FillTH1("TagdEtaLep_Denominator", comb.Eta() - muon.Eta());
     his->FillTH1("TagMtW_Denominator", mtw);
+    if (combidx != -1)
+    {
+      FillWTaggerPlots(-1, mCombJets.at(combidx));
+      FillWTaggerPlots(0, mCombJets.at(combidx));
+    }
     return false;
   }
 
@@ -846,6 +868,10 @@ bool STTagger::FillJMEEff()
   his->FillTH1("TagdRLep_Numerator", goodtop.DeltaR(muon));
   his->FillTH1("TagdPhiLep_Numerator", goodtop.DeltaPhi(muon));
   his->FillTH1("TagdEtaLep_Numerator", goodtop.Eta() - muon.Eta());
+
+  const std::map<int, std::vector<TLorentzVector> > &mTopJets = tr->getMap<int, std::vector<TLorentzVector> >(Label["mTopJets"]);
+  FillWTaggerPlots(-1, mTopJets.at(topdm.right.begin()->second));
+  FillWTaggerPlots(1, mTopJets.at(topdm.right.begin()->second));
 
   bool goodtoptag= false;
   const float dR = 0.4;
@@ -896,14 +922,14 @@ bool STTagger::FillJMEEff()
 //         Name:  STTagger::GetBestComb
 //  Description:  
 // ===========================================================================
-TLorentzVector STTagger::GetBestComb()
+int STTagger::GetBestComb()
 {
   const std::vector<TLorentzVector> &vCombs = tr->getVec<TLorentzVector>(Label["vCombs"]);
   const std::map<int, std::vector<TLorentzVector> > &mCombJets = tr->getMap<int, std::vector<TLorentzVector> >(Label["mCombJets"]);
   if (vCombs.size() == 0)
   {
     std::cout << "This is fucked so big!!! " << tr->getVar<double>(METLabel)<< std::endl;
-    return TLorentzVector(0,0,0,0);
+    return  -1;
   }
   
   //Get Pt order jet list, passing the requirement
@@ -917,7 +943,43 @@ TLorentzVector STTagger::GetBestComb()
     topdm.insert(boost::bimap<int, double >::value_type(i, fabs(itop.M() - 172.5)));
   }
 
-  if(topdm.size()  == 0 )  return TLorentzVector(0, 0,0,0);
+  if(topdm.size()  == 0 )  return -1;
   else
-    return vCombs.at(topdm.right.begin()->second);
+    return topdm.right.begin()->second;
 }       // -----  end of function STTagger::GetBestComb  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  STTagger::FillWTaggerPlots
+//  Description:  
+// ===========================================================================
+bool STTagger::FillWTaggerPlots(int type, std::vector<TLorentzVector> Jets) const
+{
+  //assert(Jets.size() == 2);
+  if (Jets.size() != 2)
+  {
+    std::cout << " Wrong in FillWTaggerPlots with type : " << type << std::endl;
+    tr->GetCurrentInfo();
+    return false;
+  }
+  TLorentzVector Ljet = Jets.front();
+  TLorentzVector Sjet = Jets.back();
+  if (type == -1)
+  {
+    his->FillTH1("WTagdPt_Denominator", Ljet.Pt() - Sjet.Pt());
+    his->FillTH1("WTagdR_Denominator", Ljet.DeltaR(Sjet));
+    his->FillTH1("WTagdMass_Denominator", Ljet.M() - Sjet.M());
+  }
+  if (type == 0)
+  {
+    his->FillTH1("WTagdPt_NoTag", Ljet.Pt() - Sjet.Pt());
+    his->FillTH1("WTagdR_NoTag", Ljet.DeltaR(Sjet));
+    his->FillTH1("WTagdMass_NoTag", Ljet.M() - Sjet.M());
+  }
+  if (type == 1)
+  {
+    his->FillTH1("WTagdPt_Numerator", Ljet.Pt() - Sjet.Pt());
+    his->FillTH1("WTagdR_Numerator", Ljet.DeltaR(Sjet));
+    his->FillTH1("WTagdMass_Numerator", Ljet.M() - Sjet.M());
+  }
+  return true;
+}       // -----  end of function STTagger::FillWTaggerPlots  -----

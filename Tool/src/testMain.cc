@@ -267,16 +267,19 @@ int main(int argc, char* argv[])
 
     if (tr.getVar<int>("run") == 1) // Set weight to MC
     {
-      if ( std::isnan(tr.getVar<double>("bTagSF_EventWeightSimple_Central")) || std::isinf(tr.getVar<double>("bTagSF_EventWeightSimple_Central")))
-        continue;
+      double bTagSF   = tr.getVar<double>("bTagSF_EventWeightSimple_Central");
+      double ISRSF    = tr.getVar<double>("isr_Unc_Cent");
+      double PUWeight = tr.getVar<double>("_PUweightFactor");
+      if ( std::isnan(bTagSF) || std::isinf(bTagSF))
+        bTagSF = 1.0;
       //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for rate, but not shape ~~~~~
-      rateWeight *= tr.getVar<double>("isr_Unc_Cent"); 
-      rateWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
+      rateWeight *= ISRSF;
+      rateWeight *= bTagSF;
 
       //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getting weight for shape, but not rate ~~~~~
-      evtWeight *= tr.getVar<double>("isr_Unc_Cent"); 
-      evtWeight *= tr.getVar<double>("bTagSF_EventWeightSimple_Central"); 
-      evtWeight *= tr.getVar<double>("_PUweightFactor"); 
+      evtWeight *= ISRSF;
+      evtWeight *= bTagSF;
+      evtWeight *= PUWeight;
       //evtWeight *= tr.getVar<double>("TopPtReweight"); // TopPtReweight, apply to shape, not rate
       //evtWeight *= tr.getVar<double>("NbNjReweight"); // TopPtReweight, apply to shape, not rate
     }
