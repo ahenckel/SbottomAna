@@ -86,6 +86,9 @@ bool STTagger::BookHistograms()
   his->AddTH1("RecoTopPT"             , "RecoTopPT"             , "p_{T}^{Reco} [GeV]"       , "Events / 10GeV", 100, 0  , 1000);
   his->AddTH1("RecoTopEta"            , "RecoTopEta"            , "#eta^{Reco}"              , "Events"        , 20 , -5 , 5);
   his->AddTH1("RecoTopMass"           , "RecoTopMass"           , "m^{Reco}"                 , "Events"        , 100, 150 , 200);
+  his->AddTH1("RecoWPT"             , "RecoWPT"             , "p_{T}^{Reco} [GeV]"       , "Events / 10GeV", 100, 0  , 1000);
+  his->AddTH1("RecoWEta"            , "RecoWEta"            , "#eta^{Reco}"              , "Events"        , 20 , -5 , 5);
+  his->AddTH1("RecoWMass"           , "RecoWMass"           , "m^{Reco}"                 , "Events"        , 100, 150 , 200);
 
 
   his->AddTH1C("TopTagPT_Denominator" , "TopTagPT_Denominator" , "p_{T}^{gen} [GeV]"       , "Denominator"   , 60, 0  , 1200);
@@ -751,23 +754,23 @@ double STTagger::GetHTLep()
 bool STTagger::BookJMEHist()
 {
 
-  his->AddTH1("WTagdPt_Denominator" , "WTagdPt_Denominator" , "p_{T}^{reco} [GeV]"       , "Denominator"   , 60, -600 , 600);
-  his->AddTH1("WTagdPt_NoTag" , "WTagdPt_NoTag" , "p_{T}^{reco} [GeV]"       , "NoTag"   , 60, -600 , 600);
-  his->AddTH1("WTagdPt_Numerator"   , "WTagdPt_Numerator"   , "p_{T}^{reco} [GeV]"       , "Numerator"     , 60,  -600, 600);
-  his->AddTH1("WTagdR_Denominator" , "WTagdR_Denominator" , "p_{T}^{reco} [GeV]"       , "Denominator"   , 60, 0  , 6);
-  his->AddTH1("WTagdR_NoTag" , "WTagdR_NoTag" , "p_{T}^{reco} [GeV]"       , "NoTag"   , 60, 0  , 6);
-  his->AddTH1("WTagdR_Numerator"   , "WTagdR_Numerator"   , "p_{T}^{reco} [GeV]"       , "Numerator"     , 60, 0  , 6);
-  his->AddTH1("WTagdMass_Denominator" , "WTagdMass_Denominator" , "p_{T}^{reco} [GeV]"       , "Denominator"   , 200, -100 , 100);
-  his->AddTH1("WTagdMass_NoTag" , "WTagdMass_NoTag" , "p_{T}^{reco} [GeV]"       , "NoTag"   , 200, -100 , 100);
-  his->AddTH1("WTagdMass_Numerator"   , "WTagdMass_Numerator"   , "p_{T}^{reco} [GeV]"       , "Numerator"     , 200, -100 , 100);
+  his->AddTH1("WTagdPt_Denominator"   , "WTagdPt_Denominator"   , "#Delta p_{T}^{reco} [GeV]" , "Denominator" , 60,  -600 , 600);
+  his->AddTH1("WTagdPt_NoTag"         , "WTagdPt_NoTag"         , "#Delta p_{T}^{reco} [GeV]" , "NoTag"       , 60,  -600 , 600);
+  his->AddTH1("WTagdPt_Numerator"     , "WTagdPt_Numerator"     , "#Delta p_{T}^{reco} [GeV]" , "Numerator"   , 60,  -600 , 600);
+  his->AddTH1("WTagdR_Denominator"    , "WTagdR_Denominator"    , "#Delta R"                  , "Denominator" , 60,  0    , 2);
+  his->AddTH1("WTagdR_NoTag"          , "WTagdR_NoTag"          , "#Delta R"                  , "NoTag"       , 60,  0    , 2);
+  his->AddTH1("WTagdR_Numerator"      , "WTagdR_Numerator"      , "#Delta R"                  , "Numerator"   , 60,  0    , 2);
+  his->AddTH1("WTagdMass_Denominator" , "WTagdMass_Denominator" , "#Delta Mass"               , "Denominator" , 200, -100 , 100);
+  his->AddTH1("WTagdMass_NoTag"       , "WTagdMass_NoTag"       , "#Delta Mass"               , "NoTag"       , 200, -100 , 100);
+  his->AddTH1("WTagdMass_Numerator"   , "WTagdMass_Numerator"   , "#Delta Mass"               , "Numerator"   , 200, -100 , 100);
 
 
-  his->AddTH1("TagPT_Denominator" , "TagPT_Denominator" , "p_{T}^{reco} [GeV]"       , "Denominator"   , 60, 0  , 1200);
-  his->AddTH1("TagPT_Numerator"   , "TagPT_Numerator"   , "p_{T}^{reco} [GeV]"       , "Numerator"     , 60, 0  , 1200);
-  his->AddTH1("TagHadPT_Numerator", "TagHadPT_Numerator" , "p_{T}^{reco} [GeV]"       , "Numerator"   , 60, 0  , 1200);
-  his->AddTH1("TagLepPT_Numerator", "TagLepPT_Numerator" , "p_{T}^{reco} [GeV]"       , "Numerator"   , 60, 0  , 1200);
-  his->AddTH1("TagOtherPT_Numerator", "TagOtherPT_Numerator" , "p_{T}^{reco} [GeV]"       , "Numerator"   , 60, 0  , 1200);
-  his->AddTH1("TagPT_Efficiency"  , "TagPT_Efficiency"  , "p_{T}^{reco} [GeV]"       , "Efficiency"    , 60, 0  , 1200);
+  his->AddTH1("TagPT_Denominator"    , "TagPT_Denominator"    , "p_{T}^{reco} [GeV]" , "Denominator" , 60 , 0 , 1200);
+  his->AddTH1("TagPT_Numerator"      , "TagPT_Numerator"      , "p_{T}^{reco} [GeV]" , "Numerator"   , 60 , 0 , 1200);
+  his->AddTH1("TagHadPT_Numerator"   , "TagHadPT_Numerator"   , "p_{T}^{reco} [GeV]" , "Numerator"   , 60 , 0 , 1200);
+  his->AddTH1("TagLepPT_Numerator"   , "TagLepPT_Numerator"   , "p_{T}^{reco} [GeV]" , "Numerator"   , 60 , 0 , 1200);
+  his->AddTH1("TagOtherPT_Numerator" , "TagOtherPT_Numerator" , "p_{T}^{reco} [GeV]" , "Numerator"   , 60 , 0 , 1200);
+  his->AddTH1("TagPT_Efficiency"     , "TagPT_Efficiency"     , "p_{T}^{reco} [GeV]" , "Efficiency"  , 60 , 0 , 1200);
   his->AddTH2("TagPT_RecoGen"  , "TagPT_RecoGen"  , "p_{T}^{reco} [GeV]"       , "p_{T}^{gen} [GeV]"    , 60, 0  , 1200, 60, 0, 1200);
 
   his->AddTH1("TagMass_Denominator" , "TagMass_Denominator" , "m^{reco} [GeV]"       , "Denominator"   , 70, 0  , 350);
@@ -964,6 +967,11 @@ bool STTagger::FillWTaggerPlots(int type, std::vector<TLorentzVector> Jets) cons
   }
   TLorentzVector Ljet = Jets.front();
   TLorentzVector Sjet = Jets.back();
+
+  his->FillTH1("RecoWPT",   Ljet.Pt());
+  his->FillTH1("RecoWMass", Ljet.M());
+  his->FillTH1("RecoWEta",  Ljet.Eta());
+
   if (type == -1)
   {
     his->FillTH1("WTagdPt_Denominator", Ljet.Pt() - Sjet.Pt());

@@ -76,6 +76,9 @@ float LepTrigSF::GetEventSF(ComAna *&ana, std::string applybit_)
     LTsf *= GetLeptonSF(ana);
   if (applybit.test(0))
     LTsf *= GetTriggerEff(ana);
+
+  if ( std::isnan(LTsf) || std::isinf(LTsf))
+    LTsf = 1.0;
   return LTsf;
 }       // -----  end of function LepTrigSF::GetEventSF  -----
 
@@ -274,6 +277,8 @@ float LepTrigSF::GetLeptonSF(ComAna* ana)
 
   float lepsf = 1.;
   lepsf *= GetMuonSF() * GetEleSF();
+  if ( std::isnan(lepsf) || std::isinf(lepsf))
+    lepsf = 1.0;
   return lepsf;
 }       // -----  end of function LepTrigSF::GetLeptonSF  -----
 

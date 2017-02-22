@@ -113,10 +113,12 @@ bool TTZ3Lep::BookHistograms()
 {
   ComAna::BookHistograms();
   BookTLVHistos("RecoZ");
-  BookTLVHistos("3rdMuon");
-  BookTLVHistos("3rdEle");
-  his->AddTH1C("JBT", "JBT", "JBT", "Events", 400, 0, 400);
-  his->AddTH2C("JBTVsZPT", "JBTVsZPT", "ZPT", "JBT", 20, 0, 1000, 400, 0, 400);
+  BookTLVHistos("Muon1");
+  BookTLVHistos("Ele1");
+  //BookTLVHistos("3rdMuon");
+  //BookTLVHistos("3rdEle");
+  //his->AddTH1C("JBT", "JBT", "JBT", "Events", 400, 0, 400);
+  //his->AddTH2C("JBTVsZPT", "JBTVsZPT", "ZPT", "JBT", 20, 0, 1000, 400, 0, 400);
   return true;
 }       // -----  end of function TTZ3Lep::BookHistograms  -----
 
@@ -258,18 +260,18 @@ bool TTZ3Lep::FillCut()
     his->FillTH1("CutFlow", int(i)); 
 
 
-    int JBTcount = tr->getVar<int>(Label["nTopCandSortedCnt"]) * 100 + tr->getVar<int>(Label["cntCSVS"]) * 10 + tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size();
-    his->FillTH1(i, "JBT", JBTcount);
+    //int JBTcount = tr->getVar<int>(Label["nTopCandSortedCnt"]) * 100 + tr->getVar<int>(Label["cntCSVS"]) * 10 + tr->getVec<TLorentzVector>(Label["jetsLVec_forTagger"]).size();
+    //his->FillTH1(i, "JBT", JBTcount);
     if (tr->getVec<TLorentzVector>(Label["recoZVec"]).size() > 0)
     {
       FillTLVHistos(i, "RecoZ", tr->getVec<TLorentzVector>(Label["recoZVec"]).at(0));
-      his->FillTH2(i, "JBTVsZPT", tr->getVec<TLorentzVector>(Label["recoZVec"]).at(0).Pt(), JBTcount);
+      //his->FillTH2(i, "JBTVsZPT", tr->getVec<TLorentzVector>(Label["recoZVec"]).at(0).Pt(), JBTcount);
     }
 
     ComAna::FillCut(i);
     ComAna::CheckLeadingLeptons(i);
 
-    Check3rdLep(i);
+    //Check3rdLep(i);
     if (i+1 == CutOrder.size()) 
     {
       passcuts = true;

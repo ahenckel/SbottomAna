@@ -318,8 +318,8 @@ TH1F* HistTool::AddTH1 (const std::string& name_, const std::string& title,
 // ===========================================================================
 int HistTool::FillTH1(int Ncut, std::string HisName_, double value, double weight)
 {
+  if (Ncut+1 == CutSize) FillTH1(HisName_, value, weight);
   std::string HisName = cutflag + "_" + HisName_;
-  if (Ncut+1 == CutSize) FillTH1(HisName, value, weight);
   TString mapname = HisName+"_"+static_cast<Long_t>(Ncut);
   if (HisMap.find(mapname.Data()) == HisMap.end())
     return 0;
@@ -341,9 +341,10 @@ int HistTool::FillTH1(int Ncut, std::string HisName_, double value, double weigh
 
 int HistTool::FillTH1(int Ncut, std::string HisName_, int value, double weight)
 {
-  std::string HisName = cutflag + "_" + HisName_;
   if (Ncut + 1 == CutSize) 
-    FillTH1(HisName, value, weight);
+    FillTH1(HisName_, value, weight);
+
+  std::string HisName = cutflag + "_" + HisName_;
   TString mapname = HisName+"_"+static_cast<Long_t>(Ncut);
   if (HisMap.find(mapname.Data()) == HisMap.end())
     return 0;
@@ -736,8 +737,8 @@ TH2D* HistTool::AddTH2 (const std::string name_, const std::string title,
 // ===========================================================================
 int HistTool::FillTH2(int Ncut, std::string HisName_, double xvalue, double yvalue, double weight)
 {
+  if (Ncut+1 == CutSize) FillTH2(HisName_, xvalue, yvalue, weight);
   std::string HisName = cutflag + "_" + HisName_;
-  if (Ncut+1 == CutSize) FillTH2(HisName, xvalue, yvalue, weight);
   TString mapname = HisName+"_"+static_cast<Long_t>(Ncut);
   if (HisMap2D.find(mapname.Data()) == HisMap2D.end())
     return 0;
