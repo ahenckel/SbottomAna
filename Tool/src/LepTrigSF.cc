@@ -236,7 +236,60 @@ float LepTrigSF::GetMuonTrigEff(int ptcut)
 // ===========================================================================
 float LepTrigSF::GetMETTrigEff()
 {
-  return true;
+
+  const std::vector<float> metPtbins = {0, 25, 50, 75, 100, 125, 150, 175, 200, 275, 400, 600, 1000};
+  const std::vector<float> metPtEffs_LessHT = {
+   0.002031716,
+   0.00386317,
+   0.01100592,
+   0.04153341,
+   0.1467812,
+   0.3698591,
+   0.6441574,
+   0.8272891,
+   0.9388552,
+   0.9876937,
+   0.9931271,
+   1};
+  const std::vector<float> metPtEffs_MoreHT = {
+   0.0236715,
+   0.03216302,
+   0.04664076,
+   0.0760191,
+   0.1595577,
+   0.2874818,
+   0.4728682,
+   0.6799037,
+   0.8580946,
+   0.9578018,
+   0.9874055,
+   0.98};
+
+  assert(metPtbins.size() - metPtEffs_LessHT.size() == 1);
+  assert(metPtbins.size() - metPtEffs_MoreHT.size() == 1);
+
+  double met =  tr->getVec<double>("met"+curSpec);
+  double ht =  tr->getVec<double>("HT"+curSpec);
+  std::size_t idx = -1;
+
+  for(unsigned int i=0; i < metPtbins.size()-1; ++i)
+  {
+    if (met >= metPtbins.at(i) && met < metPtbins.at(i+1) )
+    {
+      idx=i;
+      break;
+    }
+  }
+  if (idx == -1 && LeadingPt >= metPtbins.back())
+  {
+    idx = metPtbins.size()-2;
+  }
+  assert(idx != -1);
+
+  if (ht > 1000)
+    return metPtEffs_MoreHT.at(idx);
+  else
+    return metPtEffs_LessHT.at(idx);
 }       // -----  end of function LepTrigSF::GetMETTrigEff  -----
 
 
