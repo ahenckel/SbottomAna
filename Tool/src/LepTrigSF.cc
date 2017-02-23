@@ -68,18 +68,22 @@ float LepTrigSF::GetEventSF(ComAna *&ana, std::string applybit_)
   if (tr->getVar<int>("run") != 1) // Set weight to 1 for Data
     return 1;
 
-  float LTsf = 1;
+  float Lepsf = 1;
+  float Trigsf = 1;
   curSpec = ana->spec;
   std::bitset<2> applybit(applybit_);
 
   if (applybit.test(1))
-    LTsf *= GetLeptonSF(ana);
+    Lepsf = GetLeptonSF(ana);
   if (applybit.test(0))
-    LTsf *= GetTriggerEff(ana);
+    Trigsf = GetTriggerEff(ana);
 
-  if ( std::isnan(LTsf) || std::isinf(LTsf))
-    LTsf = 1.0;
-  return LTsf;
+  if ( std::isnan(Lepsf) || std::isinf(Lepsf))
+    Lepsf = 1.0;
+  if ( std::isnan(Trigsf) || std::isinf(Trigsf))
+    Trigsf = 1.0;
+
+  return Lepsf * Trigsf;
 }       // -----  end of function LepTrigSF::GetEventSF  -----
 
 
@@ -139,7 +143,7 @@ float LepTrigSF::GetElecTrigEff()
   assert(elePtbins.size() - elePtEffs.size() == 1);
 
   const std::vector<TLorentzVector> &elesLVec   = tr->getVec<TLorentzVector>("cutEleVec"+curSpec);
-  if (elesLVec.empty()) return 0.;
+  if (elesLVec.empty()) return 1.;
   float LeadingPt =  elesLVec.front().Pt();
 
   std::size_t idx = -1;
@@ -198,8 +202,9 @@ float LepTrigSF::GetMuonTrigEff(int ptcut)
   assert(muonEtabins.size() - muonEta45Effs.size() == 1);
 
   const std::vector<TLorentzVector> &muonsLVec   = tr->getVec<TLorentzVector>("cutMuVec"+curSpec);
-  if (muonsLVec.empty()) return 0.;
+  if (muonsLVec.empty()) return 1.;
   double LeadingPt = muonsLVec.front().Pt();
+  if (LeadingPt < ptcut ) return 1;
   double LeadingEta =  muonsLVec.front().Eta();
 
   std::size_t idx = -1;
@@ -237,7 +242,7 @@ float LepTrigSF::GetMuonTrigEff(int ptcut)
 float LepTrigSF::GetMETTrigEff()
 {
 
-  const std::vector<float> metPtbins = {0, 25, 50, 75, 100, 125, 150, 175, 200, 275, 400, 600, 1000};
+  const std::vector<float> metPtbins = {0, 25, 50, 75, 100, 125, 150, 175, 200, 250, 300, 400, 600, 1000};
   const std::vector<float> metPtEffs_LessHT = {
    0.002031716,
    0.00386317,
@@ -247,8 +252,9 @@ float LepTrigSF::GetMETTrigEff()
    0.3698591,
    0.6441574,
    0.8272891,
-   0.9388552,
-   0.9876937,
+   0.9309105,
+   0.9766839,
+   0.9922869,
    0.9931271,
    1};
   const std::vector<float> metPtEffs_MoreHT = {
@@ -260,17 +266,19 @@ float LepTrigSF::GetMETTrigEff()
    0.2874818,
    0.4728682,
    0.6799037,
-   0.8580946,
-   0.9578018,
+   0.8356643,
+   0.9377845,
+   0.9623431,
    0.9874055,
    0.98};
 
   assert(metPtbins.size() - metPtEffs_LessHT.size() == 1);
   assert(metPtbins.size() - metPtEffs_MoreHT.size() == 1);
 
-  double met =  tr->getVec<double>("met"+curSpec);
-  double ht =  tr->getVec<double>("HT"+curSpec);
+  double met =  tr->getVar<double>("met"+curSpec);
+  double ht =  tr->getVar<double>("HT"+curSpec);
   std::size_t idx = -1;
+  if (met < 250) return 1;
 
   for(unsigned int i=0; i < metPtbins.size()-1; ++i)
   {
@@ -280,7 +288,7 @@ float LepTrigSF::GetMETTrigEff()
       break;
     }
   }
-  if (idx == -1 && LeadingPt >= metPtbins.back())
+  if (idx == -1 && met >= metPtbins.back())
   {
     idx = metPtbins.size()-2;
   }

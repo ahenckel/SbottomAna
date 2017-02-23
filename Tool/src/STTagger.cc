@@ -89,11 +89,24 @@ bool STTagger::BookHistograms()
   his->AddTH1("RecoWPT"             , "RecoWPT"             , "p_{T}^{Reco} [GeV]"       , "Events / 10GeV", 100, 0  , 1000);
   his->AddTH1("RecoWEta"            , "RecoWEta"            , "#eta^{Reco}"              , "Events"        , 20 , -5 , 5);
   his->AddTH1("RecoWMass"           , "RecoWMass"           , "m^{Reco}"                 , "Events"        , 100, 150 , 200);
+  his->AddTH1("MonoTopPT_Denominator"   , "MonoTopPT_Denominator"   , "p_{T}^{Reco} [GeV]" , "Events / 10GeV", 100, 0    ,   1000);
+  his->AddTH1("MonoTopPT_Numerator"     , "MonoTopPT_Numerator"     , "p_{T}^{Reco} [GeV]" , "Events / 10GeV", 100, 0    ,   1000);
+  his->AddTH1("MonoTopPT_noTag"         , "MonoTopPT_noTag"         , "p_{T}^{Reco} [GeV]" , "Events / 10GeV", 100, 0    ,   1000);
+  his->AddTH1("MonoTopEta_Denominator"  , "MonoTopEta_Denominator"  , "#eta^{Reco}"        , "Events"          ,    20   ,   -5     ,     5);
+  his->AddTH1("MonoTopEta_Numerator"    , "MonoTopEta_Numerator"    , "#eta^{Reco}"        , "Events"          ,    20   ,   -5     ,     5);
+  his->AddTH1("MonoTopEta_noTag"        , "MonoTopEta_noTag"        , "#eta^{Reco}"        , "Events"          ,    20   ,   -5     ,     5);
+  his->AddTH1("MonoTopMass_Denominator" , "MonoTopMass_Denominator" , "m^{Reco}"           , "Events"          ,    100, 150 ,      200);
+  his->AddTH1("MonoTopMass_Numerator"   , "MonoTopMass_Numerator"   , "m^{Reco}"           , "Events"          ,    100, 150 ,      200);
+  his->AddTH1("MonoTopMass_noTag"       , "MonoTopMass_noTag"       , "m^{Reco}"           , "Events"          ,    100, 150 ,      200);
 
 
   his->AddTH1C("TopTagPT_Denominator" , "TopTagPT_Denominator" , "p_{T}^{gen} [GeV]"       , "Denominator"   , 60, 0  , 1200);
   his->AddTH1C("TopTagPT_Numerator"   , "TopTagPT_Numerator"   , "p_{T}^{gen} [GeV]"       , "Numerator"     , 60, 0  , 1200);
   his->AddTH1C("TopTagPT_Efficiency"  , "TopTagPT_Efficiency"  , "p_{T}^{gen} [GeV]"       , "Efficiency"    , 60, 0  , 1200);
+  his->AddTH1C("TopTagMass_Denominator" , "TopTagMass_Denominator" , "Mass [GeV]"       , "Denominator"   , 60, 0  , 240);
+  his->AddTH1C("TopTagMass_Numerator"   , "TopTagMass_Numerator"   , "Mass [GeV]"       , "Numerator"     , 60, 0  , 240);
+  his->AddTH1C("TopTagMass_Efficiency"  , "TopTagMass_Efficiency"  , "Mass [GeV]"       , "Efficiency"    , 60, 0  , 240);
+
   his->AddTH1("TopTagEta_Denominator", "TopTagEta_Denominator", "#eta^{gen} [GeV]"       , "Denominator"   , 20, -5, 5);
   his->AddTH1("TopTagEta_Numerator"  , "TopTagEta_Numerator"  , "#eta^{gen} [GeV]"       , "Numerator"     , 20, -5, 5);
   his->AddTH1("TopTagEta_Efficiency" , "TopTagEta_Efficiency" , "#eta^{gen} [GeV]"       , "Efficiency"    , 20, -5, 5);
@@ -217,6 +230,9 @@ bool STTagger::InitCutOrder(std::string ana)
   assert(CutOrder.size() == CutMap.size());
 
   his->Cutorder(ana, CutOrder, static_cast<unsigned int>(NBITS));
+  HLTstr.push_back("HLT_Mu50_v\\d");
+  HLTstr.push_back("HLT_IsoMu24_v\\d");
+  HLTstr.push_back("HLT_IsoTKMu24_v\\d");
   return true;
 }       // -----  end of function STTagger::InitCutOrder  -----
 
@@ -841,6 +857,8 @@ bool STTagger::FillJMEEff()
     {
       FillWTaggerPlots(-1, mCombJets.at(combidx));
       FillWTaggerPlots(0, mCombJets.at(combidx));
+      FillMonoTagerPlots(-1, mCombJets.at(combidx));
+      FillMonoTagerPlots(0, mCombJets.at(combidx));
     }
     return false;
   }
@@ -875,6 +893,8 @@ bool STTagger::FillJMEEff()
   const std::map<int, std::vector<TLorentzVector> > &mTopJets = tr->getMap<int, std::vector<TLorentzVector> >(Label["mTopJets"]);
   FillWTaggerPlots(-1, mTopJets.at(topdm.right.begin()->second));
   FillWTaggerPlots(1, mTopJets.at(topdm.right.begin()->second));
+  FillMonoTagerPlots(-1, mTopJets.at(topdm.right.begin()->second));
+  FillMonoTagerPlots(1, mTopJets.at(topdm.right.begin()->second));
 
   bool goodtoptag= false;
   const float dR = 0.4;
@@ -950,6 +970,47 @@ int STTagger::GetBestComb()
   else
     return topdm.right.begin()->second;
 }       // -----  end of function STTagger::GetBestComb  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  STTagger::FillMonoTagerPlots
+//  Description:  
+// ===========================================================================
+bool STTagger::FillMonoTagerPlots(int type, std::vector<TLorentzVector> Jets) const
+{
+
+  if (nTopJets != 1) return false;
+  if (Jets.size() != 1)
+  {
+    std::cout << AnaName << " Wrong in FillWTaggerPlots with type : " << type << std::endl;
+    tr->GetCurrentInfo();
+    return false;
+  }
+  TLorentzVector Ljet = Jets.front();
+
+  if (type == -1)
+  {
+    his->FillTH1("MonoTopPT_Denominator",   Ljet.Pt());
+    his->FillTH1("MonoTopMass_Denominator", Ljet.M());
+    his->FillTH1("MonoTopEta_Denominator",  Ljet.Eta());
+  }
+
+  if (type == 0)
+  {
+    his->FillTH1("MonoTopPT_noTag",   Ljet.Pt());
+    his->FillTH1("MonoTopMass_noTag", Ljet.M());
+    his->FillTH1("MonoTopEta_noTag",  Ljet.Eta());
+  }
+
+  if (type == 1)
+  {
+    his->FillTH1("MonoTopPT_Numerator",   Ljet.Pt());
+    his->FillTH1("MonoTopMass_Numerator", Ljet.M());
+    his->FillTH1("MonoTopEta_Numerator",  Ljet.Eta());
+  }
+  return true;
+
+}       // -----  end of function STTagger::FillMonoTagerPlots  -----
+
 
 // ===  FUNCTION  ============================================================
 //         Name:  STTagger::FillWTaggerPlots
