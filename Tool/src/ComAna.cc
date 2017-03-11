@@ -674,9 +674,14 @@ bool ComAna::PassTrigger( std::vector<std::string> Trigstr_)
         const std::vector<std::string> &triggerName = tr->getVec<std::string>("TriggerNames");
         for(unsigned int i=0; i < triggerName.size(); ++i)
         {
-          if (std::regex_match(triggerName.at(i), std::regex(hlt)))
+          //if (std::regex_match(triggerName.at(i), std::regex(hlt)))
+          //{
+            //HLTIdx[hlt].insert(i);
+          //}
+          std::string temp = hlt;
+          temp.erase(temp.find("\\d"), 3);
+          if (triggerName.at(i).find(temp) != std::string::npos)
           {
-            //std::cout << hlt<<" " << triggerName.at(i) << std::endl;
             HLTIdx[hlt].insert(i);
           }
         }

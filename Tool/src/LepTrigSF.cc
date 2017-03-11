@@ -314,8 +314,9 @@ bool LepTrigSF::InitLeptonSF(std::string LepSFFileName)
   LepSF2D["ele_VetoID_SF"]   = (TH2D*) LepSFfile->Get("GsfElectronToVeto");
   LepSF2D["ele_miniISO_SF"]  = (TH2D*) LepSFfile->Get("MVAVLooseElectronToMini");
   LepSF2D["ele_trkpt_SF"]    = (TH2D*) LepSFfile->Get("EGamma_SF2D");
-  LepSF1D["mu_trkptGT10_SF"] = (TH1D*) LepSFfile->Get("mutrksfptg10");
-  LepSF1D["mu_trkptLT10_SF"] = (TH1D*) LepSFfile->Get("mutrksfptl10");
+  LepSFTG["mu_trkptGT10_SF"] = (TGraphAsymmErrors*) LepSFfile->Get("ratio_eff_eta3_dr030e030_corr");
+  LepSFTG["mu_trkptLT10_SF"] = (TGraphAsymmErrors*) LepSFfile->Get("ratio_eff_eta3_tk0_dr030e030_corr");
+
   return true;
 }       // -----  end of function LepTrigSF::InitLeptonSF  -----
 
@@ -371,8 +372,8 @@ float LepTrigSF::GetMuonSF()
       {
         if (sf == "mu_trkptGT10_SF" && pt < 10) continue;
         if (sf == "mu_trkptLT10_SF" && pt > 10) continue;
-        if (LepSF1D.find(sf) == LepSF1D.end() || LepSF1D[sf] == NULL) continue;
-        tempweight  = LepSF1D[sf]->GetBinContent(LepSF1D[sf]->FindBin(eta));
+        if (LepSFTG.find(sf) == LepSFTG.end() || LepSFTG[sf] == NULL) continue;
+        tempweight  = LepSFTG[sf]->Eval(eta);
         if( tempweight == 0 ) tempweight = 1.0; // very simple way dealing with out of range issue of the TH2D
       }
       thismuweight *= tempweight;

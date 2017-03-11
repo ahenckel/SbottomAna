@@ -106,7 +106,10 @@ bool TriggerAna::InitCutOrder(std::string ana)
   if (AnaName.find("Stop") != std::string::npos)
   {
     // Use this trigger as denominator
-    HLTstr.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
+    if (AnaName.find("TrigEle_") != std::string::npos)
+      HLTstr.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
+    if (AnaName.find("TrigMu_") != std::string::npos)
+      HLTstr.push_back("HLT_Ele27_WPTight_Gsf_v\\d");
 
     //Add name and order of the cutflow
     //Default is the singleEle trigger pass
@@ -120,6 +123,7 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutOrder.push_back("BJets");
     CutOrder.push_back("HT");
     CutOrder.push_back("WithMuon");
+    CutOrder.push_back("dDPhi");
 
     //Set the cutbit of each cut
     CutMap["NoCut"]   = "00000000000000000";
@@ -132,6 +136,7 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutMap["BJets"]   = "00000000001111111";
     CutMap["HT"]      = "00000000011111111";
     CutMap["WithMuon"]= "00000000111110111";
+    CutMap["dDPhi"]   = "00000001011111111";
   }
 
   if (AnaName.find("Muon") != std::string::npos)
@@ -198,7 +203,7 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutOrder.push_back("NoCut");
     CutOrder.push_back("Filter");
     CutOrder.push_back("EleTrig");
-    CutOrder.push_back("VetoEle");
+    CutOrder.push_back("NEle");
     CutOrder.push_back("VetoMuon");
     CutOrder.push_back("nJets");
     CutOrder.push_back("InvDPhi");
@@ -208,11 +213,10 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutMap["NoCut"]    = "00000000000000000";
     CutMap["Filter"]   = "00000000000000001";
     CutMap["EleTrig"]  = "00000000000000011";
-    CutMap["VetoEle"]  = "00000000000000111";
+    CutMap["NEle"]     = "00000000000000111";
     CutMap["VetoMuon"] = "00000000000001111";
     CutMap["nJets"]    = "00000000000011111";
     CutMap["InvDPhi"]  = "00000000000111111";
-
   }
 
   assert(CutOrder.size() == CutMap.size());
@@ -243,6 +247,7 @@ bool TriggerAna::CheckCut()
     cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
     cutbit.set(7 , tr->getVar<bool>(Label["passHT"]));
     cutbit.set(8 , tr->getVar<int>(Label["nMuons_Base"]) >= 1);
+    cutbit.set(9 , tr->getVar<bool>(Label["passdPhis"]));
   }
 
   if (AnaName.find("Muon") != std::string::npos)
@@ -274,7 +279,8 @@ bool TriggerAna::CheckCut()
   {
     cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
     cutbit.set(1 , PassTrigger());
-    cutbit.set(2 , tr->getVar<int>(Label["nElectrons_Base"]) == 0 );
+    cutbit.set(2 , tr->getVec<TLorentzVector>(Label["cutEleVec"]).size() >= 1 && 
+        tr->getVec<TLorentzVector>(Label["cutEleVec"]).front().Pt() > 30);
     cutbit.set(3 , tr->getVar<int>(Label["nMuons_Base"]) == 0 );
     cutbit.set(4 , tr->getVar<bool>(Label["passnJets"]));
     cutbit.set(5 , !tr->getVar<bool>(Label["passdPhis"]));
@@ -292,6 +298,7 @@ bool TriggerAna::FillCut()
 //----------------------------------------------------------------------------
 //  Check cut and fill cut-based plots
 //----------------------------------------------------------------------------
+  //HLTIdx.clear();
   if (ComAna::IsUpdateHLT()) HLTIdx.clear();
   ComAna::RunEvent();
   CheckCut();
@@ -379,7 +386,8 @@ bool TriggerAna::FillMuonEff(int NCut)
 
   std::vector<std::string> MuonHLT;
   MuonHLT.push_back("HLT_Mu50_v\\d");
-  //MuonHLT.push_back("HLT_Mu45_eta2p1_v\\d");
+  MuonHLT.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v\\d");
+  MuonHLT.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v\\d");
   if (PassTrigger(MuonHLT))
   {
     his->FillTH1(NCut, "Trig50Muon_Numerator", LeadingPt);

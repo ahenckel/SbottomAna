@@ -19,6 +19,7 @@
 
 #include <algorithm>
 
+#include "TGraphAsymmErrors.h"
 #include "ComAna.h"
 
 #include "SusyAnaTools/Tools/NTupleReader.h"
@@ -68,6 +69,7 @@ class LepTrigSF
     NTupleReader *tr;
     TFile *LepSFfile;
     std::string curSpec;
+    std::map<std::string, TGraphAsymmErrors*> LepSFTG;
     std::map<std::string, TH1D*> LepSF1D;
     std::map<std::string, TH2D*> LepSF2D;
     std::map<std::string, std::vector<std::string> > LepSFVec;
