@@ -59,6 +59,11 @@ class TriggerAna : public ComAna
 
   protected:
     // ====================  METHODS       ===============================
+    bool BookEleHistograms();
+    bool BookMuonHistograms();
+    bool BookStopHistograms();
+    
+    bool FillHTEff(int NCut);
     bool FillMETEff(int NCut);
     bool FillMuonEff(int NCut);
     bool FillEleEff(int NCut);
