@@ -579,6 +579,7 @@ bool TriggerAna::FillMETEff(int NCut)
     else
       his->FillTH1(NCut, "TrigMET_HTLess1000_Numerator", tr->getVar<double>(METLabel));
 
+    his->FillTH1(NCut, "TrigHT_Numerator",    tr->getVar<double>(Label["HT"]));
     his->FillTH1(NCut, "TrigNJets_Numerator", tr->getVar<int>(Label["cntNJetsPt30"]));
     his->FillTH1(NCut, "TrigNBs_Numerator",   tr->getVar<int>(Label["cntCSVS"]));
   }
@@ -726,6 +727,7 @@ bool TriggerAna::FillHTEff(int NCut)
     else
       his->FillTH1(NCut, "TrigMET_HTLess1000_Numerator", tr->getVar<double>(METLabel));
 
+    his->FillTH1(NCut, "TrigHT_Numerator",    tr->getVar<double>(Label["HT"]));
     his->FillTH1(NCut, "TrigNJets_Numerator", tr->getVar<int>(Label["cntNJetsPt30"]));
     his->FillTH1(NCut, "TrigNBs_Numerator",   tr->getVar<int>(Label["cntCSVS"]));
   }
