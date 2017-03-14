@@ -220,16 +220,25 @@ bool TriggerAna::InitCutOrder(std::string ana)
   }
   if (AnaName == "TrigHT_Stop" ||AnaName == "TrigHT_QCD")
   {
-    HLTstr.push_back("HLT_PFHT125_v\\d");
-    HLTstr.push_back("HLT_PFHT200_v\\d");
-    HLTstr.push_back("HLT_PFHT250_v\\d");
+    /*
+     *HLTstr.push_back("HLT_PFHT125_v\\d");
+     *HLTstr.push_back("HLT_PFHT200_v\\d");
+     *HLTstr.push_back("HLT_PFHT250_v\\d");
+     *HLTstr.push_back("HLT_PFHT300_PFMET100_v\\d");
+     *HLTstr.push_back("HLT_PFHT300_v\\d");
+     *HLTstr.push_back("HLT_PFHT350_v\\d");
+     *HLTstr.push_back("HLT_PFHT400_v\\d");
+     *HLTstr.push_back("HLT_PFHT475_v\\d");
+     *HLTstr.push_back("HLT_PFHT600_v\\d");
+     *HLTstr.push_back("HLT_PFHT650_v\\d");
+     *HLTstr.push_back("HLT_PFHT800_v\\d");
+     *HLTstr.push_back("HLT_PFHT900_v\\d");
+     *HLTstr.push_back("HLT_PFJet450_v\\d");
+     *HLTstr.push_back("HLT_CaloJet500_NoJetID_v\\d");
+     */
     HLTstr.push_back("HLT_PFHT300_PFMET100_v\\d");
     HLTstr.push_back("HLT_PFHT300_v\\d");
     HLTstr.push_back("HLT_PFHT350_v\\d");
-    HLTstr.push_back("HLT_PFHT400_v\\d");
-    HLTstr.push_back("HLT_PFHT475_v\\d");
-    HLTstr.push_back("HLT_PFHT600_v\\d");
-    HLTstr.push_back("HLT_PFHT650_v\\d");
     HLTstr.push_back("HLT_PFHT800_v\\d");
     HLTstr.push_back("HLT_PFHT900_v\\d");
     HLTstr.push_back("HLT_PFJet450_v\\d");
@@ -458,7 +467,7 @@ bool TriggerAna::CheckCut()
       cutbit.set(8 , !tr->getVar<bool>(Label["passdPhis"]));
     else
       cutbit.set(8 , tr->getVar<bool>(Label["passdPhis"]));
-    cutbit.set(9 , tr->getVar<bool>(Label["passMET"]);
+    cutbit.set(9 , tr->getVar<bool>(Label["passMET"]));
     cutbit.set(10 , tr->getVar<int>(Label["nElectrons_Base"]) == 1);
     cutbit.set(11 , tr->getVar<int>(Label["nMuons_Base"]) == 1);
   }
@@ -711,20 +720,29 @@ bool TriggerAna::FillHTEff(int NCut)
     his->FillTH1(NCut, "TrigMET_HTLess1000_Denominator", tr->getVar<double>(METLabel));
 
   std::vector<std::string> HTHLT;
-  HTHLT.push_back("HLT_PFHT125_v\\d");
-  HTHLT.push_back("HLT_PFHT200_v\\d");
-  HTHLT.push_back("HLT_PFHT250_v\\d");
-  HTHLT.push_back("HLT_PFHT300_PFMET100_v\\d");
-  HTHLT.push_back("HLT_PFHT300_v\\d");
-  HTHLT.push_back("HLT_PFHT350_v\\d");
-  HTHLT.push_back("HLT_PFHT400_v\\d");
-  HTHLT.push_back("HLT_PFHT475_v\\d");
-  HTHLT.push_back("HLT_PFHT600_v\\d");
-  HTHLT.push_back("HLT_PFHT650_v\\d");
-  HTHLT.push_back("HLT_PFHT800_v\\d");
-  HTHLT.push_back("HLT_PFHT900_v\\d");
-  HTHLT.push_back("HLT_PFJet450_v\\d");
-  HTHLT.push_back("HLT_CaloJet500_NoJetID_v\\d");
+  /*
+   *HTHLT.push_back("HLT_PFHT125_v\\d");
+   *HTHLT.push_back("HLT_PFHT200_v\\d");
+   *HTHLT.push_back("HLT_PFHT250_v\\d");
+   *HTHLT.push_back("HLT_PFHT300_PFMET100_v\\d");
+   *HTHLT.push_back("HLT_PFHT300_v\\d");
+   *HTHLT.push_back("HLT_PFHT350_v\\d");
+   *HTHLT.push_back("HLT_PFHT400_v\\d");
+   *HTHLT.push_back("HLT_PFHT475_v\\d");
+   *HTHLT.push_back("HLT_PFHT600_v\\d");
+   *HTHLT.push_back("HLT_PFHT650_v\\d");
+   *HTHLT.push_back("HLT_PFHT800_v\\d");
+   *HTHLT.push_back("HLT_PFHT900_v\\d");
+   *HTHLT.push_back("HLT_PFJet450_v\\d");
+   *HTHLT.push_back("HLT_CaloJet500_NoJetID_v\\d");
+   */
+   HTHLT.push_back("HLT_PFHT300_PFMET100_v\\d");
+   HTHLT.push_back("HLT_PFHT300_v\\d");
+   HTHLT.push_back("HLT_PFHT350_v\\d");
+   HTHLT.push_back("HLT_PFHT800_v\\d");
+   HTHLT.push_back("HLT_PFHT900_v\\d");
+   HTHLT.push_back("HLT_PFJet450_v\\d");
+   HTHLT.push_back("HLT_CaloJet500_NoJetID_v\\d");
 
   if (PassTrigger(HTHLT))
   {
