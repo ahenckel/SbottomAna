@@ -170,6 +170,7 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutOrder.push_back("BJets");
     CutOrder.push_back("HT");
     CutOrder.push_back("dDPhi");
+    CutOrder.push_back("MET");
     CutOrder.push_back("WithMuon");
 
     //Set the cutbit of each cut
@@ -183,7 +184,8 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutMap["BJets"]    = "00000000001111111";
     CutMap["HT"]       = "00000000011111111";
     CutMap["dDPhi"]    = "00000000111111111";
-    CutMap["WithMuon"] = "00000001111110111";
+    CutMap["MET"]      = "00000001111111111";
+    CutMap["WithMuon"] = "00000010111110111";
   }
   if (AnaName == "TrigMu_Stop" || AnaName == "TrigMu_QCD" )
   {
@@ -199,6 +201,7 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutOrder.push_back("BJets");
     CutOrder.push_back("HT");
     CutOrder.push_back("dDPhi");
+    CutOrder.push_back("MET");
     CutOrder.push_back("WithEle");
 
     //Set the cutbit of each cut
@@ -212,7 +215,8 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutMap["BJets"]   = "00000000001111111";
     CutMap["HT"]      = "00000000011111111";
     CutMap["dDPhi"]   = "00000000111111111";
-    CutMap["WithEle"] = "00000001111110111";
+    CutMap["MET"]     = "00000001111111111";
+    CutMap["WithEle"] = "00000010111110111";
   }
   if (AnaName == "TrigHT_Stop" ||AnaName == "TrigHT_QCD")
   {
@@ -232,7 +236,6 @@ bool TriggerAna::InitCutOrder(std::string ana)
     HLTstr.push_back("HLT_CaloJet500_NoJetID_v\\d");
 
 
-
     CutOrder.push_back("NoCut");
     CutOrder.push_back("Filter");
     CutOrder.push_back("HTTrig");
@@ -243,6 +246,7 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutOrder.push_back("BJets");
     CutOrder.push_back("HT");
     CutOrder.push_back("dDPhi");
+    CutOrder.push_back("MET");
     CutOrder.push_back("WithEle");
     CutOrder.push_back("WithMu");
 
@@ -257,8 +261,9 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutMap["BJets"]   = "00000000001111111";
     CutMap["HT"]      = "00000000011111111";
     CutMap["dDPhi"]   = "00000000111111111";
-    CutMap["WithEle"] = "00000001111110111";
-    CutMap["WithMu"]  = "00000010111111011";
+    CutMap["MET"]     = "00000001111111111";
+    CutMap["WithEle"] = "00000010111110111";
+    CutMap["WithMu"]  = "00000100111111011";
   }
 
 
@@ -415,7 +420,8 @@ bool TriggerAna::CheckCut()
       cutbit.set(8 , !tr->getVar<bool>(Label["passdPhis"]));
     else
       cutbit.set(8 , tr->getVar<bool>(Label["passdPhis"]));
-    cutbit.set(9 , tr->getVar<int>(Label["nMuons_Base"]) >= 1);
+    cutbit.set(9 , tr->getVar<bool>(Label["passMET"]));
+    cutbit.set(10 , tr->getVar<int>(Label["nMuons_Base"]) == 1);
     
   }
   if (AnaName == "TrigMu_Stop" || AnaName == "TrigMu_QCD" )
@@ -433,7 +439,8 @@ bool TriggerAna::CheckCut()
       cutbit.set(8 , !tr->getVar<bool>(Label["passdPhis"]));
     else
       cutbit.set(8 , tr->getVar<bool>(Label["passdPhis"]));
-    cutbit.set(9 , tr->getVar<int>(Label["nElectrons_Base"]) >= 1);
+    cutbit.set(9 , tr->getVar<bool>(Label["passMET"]));
+    cutbit.set(10 , tr->getVar<int>(Label["nElectrons_Base"]) == 1);
     
   }
 
@@ -451,9 +458,9 @@ bool TriggerAna::CheckCut()
       cutbit.set(8 , !tr->getVar<bool>(Label["passdPhis"]));
     else
       cutbit.set(8 , tr->getVar<bool>(Label["passdPhis"]));
-    cutbit.set(9 , tr->getVar<int>(Label["nElectrons_Base"]) >= 1);
-    cutbit.set(10 , tr->getVar<int>(Label["nMuons_Base"]) >= 1);
-    
+    cutbit.set(9 , tr->getVar<bool>(Label["passMET"]);
+    cutbit.set(10 , tr->getVar<int>(Label["nElectrons_Base"]) == 1);
+    cutbit.set(11 , tr->getVar<int>(Label["nMuons_Base"]) == 1);
   }
 
 //**************************************************************************//
