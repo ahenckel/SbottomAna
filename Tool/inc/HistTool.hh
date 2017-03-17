@@ -58,6 +58,7 @@ class HistTool
     int CreateFile(std::string filname);
     bool SetWeight(double weight);
     bool SaveCutHists(bool choice);
+    bool SaveStatHists(bool choice);
 
     bool BookCutBits(const unsigned int& Nbits);
     bool FillCutBits(const std::vector<bool> bits);

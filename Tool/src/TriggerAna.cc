@@ -25,6 +25,7 @@ TriggerAna::TriggerAna (std::string name, NTupleReader* tr_, std::shared_ptr<TFi
 : ComAna(name, tr_, OutFile, spec_)
 {
   InitCutOrder(name);
+  his->SaveStatHists(false);
 }  // -----  end of method TriggerAna::TriggerAna  (constructor)  -----
 
 //----------------------------------------------------------------------------
@@ -124,6 +125,8 @@ bool TriggerAna::BookStopHistograms()
 {
   his->AddTH1C("TrigMET_Denominator" , "TrigMET_Denominator" , "MET [GeV]" , "Denominator" , 200, 0, 1000);
   his->AddTH1C("TrigMET_Numerator"   , "TrigMET_Numerator"   , "MET [GeV]" , "Numerator"   , 200, 0, 1000);
+  his->AddTH1C("TrigMHT_Denominator" , "TrigMHT_Denominator" , "MHT [GeV]" , "Denominator" , 200, 0, 1000);
+  his->AddTH1C("TrigMHT_Numerator"   , "TrigMHT_Numerator"   , "MHT [GeV]" , "Numerator"   , 200, 0, 1000);
   his->AddTH1C("TrigMET_HTLess1000_Denominator" , "TrigMET_HTLess1000_Denominator" , "MET [GeV]" , "Denominator" , 200, 0, 1000);
   his->AddTH1C("TrigMET_HTLess1000_Numerator"   , "TrigMET_HTLess1000_Numerator"   , "MET [GeV]" , "Numerator"   , 200, 0, 1000);
   his->AddTH1C("TrigMET_HTMore1000_Denominator" , "TrigMET_HTMore1000_Denominator" , "MET [GeV]" , "Denominator" , 200, 0, 1000);
@@ -220,29 +223,27 @@ bool TriggerAna::InitCutOrder(std::string ana)
   }
   if (AnaName == "TrigHT_Stop" ||AnaName == "TrigHT_QCD")
   {
-    /*
-     *HLTstr.push_back("HLT_PFHT125_v\\d");
-     *HLTstr.push_back("HLT_PFHT200_v\\d");
-     *HLTstr.push_back("HLT_PFHT250_v\\d");
-     *HLTstr.push_back("HLT_PFHT300_PFMET100_v\\d");
-     *HLTstr.push_back("HLT_PFHT300_v\\d");
-     *HLTstr.push_back("HLT_PFHT350_v\\d");
-     *HLTstr.push_back("HLT_PFHT400_v\\d");
-     *HLTstr.push_back("HLT_PFHT475_v\\d");
-     *HLTstr.push_back("HLT_PFHT600_v\\d");
-     *HLTstr.push_back("HLT_PFHT650_v\\d");
-     *HLTstr.push_back("HLT_PFHT800_v\\d");
-     *HLTstr.push_back("HLT_PFHT900_v\\d");
-     *HLTstr.push_back("HLT_PFJet450_v\\d");
-     *HLTstr.push_back("HLT_CaloJet500_NoJetID_v\\d");
-     */
-    HLTstr.push_back("HLT_PFHT300_PFMET100_v\\d");
+    //HLTstr.push_back("HLT_PFHT125_v\\d");
+    HLTstr.push_back("HLT_PFHT200_v\\d");
+    HLTstr.push_back("HLT_PFHT250_v\\d");
+    //HLTstr.push_back("HLT_PFHT300_PFMET100_v\\d");
     HLTstr.push_back("HLT_PFHT300_v\\d");
     HLTstr.push_back("HLT_PFHT350_v\\d");
+    HLTstr.push_back("HLT_PFHT400_v\\d");
+    HLTstr.push_back("HLT_PFHT475_v\\d");
+    HLTstr.push_back("HLT_PFHT600_v\\d");
+    HLTstr.push_back("HLT_PFHT650_v\\d");
     HLTstr.push_back("HLT_PFHT800_v\\d");
     HLTstr.push_back("HLT_PFHT900_v\\d");
-    HLTstr.push_back("HLT_PFJet450_v\\d");
+    //HLTstr.push_back("HLT_PFJet450_v\\d");
     HLTstr.push_back("HLT_CaloJet500_NoJetID_v\\d");
+    //HLTstr.push_back("HLT_PFHT300_PFMET100_v\\d");
+    //HLTstr.push_back("HLT_PFHT300_v\\d");
+    //HLTstr.push_back("HLT_PFHT350_v\\d");
+    //HLTstr.push_back("HLT_PFHT800_v\\d");
+    //HLTstr.push_back("HLT_PFHT900_v\\d");
+    //HLTstr.push_back("HLT_PFJet450_v\\d");
+    //HLTstr.push_back("HLT_CaloJet500_NoJetID_v\\d");
 
 
     CutOrder.push_back("NoCut");
@@ -572,6 +573,7 @@ bool TriggerAna::FillMETEff(int NCut)
 {
   // Denominator
   his->FillTH1(NCut, "TrigMET_Denominator",   tr->getVar<double>(METLabel));
+  his->FillTH1(NCut, "TrigMHT_Denominator",   tr->getVar<double>(Label["MHT"]));
   his->FillTH1(NCut, "TrigHT_Denominator",    tr->getVar<double>(Label["HT"]));
   his->FillTH1(NCut, "TrigNJets_Denominator", tr->getVar<int>(Label["cntNJetsPt30"]));
   his->FillTH1(NCut, "TrigNBs_Denominator",   tr->getVar<int>(Label["cntCSVS"]));
@@ -595,6 +597,7 @@ bool TriggerAna::FillMETEff(int NCut)
     else
       his->FillTH1(NCut, "TrigMET_HTLess1000_Numerator", tr->getVar<double>(METLabel));
 
+    his->FillTH1(NCut, "TrigMHT_Numerator",   tr->getVar<double>(Label["MHT"]));
     his->FillTH1(NCut, "TrigHT_Numerator",    tr->getVar<double>(Label["HT"]));
     his->FillTH1(NCut, "TrigNJets_Numerator", tr->getVar<int>(Label["cntNJetsPt30"]));
     his->FillTH1(NCut, "TrigNBs_Numerator",   tr->getVar<int>(Label["cntCSVS"]));
@@ -711,6 +714,7 @@ bool TriggerAna::FillEleEff(int NCut)
 bool TriggerAna::FillHTEff(int NCut)
 {
   his->FillTH1(NCut, "TrigMET_Denominator",   tr->getVar<double>(METLabel));
+  his->FillTH1(NCut, "TrigMHT_Denominator",   tr->getVar<double>(Label["MHT"]));
   his->FillTH1(NCut, "TrigHT_Denominator",    tr->getVar<double>(Label["HT"]));
   his->FillTH1(NCut, "TrigNJets_Denominator", tr->getVar<int>(Label["cntNJetsPt30"]));
   his->FillTH1(NCut, "TrigNBs_Denominator",   tr->getVar<int>(Label["cntCSVS"]));
@@ -720,29 +724,27 @@ bool TriggerAna::FillHTEff(int NCut)
     his->FillTH1(NCut, "TrigMET_HTLess1000_Denominator", tr->getVar<double>(METLabel));
 
   std::vector<std::string> HTHLT;
-  /*
-   *HTHLT.push_back("HLT_PFHT125_v\\d");
-   *HTHLT.push_back("HLT_PFHT200_v\\d");
-   *HTHLT.push_back("HLT_PFHT250_v\\d");
-   *HTHLT.push_back("HLT_PFHT300_PFMET100_v\\d");
-   *HTHLT.push_back("HLT_PFHT300_v\\d");
-   *HTHLT.push_back("HLT_PFHT350_v\\d");
-   *HTHLT.push_back("HLT_PFHT400_v\\d");
-   *HTHLT.push_back("HLT_PFHT475_v\\d");
-   *HTHLT.push_back("HLT_PFHT600_v\\d");
-   *HTHLT.push_back("HLT_PFHT650_v\\d");
-   *HTHLT.push_back("HLT_PFHT800_v\\d");
-   *HTHLT.push_back("HLT_PFHT900_v\\d");
-   *HTHLT.push_back("HLT_PFJet450_v\\d");
-   *HTHLT.push_back("HLT_CaloJet500_NoJetID_v\\d");
-   */
-   HTHLT.push_back("HLT_PFHT300_PFMET100_v\\d");
-   HTHLT.push_back("HLT_PFHT300_v\\d");
-   HTHLT.push_back("HLT_PFHT350_v\\d");
-   HTHLT.push_back("HLT_PFHT800_v\\d");
-   HTHLT.push_back("HLT_PFHT900_v\\d");
-   HTHLT.push_back("HLT_PFJet450_v\\d");
-   HTHLT.push_back("HLT_CaloJet500_NoJetID_v\\d");
+  HTHLT.push_back("HLT_PFHT125_v\\d");
+  HTHLT.push_back("HLT_PFHT200_v\\d");
+  HTHLT.push_back("HLT_PFHT250_v\\d");
+  HTHLT.push_back("HLT_PFHT300_PFMET100_v\\d");
+  HTHLT.push_back("HLT_PFHT300_v\\d");
+  HTHLT.push_back("HLT_PFHT350_v\\d");
+  HTHLT.push_back("HLT_PFHT400_v\\d");
+  HTHLT.push_back("HLT_PFHT475_v\\d");
+  HTHLT.push_back("HLT_PFHT600_v\\d");
+  HTHLT.push_back("HLT_PFHT650_v\\d");
+  HTHLT.push_back("HLT_PFHT800_v\\d");
+  HTHLT.push_back("HLT_PFHT900_v\\d");
+  HTHLT.push_back("HLT_PFJet450_v\\d");
+  HTHLT.push_back("HLT_CaloJet500_NoJetID_v\\d");
+   //HTHLT.push_back("HLT_PFHT300_PFMET100_v\\d");
+   //HTHLT.push_back("HLT_PFHT300_v\\d");
+   //HTHLT.push_back("HLT_PFHT350_v\\d");
+   //HTHLT.push_back("HLT_PFHT800_v\\d");
+   //HTHLT.push_back("HLT_PFHT900_v\\d");
+   //HTHLT.push_back("HLT_PFJet450_v\\d");
+   //HTHLT.push_back("HLT_CaloJet500_NoJetID_v\\d");
 
   if (PassTrigger(HTHLT))
   {
@@ -752,6 +754,7 @@ bool TriggerAna::FillHTEff(int NCut)
     else
       his->FillTH1(NCut, "TrigMET_HTLess1000_Numerator", tr->getVar<double>(METLabel));
 
+    his->FillTH1(NCut, "TrigMHT_Numerator",   tr->getVar<double>(Label["MHT"]));
     his->FillTH1(NCut, "TrigHT_Numerator",    tr->getVar<double>(Label["HT"]));
     his->FillTH1(NCut, "TrigNJets_Numerator", tr->getVar<int>(Label["cntNJetsPt30"]));
     his->FillTH1(NCut, "TrigNBs_Numerator",   tr->getVar<int>(Label["cntCSVS"]));

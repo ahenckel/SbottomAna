@@ -895,3 +895,13 @@ bool HistTool::SaveCutHists(bool choice)
   SaveCutHists_ = choice;
   return SaveCutHists_;
 }       // -----  end of function HistTool::SaveCutHists  -----
+
+// ===  FUNCTION  ============================================================
+//         Name:  HistTool::SaveStatHists
+//  Description:  
+// ===========================================================================
+bool HistTool::SaveStatHists(bool choice)
+{
+  SaveStatHists_ = choice;
+  return SaveStatHists_;
+}       // -----  end of function HistTool::SaveStatHists  -----
