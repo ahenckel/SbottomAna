@@ -96,13 +96,12 @@ bool TriggerAna::BookEleHistograms()
 // ===========================================================================
 bool TriggerAna::BookMuonHistograms()
 {
-  his->AddTH1C("Trig50Muon_Denominator"      , "Trig50Muon_Denominator"    , "MuonPT [GeV]"     , "Denominator" , 250, 0,  500);
-  his->AddTH1C("Trig50Muon_Numerator"        , "Trig50Muon_Numerator"      , "MuonPT [GeV]"     , "Numerator"   , 250, 0,  500);
-  his->AddTH1C("Trig50MuonEta50_Denominator" , "Trig50MuonEta50_Denominator" , "MuonEta(PT > 50)" , "Denominator" , 60,  -3, 3);
-  his->AddTH1C("Trig50MuonEta50_Numerator"   , "Trig50MuonEta50_Numerator"   , "MuonEta(PT > 50)" , "Numerator"   , 60,  -3, 3);
-
-  his->AddTH1C("Trig50DiMuMuon_Denominator"      , "Trig50DiMuMuon_Denominator"    , "MuonPT [GeV]"     , "Denominator" , 250, 0,  500);
-  his->AddTH1C("Trig50DiMuMuon_Numerator"        , "Trig50DiMuMuon_Numerator"      , "MuonPT [GeV]"     , "Numerator"   , 250, 0,  500);
+  his->AddTH1C("Trig50Muon_Denominator"          , "Trig50Muon_Denominator"          , "MuonPT [GeV]"     , "Denominator" , 250, 0,  500);
+  his->AddTH1C("Trig50Muon_Numerator"            , "Trig50Muon_Numerator"            , "MuonPT [GeV]"     , "Numerator"   , 250, 0,  500);
+  his->AddTH1C("Trig50MuonEta50_Denominator"     , "Trig50MuonEta50_Denominator"     , "MuonEta(PT > 50)" , "Denominator" , 60,  -3, 3);
+  his->AddTH1C("Trig50MuonEta50_Numerator"       , "Trig50MuonEta50_Numerator"       , "MuonEta(PT > 50)" , "Numerator"   , 60,  -3, 3);
+  his->AddTH1C("Trig50DiMuMuon_Denominator"      , "Trig50DiMuMuon_Denominator"      , "MuonPT [GeV]"     , "Denominator" , 250, 0,  500);
+  his->AddTH1C("Trig50DiMuMuon_Numerator"        , "Trig50DiMuMuon_Numerator"        , "MuonPT [GeV]"     , "Numerator"   , 250, 0,  500);
   his->AddTH1C("Trig50DiMuMuonEta50_Denominator" , "Trig50DiMuMuonEta50_Denominator" , "MuonEta(PT > 50)" , "Denominator" , 60,  -3, 3);
   his->AddTH1C("Trig50DiMuMuonEta50_Numerator"   , "Trig50DiMuMuonEta50_Numerator"   , "MuonEta(PT > 50)" , "Numerator"   , 60,  -3, 3);
 
@@ -114,6 +113,16 @@ bool TriggerAna::BookMuonHistograms()
   his->AddTH1C("TrigMuonEta40_Numerator"   , "TrigMuonEta40_Numerator"   , "MuonEta(PT > 40)" , "Numerator"   , 60,  -3, 3);
   his->AddTH1C("TrigMuonEta50_Denominator" , "TrigMuonEta50_Denominator" , "MuonEta(PT > 50)" , "Denominator" , 60,  -3, 3);
   his->AddTH1C("TrigMuonEta50_Numerator"   , "TrigMuonEta50_Numerator"   , "MuonEta(PT > 50)" , "Numerator"   , 60,  -3, 3);
+
+
+  his->AddTH1C("TrigMuonZ_Denominator"          , "TrigMuonZ_Denominator"          , "ZPT [GeV]"     , "Denominator" , 250, 0,  500);
+  his->AddTH1C("TrigMuonZ_Numerator"            , "TrigMuonZ_Numerator"            , "ZPT [GeV]"     , "Numerator"   , 250, 0,  500);
+  his->AddTH1C("TrigMuonZEta100_Denominator"     , "TrigMuonZEta100_Denominator"     , "ZEta(PT > 100)" , "Denominator" , 60,  -3, 3);
+  his->AddTH1C("TrigMuonZEta100_Numerator"       , "TrigMuonZEta100_Numerator"       , "ZEta(PT > 100)" , "Numerator"   , 60,  -3, 3);
+  his->AddTH1C("TrigMuonDiMuZ_Denominator"      , "TrigMuonDiMuZ_Denominator"      , "ZPT [GeV]"     , "Denominator" , 250, 0,  500);
+  his->AddTH1C("TrigMuonDiMuZ_Numerator"        , "TrigMuonDiMuZ_Numerator"        , "ZPT [GeV]"     , "Numerator"   , 250, 0,  500);
+  his->AddTH1C("TrigMuonDiMuZEta100_Denominator" , "TrigMuonDiMuZEta100_Denominator" , "ZEta(PT > 100)" , "Denominator" , 60,  -3, 3);
+  his->AddTH1C("TrigMuonDiMuZEta100_Numerator"   , "TrigMuonDiMuZEta100_Numerator"   , "ZEta(PT > 100)" , "Numerator"   , 60,  -3, 3);
   return true;
 }       // -----  end of function TriggerAna::BookMuonHistograms  -----
 
@@ -278,7 +287,6 @@ bool TriggerAna::InitCutOrder(std::string ana)
 
 
 
-
 //**************************************************************************//
 //                                  Others                                  //
 //**************************************************************************//
@@ -399,6 +407,41 @@ bool TriggerAna::InitCutOrder(std::string ana)
     CutMap["HT"]      = "00000000011111111";
   }
 
+  if (AnaName == "TrigMET_Muon")
+  {
+    // Use this trigger as denominator
+    HLTstr.push_back("HLT_PFMET100_PFMHT100_IDTight_v\\d");
+    HLTstr.push_back("HLT_PFMET110_PFMHT110_IDTight_v\\d");
+    HLTstr.push_back("HLT_PFMET120_PFMHT120_IDTight_v\\d");
+    HLTstr.push_back("HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_v\\d");
+    HLTstr.push_back("HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_v\\d");
+    HLTstr.push_back("HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v\\d");
+
+    //Add name and order of the cutflow
+    //Default is the singleEle trigger pass
+    CutOrder.push_back("NoCut");
+    CutOrder.push_back("Filter");
+    CutOrder.push_back("METTrig");
+    CutOrder.push_back("METCut");
+    CutOrder.push_back("EleVeto");
+    CutOrder.push_back("NMuon");
+    CutOrder.push_back("nJets30");
+    CutOrder.push_back("nJets50");
+    CutOrder.push_back("BJets");
+    CutOrder.push_back("HT");
+
+    //Set the cutbit of each cut
+    CutMap["NoCut"]   = "00000000000000000";
+    CutMap["Filter"]  = "00000000000000001";
+    CutMap["METTrig"] = "00000000000000011";
+    CutMap["METCut"]  = "00000000000000111";
+    CutMap["EleVeto"] = "00000000000001111";
+    CutMap["NMuon"]   = "00000000000011111";
+    CutMap["nJets30"] = "00000000000111111";
+    CutMap["nJets50"] = "00000000001111111";
+    CutMap["BJets"]   = "00000000011111111";
+    CutMap["HT"]      = "00000000111111111";
+  }
   assert(CutOrder.size() == CutMap.size());
 
   his->Cutorder(ana, CutOrder, static_cast<unsigned int>(NBITS));
@@ -487,6 +530,19 @@ bool TriggerAna::CheckCut()
     cutbit.set(5 , tr->getVar<int>(Label["cntNJetsPt50Eta24"]) > 1);
     cutbit.set(6 , tr->getVar<bool>(Label["passBJets"]));
     cutbit.set(7 , tr->getVar<bool>(Label["passHT"]));
+  }
+
+  if (AnaName == "TrigMET_Muon")
+  {
+    cutbit.set(0 , tr->getVar<bool>(Label["passNoiseEventFilter"]));
+    cutbit.set(1 , PassTrigger());
+    cutbit.set(2 , tr->getVar<bool>(Label["passMET"]));
+    cutbit.set(3 , tr->getVar<int>(Label["nElectrons_Base"]) == 0 );
+    cutbit.set(4 , tr->getVar<int>(Label["nMuons_Base"]) >= 1 );
+    cutbit.set(5 , tr->getVar<int>(Label["cntNJetsPt30Eta24"]) > 3 );
+    cutbit.set(6 , tr->getVar<int>(Label["cntNJetsPt50Eta24"]) > 1);
+    cutbit.set(7 , tr->getVar<bool>(Label["passBJets"]));
+    cutbit.set(8 , tr->getVar<bool>(Label["passHT"]));
   }
 
   if (AnaName == "TrigMu_Electron")
@@ -633,6 +689,20 @@ bool TriggerAna::FillMuonEff(int NCut)
     }
   }
 
+  const std::vector<TLorentzVector> &ZLVec   = tr->getVec<TLorentzVector>(Label["recoZVec"]);
+  double bestZpt = -1;
+  double bestZEta = -999;
+  double bestZmass = -1;
+  for(auto z : ZLVec)
+  {
+    if (fabs(z.M() - 91.2) <= fabs(bestZmass - 91.2))
+    {
+      bestZmass = z.M();
+      bestZpt = z.Pt();
+      bestZEta = z.Eta();
+    }
+  }
+
   his->FillTH1(NCut, "TrigMuon_Denominator", LeadingPt);
   his->FillTH1(NCut, "Trig50Muon_Denominator", LeadingPt);
   his->FillTH1(NCut, "Trig50MuonEta50_Denominator", LeadingEta50);
@@ -641,13 +711,30 @@ bool TriggerAna::FillMuonEff(int NCut)
   his->FillTH1(NCut, "TrigMuonEta40_Denominator", LeadingEta40);
   his->FillTH1(NCut, "TrigMuonEta45_Denominator", LeadingEta45);
   his->FillTH1(NCut, "TrigMuonEta50_Denominator", LeadingEta50);
+  his->FillTH1(NCut, "TrigMuonZ_Denominator", bestZpt);
+  his->FillTH1(NCut, "TrigMuonDiMuZ_Denominator", bestZpt);
+  if (bestZpt >= 100)
+  {
+    his->FillTH1(NCut, "TrigMuonZEta100_Denominator", bestZEta);
+    his->FillTH1(NCut, "TrigMuonDiMuZEta100_Denominator", bestZEta);
+  }
+
 
   std::vector<std::string> MuonHLT;
+  MuonHLT.push_back("HLT_IsoMu24_v\\d");
+  MuonHLT.push_back("HLT_IsoTKMu24_v\\d");
   MuonHLT.push_back("HLT_Mu50_v\\d");
   if (PassTrigger(MuonHLT))
   {
     his->FillTH1(NCut, "Trig50Muon_Numerator", LeadingPt);
     his->FillTH1(NCut, "Trig50MuonEta50_Numerator", LeadingEta50);
+    his->FillTH1(NCut, "TrigMuon_Numerator", LeadingPt);
+    his->FillTH1(NCut, "TrigMuonEta40_Numerator", LeadingEta40);
+    his->FillTH1(NCut, "TrigMuonEta45_Numerator", LeadingEta45);
+    his->FillTH1(NCut, "TrigMuonEta50_Numerator", LeadingEta50);
+    his->FillTH1(NCut, "TrigMuonZ_Numerator", bestZpt);
+    if (bestZpt >= 100)
+      his->FillTH1(NCut, "TrigMuonZEta100_Numerator", bestZEta);
   }
 
   std::vector<std::string> DiMuHLT = MuonHLT;
@@ -657,17 +744,11 @@ bool TriggerAna::FillMuonEff(int NCut)
   {
     his->FillTH1(NCut, "Trig50DiMuMuon_Numerator", LeadingPt);
     his->FillTH1(NCut, "Trig50DiMuMuonEta50_Numerator", LeadingEta50);
+    his->FillTH1(NCut, "TrigMuonDiMuZ_Numerator", bestZpt);
+    if (bestZpt >= 100)
+      his->FillTH1(NCut, "TrigMuonDiMuZEta100_Numerator", bestZEta);
   }
 
-  MuonHLT.push_back("HLT_IsoMu24_v\\d");
-  MuonHLT.push_back("HLT_IsoTKMu24_v\\d");
-  if (PassTrigger(MuonHLT))
-  {
-    his->FillTH1(NCut, "TrigMuon_Numerator", LeadingPt);
-    his->FillTH1(NCut, "TrigMuonEta40_Numerator", LeadingEta40);
-    his->FillTH1(NCut, "TrigMuonEta45_Numerator", LeadingEta45);
-    his->FillTH1(NCut, "TrigMuonEta50_Numerator", LeadingEta50);
-  }
   return true;
 }       // -----  end of function TriggerAna::FillMuonEff  -----
 // ===  FUNCTION  ============================================================
@@ -724,10 +805,10 @@ bool TriggerAna::FillHTEff(int NCut)
     his->FillTH1(NCut, "TrigMET_HTLess1000_Denominator", tr->getVar<double>(METLabel));
 
   std::vector<std::string> HTHLT;
-  HTHLT.push_back("HLT_PFHT125_v\\d");
+  //HTHLT.push_back("HLT_PFHT125_v\\d");
   HTHLT.push_back("HLT_PFHT200_v\\d");
   HTHLT.push_back("HLT_PFHT250_v\\d");
-  HTHLT.push_back("HLT_PFHT300_PFMET100_v\\d");
+  //HTHLT.push_back("HLT_PFHT300_PFMET100_v\\d");
   HTHLT.push_back("HLT_PFHT300_v\\d");
   HTHLT.push_back("HLT_PFHT350_v\\d");
   HTHLT.push_back("HLT_PFHT400_v\\d");
