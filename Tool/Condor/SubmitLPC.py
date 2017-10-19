@@ -7,131 +7,147 @@ import time
 import subprocess
 import glob
 import tarfile
+import shutil
+import getpass
 
 DelExe    = '../testMain'
-OutDir = '/store/user/benwu/Stop16/TTZ/'
+# OutDir = '/store/user/benwu/Stop16/Trigger/'
+# OutDir = '/store/user/benwu/Stop16/TTZ'
+OutDir = '/store/user/benwu/Stop16/Tagger'
+# OutDir = '/store/user/benwu/Stop16/TFCheck'
 
 
 # tempdir = ''
 tempdir = '/uscmst1b_scratch/lpc1/lpctrig/benwu/CondorTemp'
 UserEMAIL = 'benwu@fnal.gov'
-ProjectName = 'TTZTaggerStop_v15'
+ProjectName = 'Aggreate_v11'
+# ProjectName = 'TaggerLepClean_v0'
+# ProjectName = 'Signal_v0'
+# ProjectName = 'Batool_v9'
+# ProjectName = 'StopPre_v2'
+# ProjectName = 'DataMC_v11'
+# ProjectName = 'BugTest_v0'
+# ProjectName = 'FullSimFastSim_v1'
 Process = {
-# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SM ~~~~~
-    "WJetsToLNu_HT_70to100"    : ['', 10],
-    "WJetsToLNu_HT_100to200"   : ['', 50],
-    "WJetsToLNu_HT_200to400"   : ['', 30],
-    "WJetsToLNu_HT_400to600"   : ['', 50],
-    "WJetsToLNu_HT_600to800"   : ['', 10],
-    "WJetsToLNu_HT_800to1200"  : ['', 7],
-    "WJetsToLNu_HT_1200to2500" : ['', 6],
-    "WJetsToLNu_HT_2500toInf"  : ['', 4],
-    # "WJetsToLNu_Inc"           : ['', 20],
+# # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SM ~~~~~
+    # "WJetsToLNu_HT_70to100"    : ['', 10],
+    # "WJetsToLNu_HT_100to200"   : ['', 50],
+    # "WJetsToLNu_HT_200to400"   : ['', 30],
+    # "WJetsToLNu_HT_400to600"   : ['', 50],
+    # "WJetsToLNu_HT_600to800"   : ['', 20],
+    # "WJetsToLNu_HT_800to1200"  : ['', 7],
+    # "WJetsToLNu_HT_1200to2500" : ['', 6],
+    # "WJetsToLNu_HT_2500toInf"  : ['', 4],
+    # # "WJetsToLNu_Inc"           : ['', 20],
 
-    "DYJetsToLL_HT_70to100"    : ['', 10],
-    "DYJetsToLL_HT_100to200"   : ['', 20],
-    "DYJetsToLL_HT_200to400"   : ['', 20],
-    "DYJetsToLL_HT_400to600"   : ['', 20],
-    "DYJetsToLL_HT_600to800"   : ['', 20],
-    "DYJetsToLL_HT_800to1200"  : ['', 8],
-    "DYJetsToLL_HT_1200to2500" : ['', 10],
-    "DYJetsToLL_HT_2500toInf"  : ['', 8],
-    # "DYJetsToLL_Inc"           : ['', 50],
+    # "DYJetsToLL_HT_70to100"    : ['', 10],
+    # "DYJetsToLL_HT_100to200"   : ['', 20],
+    # "DYJetsToLL_HT_200to400"   : ['', 20],
+    # "DYJetsToLL_HT_400to600"   : ['', 20],
+    # "DYJetsToLL_HT_600to800"   : ['', 20],
+    # "DYJetsToLL_HT_800to1200"  : ['', 8],
+    # "DYJetsToLL_HT_1200to2500" : ['', 10],
+    # "DYJetsToLL_HT_2500toInf"  : ['', 8],
+    # # "DYJetsToLL_Inc"           : ['', 50],
 
-    "ZJetsToNuNu_HT_100to200"   : ['', 13],
-    "ZJetsToNuNu_HT_200to400"   : ['', 15],
-    "ZJetsToNuNu_HT_400to600"   : ['', 7],
-    "ZJetsToNuNu_HT_600to800"   : ['', 7],
-    "ZJetsToNuNu_HT_800to1200"  : ['', 10],
-    "ZJetsToNuNu_HT_1200to2500" : ['', 5],
-    "ZJetsToNuNu_HT_2500toInf"  : ['', 6],
+    # "ZJetsToNuNu_HT_100to200"   : ['', 13],
+    # "ZJetsToNuNu_HT_200to400"   : ['', 15],
+    # "ZJetsToNuNu_HT_400to600"   : ['', 7],
+    # "ZJetsToNuNu_HT_600to800"   : ['', 7],
+    # "ZJetsToNuNu_HT_800to1200"  : ['', 10],
+    # "ZJetsToNuNu_HT_1200to2500" : ['', 5],
+    # "ZJetsToNuNu_HT_2500toInf"  : ['', 6],
 
 
-    "TTbarDiLep"                         : ['', 20],
-    "TTbarSingleLepTbar"                 : ['', 40],
-    "TTbarSingleLepT"                    : ['', 45],
-    # "TTbar_fastsim_wt_genJets_wt_genMET" : ['', 15],
-    # "TTbar_fullsim_wt_genJets_wt_genMET" : ['', 15],
-    # "TTbar_HT-600to800"                  : ['', 15],
-    # "TTbar_HT-800to1200"                 : ['', 15],
-    # "TTbar_HT-1200to2500"                : ['', 6],
-    # "TTbar_HT-2500toInf"                 : ['', 3],
+    # "TTbarDiLep"                         : ['', 20],
+    # "TTbarSingleLepTbar"                 : ['', 80],
+    # "TTbarSingleLepT"                    : ['', 80],
+    # # "TTbar_fastsim_wt_genJets_wt_genMET" : ['', 15],
+    # # "TTbar_fullsim_wt_genJets_wt_genMET" : ['', 15],
+    # # "TTbar_HT-600to800"                  : ['', 15],
+    # # "TTbar_HT-800to1200"                 : ['', 15],
+    # # "TTbar_HT-1200to2500"                : ['', 6],
+    # # "TTbar_HT-2500toInf"                 : ['', 3],
 
-    "QCD_HT100to200"              : ['', 40],
-    "QCD_HT200to300"              : ['', 25],
-    "QCD_HT300to500"              : ['', 32],
-    "QCD_HT500to700"              : ['', 50],
-    "QCD_HT700to1000"             : ['', 26],
-    "QCD_HT1000to1500"            : ['', 13],
-    "QCD_HT1500to2000"            : ['', 11],
-    "QCD_HT2000toInf"             : ['', 10],
+    # "QCD_HT100to200"              : ['', 40],
+    # "QCD_HT200to300"              : ['', 25],
+    # "QCD_HT300to500"              : ['', 32],
+    # "QCD_HT500to700"              : ['', 50],
+    # "QCD_HT700to1000"             : ['', 50],
+    # "QCD_HT1000to1500"            : ['', 13],
+    # "QCD_HT1500to2000"            : ['', 11],
+    # "QCD_HT2000toInf"             : ['', 10],
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SingleTop ~~~~~
-    "ST_s"             : ['', 2],
-    "ST_t_antitop"     : ['', 20],
-    "ST_t_top"         : ['', 40],
-    "tW_antitop_incl"  : ['', 1],
-    "tW_antitop_NoHad" : ['', 1],
-    "tW_top_incl"      : ['', 1],
-    "tW_top_NoHad"     : ['', 1],
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SingleTop ~~~~~
+    # "ST_s"             : ['', 4],
+    # "ST_t_antitop"     : ['', 40],
+    # "ST_t_top"         : ['', 80],
+    # "tW_antitop_incl"  : ['', 40],
+    # # "tW_antitop_NoHad" : ['', 10],
+    # "tW_top_incl"      : ['', 40],
+    # # "tW_top_NoHad"     : ['', 10],
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Top Associated Production ~~~~~
-    "ST_tWll"      : ['', 1],
-    "ST_tWnunu"    : ['', 1],
-    "TTGJets"      : ['', 4],
-    "ttHTobb"      : ['', 6],
-    "ttHToNonbb"   : ['', 5],
-    "TTTT"         : ['', 1],
-    "TTWJetsToLNu" : ['', 4],
-    "TTWJetsToQQ"  : ['', 1],
-    "TTZToLLNuNu"  : ['', 2],
-    "TTZToQQ"      : ['', 1],
-    "tZq_ll"       : ['', 15],
+# # # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Top Associated Production ~~~~~
+    # "ST_tWll"      : ['', 2],
+    # "ST_tWnunu"    : ['', 2],
+    # "TTGJets"      : ['', 16],
+    # "ttHTobb"      : ['', 12],
+    # "ttHToNonbb"   : ['', 10],
+    # "TTTT"         : ['', 2],
+    # "TTWJetsToLNu" : ['', 16],
+    # "TTWJetsToQQ"  : ['', 2],
+    # "TTZToLLNuNu"  : ['', 4],
+    # "TTZToQQ"      : ['', 2],
+    # "tZq_ll"       : ['', 30],
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Diboson ~~~~~
-    "ZZTo2L2Nu"   : ['', 11],
-    "ZZTo2L2Q"    : ['', 16],
-    "ZZTo2Q2Nu"   : ['', 25],
-    "ZZTo4L"      : ['', 5],
-    "ZZTo4Q"      : ['', 30],
-    # "WZ"          : ['', 8],
-    "WZTo1L1Nu2Q" : ['', 24],
-    "WZTo1L3Nu"   : ['', 1],
-    "WZTo3LNu"    : ['', 10],
-    "WWTo2L2Nu"   : ['', 1],
-    "WWTo4Q"      : ['', 1],
-    "WWToLNuQQ"   : ['', 6],
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Diboson ~~~~~
+    # "ZZTo2L2Nu"   : ['', 22],
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TriBoson ~~~~~
-    "WWG" : ['', 1],
-    "WWW" : ['', 1],
-    "WWZ" : ['', 1],
-    "WZG" : ['', 1],
-    "WZZ" : ['', 1],
-    "ZZZ" : ['', 1],
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Higgs ~~~~~
-    "VHToNonbb"       : ['', 1],
-    "GluGluHToZZTo4L" : ['', 1],
+    # "ZZTo2Q2Nu"   : ['', 50],
+    # "ZZTo4L"      : ['', 10],
+    # "ZZTo4Q"      : ['', 50],
+    # # "WZ"          : ['', 8],
+    # "WZTo1L1Nu2Q" : ['', 48],
+    # "WZTo1L3Nu"   : ['', 2],
+    # "WZTo3LNu"    : ['', 20],
+    # "WWTo2L2Nu"   : ['', 2],
+    # "WWTo4Q"      : ['', 2],
+    # "WWToLNuQQ"   : ['', 12],
+
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TriBoson ~~~~~
+    # "WWG" : ['', 2],
+    # "WWW" : ['', 2],
+    # "WWZ" : ['', 2],
+    # "WZG" : ['', 2],
+    # "WZZ" : ['', 2],
+    # "ZZZ" : ['', 2],
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Higgs ~~~~~
+    # "VHToNonbb"       : ['', 2],
+    # "GluGluHToZZTo4L" : ['', 2],
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Data ~~~~~
-    # "Data_MET_2016"                : ['', 1000],
     # "Data_MET_Run2016G"            : ['', 200],
-    # "Data_SingleElectron_2016"     : ['', 1000],
-    # "Data_SingleElectron_Run2016G" : ['', 200],
-    # "Data_SingleMuon_2016"         : ['', 1200],
+    # # "Data_SingleElectron_Run2016G" : ['', 200],
+    # "Data_SingleElectron_2016" : ['', 1400],
+    "Data_MET_2016"            : ['', 600],
+    # "Data_SingleMuon_2016"     : ['', 1400],
+    # "Data_HTMHT_2016"          : ['', 1000],
     # "Data_SingleMuon_Run2016G"     : ['', 200],
-
 # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Signal ~~~~~
-    # "Signal_fullsim_T2tt_mStop175_mLSP0"   : ['', 18],
-    # "Signal_fullsim_T2tt_mStop200_mLSP25"  : ['', 20],
-    # "Signal_fullsim_T2tt_mStop225_mLSP50"  : ['', 11],
-    # "Signal_fullsim_T2tt_mStop250_mLSP75"  : ['', 22],
-    # "Signal_fullsim_T2tt_mStop275_mLSP100" : ['', 13],
-    # "Signal_fullsim_T2tt_mStop300_mLSP125" : ['', 9],
-    # "Signal_T1tttt_mGluino1200_mLSP800"    : ['', 1],
-    # "Signal_T1tttt_mGluino1500_mLSP100"    : ['', 1],
-    # "Signal_T2tt_mStop500_mLSP325"         : ['', 1],
-    # "Signal_T2tt_mStop850_mLSP100"         : ['', 1],
+    # "Signal_fastsim_T1tttt_1200_800"    : ['',1],
+    # "Signal_fastsim_T1tttt_1500_100"    : ['',1],
+    # "Signal_fastsim_T1tttt_2000_100"    : ['',1],
+    # "Signal_fastsim_T2tt_425_325"       : ['',1],
+    # "Signal_fastsim_T2tt_500_325"       : ['',1],
+    # "Signal_fastsim_T2tt_650_350"       : ['',1],
+    # "Signal_fastsim_T2tt_850_100"       : ['',1],
+    # "Signal_fullsim_T1tttt_2000_100"    : ['',1],
+    # "Signal_fullsim_T2tt_425_325"       : ['',1],
+    # "Signal_fullsim_T2tt_650_350"       : ['',1],
+    # "Signal_T1tttt_mGluino1200_mLSP800" : ['',1],
+    # "Signal_T1tttt_mGluino1500_mLSP100" : ['',1],
+    # "Signal_T2tt_mStop500_mLSP325"      : ['',1],
+    # "Signal_T2tt_mStop850_mLSP100"      : ['',3],
 
 }
 
@@ -175,8 +191,8 @@ if __name__ == "__main__":
     cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK)
                                for path in os.environ["PATH"].split(os.pathsep))
     if cmd_exists('hadd'):
-        if not os.path.isdir("backup"):
-            os.mkdir("backup")
+        if not os.path.isdir("merged"):
+            os.mkdir("merged")
     else:
         HEADER = '[95m'
         OKBLUE = '[94m'
@@ -211,17 +227,6 @@ if __name__ == "__main__":
 """
 
 def Condor_Sub(condor_file):
-    ## Since we run with xrootd, setup proxy
-    hasproxy = True
-    proxyfile = ''
-    if os.environ.has_key('X509_USER_PROXY'):
-        proxyfile = os.path.abspath(os.environ['X509_USER_PROXY'])
-    else:
-        hasproxy = False
-    if not hasproxy or not os.path.exists(proxyfile) or (time.time() - os.stat(proxyfile).st_ctime) / 60/24 > 1:
-        print "Proxy file is at least one day old. Requesting new proxy"
-        os.system("voms-proxy-init -valid 168:00 -voms cms")
-
     curdir = os.path.abspath(os.path.curdir)
     os.chdir(os.path.dirname(condor_file))
     print "To submit condor with " + condor_file
@@ -241,6 +246,7 @@ def SplitPro(key, file, fraction):
     filename = os.path.abspath(file)
     if fraction == 1:
         splitedfiles.append(os.path.abspath(filename))
+        shutil.copy2(os.path.abspath(filename), "%s/%s" % (filelistdir, os.path.basename(filename)))
         return splitedfiles
 
     f = open(filename, 'r')
@@ -283,7 +289,7 @@ def my_process():
     ## Create the output directory
     outdir = OutDir +  "/" + ProjectName + "/"
     try:
-        os.makedirs(outdir)
+        os.makedirs("/eos/uscms/%s" % outdir)
     except OSError:
         pass
 
@@ -291,8 +297,8 @@ def my_process():
     RunHTFile = tempdir + "/" + "RunExe.csh"
     with open(RunHTFile, "wt") as outfile:
         for line in open("RunExe.csh", "r"):
-            #line = line.replace("DELDIR", os.environ['PWD'])
-            line = line.replace("DELDIR", os.environ['CMSSW_BASE'])
+            line = line.replace("DELSCR", os.environ['SCRAM_ARCH'])
+            line = line.replace("DELDIR", os.environ['CMSSW_VERSION'])
             line = line.replace("DELEXE", DelExe.split('/')[-1])
             line = line.replace("OUTDIR", outdir)
             outfile.write(line)
@@ -302,10 +308,9 @@ def my_process():
     f = open("%s/merge.py" % tempdir, 'wt')
     f.writelines(Mergeblock)
     f.close()
-    import shutil
-    shutil.copy2("%s/merge.py" % tempdir, "%s/merge.py" % outdir)
+    shutil.copy2("%s/merge.py" % tempdir, "/eos/uscms/%s/merge.py" % outdir)
     ### Keeping track of running script
-    shutil.copy2("../src/testMain.cc", "%s/testMain.cc" % outdir)
+    shutil.copy2("../src/testMain.cc", "/eos/uscms/%s/testMain.cc" % outdir)
 
     ### Create Tarball
     NewNpro = {}
