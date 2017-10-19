@@ -275,7 +275,7 @@ float LepTrigSF::GetMETTrigEff()
   assert(metPtbins.size() - metPtEffs_LessHT.size() == 1);
   assert(metPtbins.size() - metPtEffs_MoreHT.size() == 1);
 
-  double met =  tr->getVar<double>("met"+curSpec);
+  double met =  tr->getVar<double>("met");
   double ht =  tr->getVar<double>("HT"+curSpec);
   std::size_t idx = -1;
   if (met < 250) return 1;

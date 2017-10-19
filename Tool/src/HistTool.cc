@@ -657,7 +657,7 @@ int HistTool::AddTH2C (const std::string name, const std::string title,
   {
     for (Long_t i = 0; i < CutSize; ++i)
     {
-      TString mapname = name+"_"+i;
+      TString mapname = cutflag +"_"+name+"_"+i;
       TString xlb, ylb;
       if (logx) xlb = "log_"+xlabel;
       else xlb = xlabel;
@@ -684,7 +684,7 @@ int HistTool::AddTH2C (const std::string name, const std::string title,
   {
     for (Long_t i = 0; i < CutSize; ++i)
     {
-      TString mapname = name+"_"+i;
+      TString mapname = cutflag +"_"+name+"_"+i;
       TString maptitle = title+" ("+order.at(i)+")";
 
       HisMap2D[mapname.Data()] = std::unique_ptr<TH2D>(new TH2D(mapname.Data(), maptitle.Data(), 
@@ -809,7 +809,7 @@ int HistTool::WriteTH2()
   {
     std::string newname = it->second->GetName();
     newname.erase(0, cutflag.size()+1);
-    it->second->Write();
+    it->second->Write(newname.c_str());
   }
   return 1;
 }       // -----  end of function HistTool::WriteTH2  -----
